@@ -89,6 +89,7 @@ const char *const sensor_type_name[] = {
 	sensor_name_to_num(raa229621)
 	sensor_name_to_num(nct7718w)
 	sensor_name_to_num(ltc4286)
+	sensor_name_to_num(ltc4287) //Victor test
 #ifdef ENABLE_APML
 	sensor_name_to_num(amd_tsi)
 	sensor_name_to_num(apml_mailbox)
@@ -124,6 +125,7 @@ SENSOR_DRIVE_INIT_DECLARE(xdpe12284c);
 SENSOR_DRIVE_INIT_DECLARE(raa229621);
 SENSOR_DRIVE_INIT_DECLARE(nct7718w);
 SENSOR_DRIVE_INIT_DECLARE(ltc4286);
+SENSOR_DRIVE_INIT_DECLARE(ltc4287); //Victor test
 #ifdef ENABLE_APML
 SENSOR_DRIVE_INIT_DECLARE(amd_tsi);
 SENSOR_DRIVE_INIT_DECLARE(apml_mailbox);
@@ -161,6 +163,7 @@ struct sensor_drive_api {
 	SENSOR_DRIVE_TYPE_INIT_MAP(raa229621),
 	SENSOR_DRIVE_TYPE_INIT_MAP(nct7718w),
 	SENSOR_DRIVE_TYPE_INIT_MAP(ltc4286),
+	SENSOR_DRIVE_TYPE_INIT_MAP(ltc4287), //Victor test
 #ifdef ENABLE_APML
 	SENSOR_DRIVE_TYPE_INIT_MAP(amd_tsi),
 	SENSOR_DRIVE_TYPE_INIT_MAP(apml_mailbox),

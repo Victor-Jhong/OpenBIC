@@ -118,6 +118,7 @@ enum SENSOR_DEV {
 	sensor_dev_mp2856gut = 0x1C,
 	sensor_dev_ddr5_power = 0x1D,
 	sensor_dev_ddr5_temp = 0x1E,
+	sensor_dev_ltc4287 = 0x1F,  //Victor test
 	sensor_dev_max
 };
 
@@ -315,6 +316,29 @@ typedef struct _ltc4286_init_arg {
 	/* Initailize function will set following arguments, no need to give value */
 	bool is_init;
 } ltc4286_init_arg;
+
+//Victor test
+typedef struct _ltc4287_init_arg {
+	/* value to get/set MFR CONFIG 1 register */
+	union {
+		uint16_t value;
+		struct {
+			uint16_t vpwr_select : 1;
+			uint16_t vrange_select : 1;
+			uint16_t cooking_dl :3;
+			uint16_t vdth :2;
+			uint16_t reserved_1 : 1; // bit[7] are reserved.
+			uint16_t fb :2;
+			uint16_t ilim :4;
+			uint16_t therm_tmr :1;
+			uint16_t reserved_2 : 1; // bit[15] are reserved.
+		} fields;
+	} mfr_config_1;
+	/* Rsense valus, unit: milliohm */
+	float r_sense_mohm;
+	/* Initailize function will set following arguments, no need to give value */
+	bool is_init;
+} ltc4287_init_arg;
 
 typedef struct _mp5990_init_arg {
 	/* value to sets the gain for output current reporting */
