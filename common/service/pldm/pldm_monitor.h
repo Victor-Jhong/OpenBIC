@@ -97,6 +97,59 @@ struct pldm_get_sensor_reading_resp {
 
 uint8_t pldm_monitor_handler_query(uint8_t code, void **ret_fn);
 
+//******************************************************************//
+//Victor test 														//
+//******************************************************************//
+
+//******************************************************************//
+//SetStateEffecterStates command									//
+//******************************************************************//
+
+/* define size of request */
+#define PLDM_SET_STATE_EFFECTER_ENABLES_REQ_NO_STATE_FIELD_BYTES 3
+#define PLDM_SET_STATE_EFFECTER_ENABLES_REQ_STATE_FIELD_BYTES 2
+
+typedef enum set_request { no_change, request_set } set_request_t;
+
+typedef enum effecter_states { unknown = 0x00, state_0 = 0xF0, state_1 = 0xF1 } effecter_states_t;
+
+typedef struct set_state_field {
+	set_request_t pldm_set_request;
+	effecter_states_t pldm_effecter_states;
+} set_state_field_t;
+
+struct pldm_set_state_effecter_states_req {
+	uint16_t effecter_id;
+	uint8_t composite_effecter_count;
+	set_state_field_t pldm_state_field[1];
+} __attribute__((packed));
+
+struct pldm_set_state_effecter_states_resp {
+	uint8_t completion_code;
+} __attribute__((packed));
+
+//******************************************************************//
+//GetStateEffecterStates command									//
+//******************************************************************//
+typedef enum effecter_operational_state { enabled, disabled } effecter_operational_state_t;
+
+typedef enum present_state { unknown = 0x00, low = 0xF0, high = 0xF1 } present_state_t;
+
+typedef struct get_state_field {
+	effecter_operational_state_t pldm_effecter_operational_state;
+	present_state_t pldm_present_State;
+} get_state_field_t;
+
+struct pldm_get_state_effecter_states_req {
+	uint16_t effecter_id;
+} __attribute__((packed));
+
+struct pldm_get_state_effecter_states_resp {
+	uint8_t completion_code;
+	uint8_t composite_effecter_count;
+	get_state_field_t pldm_state_field[1];
+} __attribute__((packed));
+
 #ifdef __cplusplus
 }
 #endif
