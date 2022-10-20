@@ -97,8 +97,168 @@ ret:
 	return PLDM_SUCCESS;
 }
 
+//******************************************************************//
+//Victor test 														//
+//******************************************************************//
+
+#define Victor_test 1
+#if Victor_test
+//******************************************************************//
+//SetStateEffecterStates command									//
+//******************************************************************//
+
+uint8_t pldm_set_state_effecter_states(void *mctp_inst, uint8_t *buf, uint16_t len, uint8_t *resp,
+				       uint16_t *resp_len, void *ext_params)
+{
+	if (!mctp_inst || !buf || !resp || !resp_len)
+		return PLDM_ERROR;
+
+	struct pldm_set_state_effecter_states_req *req_p =
+		(struct pldm_set_state_effecter_states_req *)buf;
+	struct pldm_set_state_effecter_states_resp *res_p =
+		(struct pldm_set_state_effecter_states_resp *)resp;
+
+	//check effecter type is gpio (0xFF00~0xFFA8 represents GPIO 0~167)
+	if (req_p->effecter_id < 0xFF00 || req_p->effecter_id > 0xFFA8)
+		goto spare_effecter_area;
+
+	//check length
+	uint8_t pldm_set_state_effecter_enables_req_bytes =
+		PLDM_SET_STATE_EFFECTER_ENABLES_REQ_NO_STATE_FIELD_BYTES +
+		PLDM_SET_STATE_EFFECTER_ENABLES_REQ_STATE_FIELD_BYTES *
+			req_p->composite_effecter_count;
+	if (len != pldm_set_state_effecter_enables_req_bytes ||
+	    req_p->composite_effecter_count == 0) {
+		res_p->completion_code = PLDM_ERROR_INVALID_LENGTH;
+		goto ret;
+	}
+
+	//check effecter count is 2
+	if (req_p->composite_effecter_count != 2) {
+		res_p->completion_code = INVALID_STATE_VALUE;
+		goto ret;
+	}
+
+	//check state field 0 set request is noChange
+	if (req_p->pldm_state_field[0].pldm_set_request == NO_CHANGE)
+		goto field_1;
+	//gpio direction can't change by this command
+	res_p->completion_code = INVALID_STATE_VALUE;
+	goto ret;
+
+field_1:
+
+	//Victor test
+	printf("pldm_set_state_effecter_states command ID= %x \n", req_p->effecter_id);
+	printf("pldm_set_state_effecter_states command gpio dir= %x \n",
+	       gpio_get_direction(req_p->effecter_id - 0xFF00));
+	printf("pldm_set_state_effecter_states command gpio HL= %x \n",
+	       gpio_get(req_p->effecter_id - 0xFF00));
+
+	//check state field 1 isn't noChange
+	if (req_p->pldm_state_field[1].pldm_set_request == NO_CHANGE ||
+	    req_p->pldm_state_field[1].pldm_effecter_states == UNKNOWN_STATE)
+		goto ret;
+
+	//if gpio pin is input, it can't configure high low
+	if (gpio_get_direction(req_p->effecter_id - 0xFF00) == 0x00) {
+		res_p->completion_code = INVALID_STATE_VALUE;
+		goto ret;
+	}
+
+	//set gpio pin high low
+	gpio_set(req_p->effecter_id - 0xFF00,
+		 req_p->pldm_state_field[1].pldm_effecter_states - 0xF0);
+	res_p->completion_code = PLDM_SUCCESS;
+
+	//Victor test
+	printf("pldm_set finish command ID= %x \n", req_p->effecter_id);
+	printf("pldm_set finish gpio dir= %x \n", gpio_get_direction(req_p->effecter_id - 0xFF00));
+	printf("pldm_set finish gpio HL= %x \n", gpio_get(req_p->effecter_id - 0xFF00));
+
+/**
+ * @brief spare area for previous type of effecter
+ */
+spare_effecter_area:
+	//do nothing
+
+ret:
+	*resp_len = sizeof(struct pldm_set_state_effecter_states_resp);
+	return PLDM_SUCCESS;
+}
+
+//******************************************************************//
+//******************************************************************//
+//GetStateEffecterStates command									//
+//******************************************************************//
+//******************************************************************//
+uint8_t pldm_get_state_effecter_states(void *mctp_inst, uint8_t *buf, uint16_t len, uint8_t *resp,
+				       uint16_t *resp_len, void *ext_params)
+{
+	printf("pldm_get_state_effecter_states command \n");
+
+	if (!mctp_inst || !buf || !resp || !resp_len)
+		return PLDM_ERROR;
+
+	struct pldm_get_state_effecter_states_req *req_p =
+		(struct pldm_get_state_effecter_states_req *)buf;
+	struct pldm_get_state_effecter_states_resp *res_p =
+		(struct pldm_get_state_effecter_states_resp *)resp;
+
+	//check length
+	if (len != PLDM_GET_STATE_EFFECTER_STATES_REQ_BYTES) {
+		//res_p->completion_code = PLDM_ERROR_INVALID_LENGTH;
+		goto ret;
+	}
+
+	//check effecter type is gpio (0xFF00~0xFFA8 represents GPIO 0~167)
+	if (req_p->effecter_id < 0xFF00 || req_p->effecter_id > 0xFFA8)
+		goto spare_effecter_area;
+
+	//gpio effecter's count is always 2
+	res_p->composite_effecter_count = 2;
+
+	//gpio effecter's state is always enabled_noUpdatePending
+	res_p->pldm_state_field[0].pldm_effecter_operational_state = enabled_noUpdatePending;
+	res_p->pldm_state_field[1].pldm_effecter_operational_state = enabled_noUpdatePending;
+
+	//no pending state in gpio effecter
+	res_p->pldm_state_field[0].pldm_present_state =
+		gpio_get_direction(req_p->effecter_id - 0xFF00);
+	res_p->pldm_state_field[1].pldm_present_state = gpio_get(req_p->effecter_id - 0xFF00);
+	res_p->completion_code = PLDM_SUCCESS;
+
+	//Victor test
+	printf("get_state_effecter_states command ID= %x \n", req_p->effecter_id);
+	printf("get_state_effecter_states command gpio dir= %x \n",
+	       gpio_get_direction(req_p->effecter_id - 0xFF00));
+	printf("get_state_effecter_states command gpio HL= %x \n",
+	       gpio_get(req_p->effecter_id - 0xFF00));
+
+/**
+ * @brief spare area for previous type of effecter
+ */
+spare_effecter_area:
+	res_p->completion_code = INVALID_EFFECTER_ID;
+
+ret:
+	//Victor test
+	//res_p->completion_code = PLDM_SUCCESS;
+
+//	*resp_len = 8;
+#if 1
+	*resp_len = sizeof(struct pldm_get_state_effecter_states_resp) +
+		    sizeof(struct get_state_field) * res_p->composite_effecter_count - 3;
+#endif
+	return PLDM_SUCCESS;
+}
+
+#endif
+
 static pldm_cmd_handler pldm_monitor_cmd_tbl[] = {
 	{ PLDM_MONITOR_CMD_CODE_GET_SENSOR_READING, pldm_get_sensor_reading },
+	{ PLDM_MONITOR_CMD_CODE_SET_STATE_EFFECTER_STATES, pldm_set_state_effecter_states },
+	{ PLDM_MONITOR_CMD_CODE_GET_STATE_EFFECTER_STATES, pldm_get_state_effecter_states },
 };
 
 uint8_t pldm_monitor_handler_query(uint8_t code, void **ret_fn)
@@ -118,80 +278,4 @@ uint8_t pldm_monitor_handler_query(uint8_t code, void **ret_fn)
 
 	*ret_fn = (void *)fn;
 	return fn ? PLDM_SUCCESS : PLDM_ERROR;
-}
-
-//******************************************************************//
-//Victor test 														//
-//******************************************************************//
-
-//******************************************************************//
-//SetStateEffecterStates command									//
-//******************************************************************//
-uint8_t pldm_set_state_effecter_states(void *mctp_inst, uint8_t *buf, uint16_t len, uint8_t *resp,
-				       uint16_t *resp_len, void *ext_params)
-{
-	if (!mctp_inst || !buf || !resp || !resp_len)
-		return PLDM_ERROR;
-
-	struct pldm_set_state_effecter_states_req *req_p =
-		(struct pldm_set_state_effecter_states_req *)buf;
-	struct pldm_set_state_effecter_states_resp *res_p =
-		(struct pldm_set_state_effecter_states_resp *)resp;
-
-	uint8_t pldm_set_state_effecter_enables_req_bytes =
-		PLDM_SET_STATE_EFFECTER_ENABLES_REQ_NO_STATE_FIELD_BYTES +
-		PLDM_SET_STATE_EFFECTER_ENABLES_REQ_STATE_FIELD_BYTES *
-			req_p->composite_effecter_count;
-
-#if 0
-	if (len != pldm_set_state_effecter_enables_req_bytes ||
-	    req_p->composite_effecter_count == 0) {
-		res_p->completion_code = PLDM_ERROR_INVALID_LENGTH;
-		goto ret;
-	}
-#endif
-
-#if 0
-	uint8_t composite_effecter_count = req_p->composite_effecter_count;
-#endif
-#if 0	
-	struct set_state_field_t *req_field_p = buf->pldm_state_field[1];
-#endif
-
-	set_state_field_t oem_gpio_direction_set = req_p->state_field[0];
-
-	if (oem_gpio_direction_set->pldm_set_request == no_change)
-		goto field_2;
-		//return >> direction can't set by this command
-
-#if 0
-	//set gpio dir
-	if (oem_gpio_direction_set->pldm_effecter_states == unknown)
-		goto 123123123;
-	if (oem_gpio_direction_set->pldm_effecter_states == state_0)
-		gpio_conf(gpio_num, GPIO_INPUT);
-	else if (oem_gpio_direction_sett->pldm_effecter_states == state_1)
-		gpio_conf(gpio_num, GPIO_OUTPUT);
-		
-	123123123:
-#endif
-
-field_2:
-	set_state_field_t oem_gpio_value_state_set = req_p->state_field[1];
-
-	if (oem_gpio_value_state_set->pldm_set_request == no_change ||
-	    oem_gpio_value_state_set->pldm_effecter_states == unknown)
-		goto ret;
-
-	gpio_set(req_p->effecter_id - 0xFF00,
-		 oem_gpio_value_state_set->pldm_effecter_states - 0xF0);
-
-ret:
-}
-
-//******************************************************************//
-//GetStateEffecterStates command									//
-//******************************************************************//
-uint8_t pldm_get_state_effecter_states()
-{
 }

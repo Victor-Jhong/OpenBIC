@@ -25,6 +25,8 @@ extern "C" {
 
 /* command number of pldm type 0x02 : PLDM for platform monitor and control */
 #define PLDM_MONITOR_CMD_CODE_GET_SENSOR_READING 0x11
+#define PLDM_MONITOR_CMD_CODE_SET_STATE_EFFECTER_STATES 0x39
+#define PLDM_MONITOR_CMD_CODE_GET_STATE_EFFECTER_STATES 0x3A
 
 /* define size of request */
 #define PLDM_GET_SENSOR_READING_REQ_BYTES 3
@@ -109,13 +111,21 @@ uint8_t pldm_monitor_handler_query(uint8_t code, void **ret_fn);
 #define PLDM_SET_STATE_EFFECTER_ENABLES_REQ_NO_STATE_FIELD_BYTES 3
 #define PLDM_SET_STATE_EFFECTER_ENABLES_REQ_STATE_FIELD_BYTES 2
 
-typedef enum set_request { no_change, request_set } set_request_t;
+#define PLDM_GET_STATE_EFFECTER_STATES_REQ_BYTES 2
 
-typedef enum effecter_states { unknown = 0x00, state_0 = 0xF0, state_1 = 0xF1 } effecter_states_t;
+enum pldm_platform_effecter_completion_codes {
+	INVALID_EFFECTER_ID = 0x80,
+	INVALID_STATE_VALUE = 0x81,
+	UNSUPPORTED_EFFECTERSTATE = 0x82
+};
+
+enum set_request { NO_CHANGE, REQUEST_SET };
+
+enum effecter_states { UNKNOWN_STATE = 0x00, STATE_0 = 0xF0, STATE_1 = 0xF1 };
 
 typedef struct set_state_field {
-	set_request_t pldm_set_request;
-	effecter_states_t pldm_effecter_states;
+	uint8_t pldm_set_request;
+	uint8_t pldm_effecter_states;
 } set_state_field_t;
 
 struct pldm_set_state_effecter_states_req {
@@ -131,13 +141,23 @@ struct pldm_set_state_effecter_states_resp {
 //******************************************************************//
 //GetStateEffecterStates command									//
 //******************************************************************//
-typedef enum effecter_operational_state { enabled, disabled } effecter_operational_state_t;
 
-typedef enum present_state { unknown = 0x00, low = 0xF0, high = 0xF1 } present_state_t;
+enum effecter_operational_state {
+	enabled_updatePending,
+	enabled_noUpdatePending,
+	disabled,
+	unavailable,
+	statusUnknown,
+	failed,
+	initializing,
+	shuttingDown,
+	inTest
+};
 
 typedef struct get_state_field {
-	effecter_operational_state_t pldm_effecter_operational_state;
-	present_state_t pldm_present_State;
+	uint8_t pldm_effecter_operational_state;
+	uint8_t pldm_pending_state;
+	uint8_t pldm_present_state;
 } get_state_field_t;
 
 struct pldm_get_state_effecter_states_req {
