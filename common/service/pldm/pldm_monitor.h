@@ -99,14 +99,6 @@ struct pldm_get_sensor_reading_resp {
 
 uint8_t pldm_monitor_handler_query(uint8_t code, void **ret_fn);
 
-//******************************************************************//
-//Victor test 														//
-//******************************************************************//
-
-//******************************************************************//
-//SetStateEffecterStates command									//
-//******************************************************************//
-
 /* define size of request */
 #define PLDM_SET_STATE_EFFECTER_ENABLES_REQ_NO_STATE_FIELD_BYTES 3
 #define PLDM_SET_STATE_EFFECTER_ENABLES_REQ_STATE_FIELD_BYTES 2
@@ -160,10 +152,6 @@ struct pldm_set_state_effecter_states_req {
 struct pldm_set_state_effecter_states_resp {
 	uint8_t completion_code;
 } __attribute__((packed));
-
-//******************************************************************//
-//GetStateEffecterStates command									//
-//******************************************************************//
 
 enum effecter_operational_state {
 	enabled_updatePending,
