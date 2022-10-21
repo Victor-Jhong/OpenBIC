@@ -113,15 +113,38 @@ uint8_t pldm_monitor_handler_query(uint8_t code, void **ret_fn);
 
 #define PLDM_GET_STATE_EFFECTER_STATES_REQ_BYTES 2
 
+#define PLDM_STATE_EFFECTER_FIRST_GPIO_PIN 0
+#define PLDM_STATE_EFFECTER_LAST_GPIO_PIN 167
+
+#define PLDM_STATE_EFFECTER_GPIO_COMPOSITE_EFFECTER_COUNT 2
+
 enum pldm_platform_effecter_completion_codes {
 	INVALID_EFFECTER_ID = 0x80,
 	INVALID_STATE_VALUE = 0x81,
 	UNSUPPORTED_EFFECTERSTATE = 0x82
 };
 
-enum set_request { NO_CHANGE, REQUEST_SET };
+enum oem_gpio_dir_set_request {
+	GPIO_DIR_SET_REQUEST_NO_CHANGE = 0x00,
+	GPIO_DIR_SET_REQUEST_REQUEST_SET = 0x01
+};
 
-enum effecter_states { UNKNOWN_STATE = 0x00, STATE_0 = 0xF0, STATE_1 = 0xF1 };
+enum oem_gpio_value_set_request {
+	GPIO_VALUE_SET_REQUEST_NO_CHANGE = 0x00,
+	GPIO_VALUE_SET_REQUEST_REQUEST_SET = 0x01
+};
+
+enum oem_gpio_dir_effecter_states {
+	GPIO_DIR_EFFECTER_UNKNOWN_STATE = 0x00,
+	GPIO_DIR_EFFECTER_INPUT = 0xF0,
+	GPIO_DIR_EFFECTER_OUTPUT = 0xF1
+};
+
+enum oem_gpio_value_effecter_states {
+	GPIO_VALUE_EFFECTER_UNKNOWN_STATE = 0x00,
+	GPIO_VALUE_EFFECTER_LOW = 0xF0,
+	GPIO_VALUE_EFFECTER_HIGH = 0xF1
+};
 
 typedef struct set_state_field {
 	uint8_t pldm_set_request;
