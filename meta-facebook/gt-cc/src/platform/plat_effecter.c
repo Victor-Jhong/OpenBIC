@@ -1,3 +1,5 @@
+//plat_effecter.c
+
 /*
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
@@ -14,28 +16,23 @@
  * limitations under the License.
  */
 
-#ifndef _PLDM_MONITOR_H
-#define _PLDM_MONITOR_H
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include "pldm.h"
-
-uint8_t pldm_monitor_handler_query(uint8_t code, void **ret_fn);
+#include <logging/log.h>
+#include <string.h>
+#include <stdio.h>
+#include "plat_effecter.h"
+#include "pldm_monitor.h"
 
 /*
 uint8_t oem_set_effecter_type_gpio_handler(uint8_t *buf, uint16_t len, uint8_t *resp,
-					   uint16_t *resp_len);
+					   uint16_t *resp_len)
+{
+	printf("platform\n");
+}
 
 uint8_t oem_get_effecter_type_gpio_handler(uint8_t *buf, uint16_t len, uint8_t *resp,
-					   uint16_t *resp_len);
+					   uint16_t *resp_len)
+{
+	printf("platform\n");
+}
 
 */
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* _PLDM_MONITOR_H */
