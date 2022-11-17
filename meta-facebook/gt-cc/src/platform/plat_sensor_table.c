@@ -1440,6 +1440,9 @@ static void load_vr_sensor_table()
 		memcpy(&sensor_config[sensor_config_count], xdpe12284_vr_sensor_config_table,
 		       ARRAY_SIZE(xdpe12284_vr_sensor_config_table) * sizeof(sensor_cfg));
 		sensor_config_count += ARRAY_SIZE(xdpe12284_vr_sensor_config_table);
+	} else if (1) { //Victor test
+		LOG_INF("The VR is MPS MP2971");
+
 	} else {
 		LOG_ERR("Unknown VR type, (%d.%d V)", (uint16_t)voltage_vr_type_adc,
 			(uint16_t)((voltage_vr_type_adc - (uint16_t)voltage_vr_type_adc) * 100));
