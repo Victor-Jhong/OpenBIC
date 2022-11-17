@@ -51,29 +51,29 @@ bool get_page(uint16_t *val, uint8_t sensor_num)
 	return 0;
 }
 
-bool get_mfr_resolution_set(uint16_t *val, uint8_t sensor_num)
-{
-	if ((val == NULL) || (sensor_num > SENSOR_NUM_MAX)) {
-		return -1;
-	}
+// bool get_mfr_resolution_set(uint16_t *val, uint8_t sensor_num)
+// {
+// 	if ((val == NULL) || (sensor_num > SENSOR_NUM_MAX)) {
+// 		return -1;
+// 	}
 
-	I2C_MSG msg;
-	uint8_t retry = 5;
+// 	I2C_MSG msg;
+// 	uint8_t retry = 5;
 
-	msg.bus = sensor_config[sensor_config_index_map[sensor_num]].port;
-	msg.target_addr = sensor_config[sensor_config_index_map[sensor_num]].target_addr;
-	msg.tx_len = 1;
-	msg.rx_len = 2;
-	msg.data[0] = MFR_RESO_SET;
+// 	msg.bus = sensor_config[sensor_config_index_map[sensor_num]].port;
+// 	msg.target_addr = sensor_config[sensor_config_index_map[sensor_num]].target_addr;
+// 	msg.tx_len = 1;
+// 	msg.rx_len = 2;
+// 	msg.data[0] = MFR_RESO_SET;
 
-	if (i2c_master_read(&msg, retry)) {
-		LOG_WRN("i2c read failed.\n");
-		return SENSOR_FAIL_TO_ACCESS;
-	}
+// 	if (i2c_master_read(&msg, retry)) {
+// 		LOG_WRN("i2c read failed.\n");
+// 		return SENSOR_FAIL_TO_ACCESS;
+// 	}
 
-	*val = (msg.data[1] << 8) | msg.data[0];
-	return 0;
-}
+// 	*val = (msg.data[1] << 8) | msg.data[0];
+// 	return 0;
+// }
 
 bool vr_adjust_of_twos_complement(uint8_t offset, int *val)
 {
@@ -145,12 +145,12 @@ uint8_t mp2971_read(uint8_t sensor_num, int *reading)
 	}
 
 	//get mfr resolution
-	bool res_ret = false;
-	uint16_t mfr_resolution = 0;
-	res_ret = get_mfr_resolution_set(&mfr_resolution, sensor_num);
-	if (res_ret != 0) {
-		return SENSOR_UNSPECIFIED_ERROR;
-	}
+	// bool res_ret = false;
+	// uint16_t mfr_resolution = 0;
+	// res_ret = get_mfr_resolution_set(&mfr_resolution, sensor_num);
+	// if (res_ret != 0) {
+	// 	return SENSOR_UNSPECIFIED_ERROR;
+	// }
 
 	uint8_t offset = sensor_config[sensor_config_index_map[sensor_num]].offset;
 	val = (msg.data[1] << 8) | msg.data[0];
@@ -163,7 +163,6 @@ uint8_t mp2971_read(uint8_t sensor_num, int *reading)
 		sval->fraction = val % 1000;
 		break;
 	case PMBUS_READ_IOUT:
-		/* 1 A/LSB, 2's complement */
 		val = val & BIT_MASK(11);
 		ret = vr_adjust_of_twos_complement(offset, &val);
 		if (ret == false) {
@@ -171,13 +170,35 @@ uint8_t mp2971_read(uint8_t sensor_num, int *reading)
 			       __func__, sensor_num);
 			return SENSOR_UNSPECIFIED_ERROR;
 		}
-		sval->integer = val;
+
+		if (page == 0) {
+			/* 1 A/LSB, 2's complement */
+			sval->integer = val;
+		} else if (page == 1) {
+			/* 0.25 A/LSB, 2's complement */
+			sval->integer = (int16_t)val / 4;
+			sval->fraction = (int16_t)(val - (sval->integer * 4)) * 250;
+		} else {
+			return SENSOR_UNSPECIFIED_ERROR;
+		}
+
 		break;
 	case PMBUS_READ_IIN:
-		/* 0.25 A/LSB, 2's complement */
+
 		val = val & BIT_MASK(11);
-		sval->integer = (int16_t)val / 4;
-		sval->fraction = (int16_t)(val - (sval->integer * 4)) * 250;
+
+		if (page == 0) {
+			/* 0.25 A/LSB, 2's complement */
+			sval->integer = (int16_t)val / 4;
+			sval->fraction = (int16_t)(val - (sval->integer * 4)) * 250;
+		} else if (page == 1) {
+			/* 0.125 A/LSB, 2's complement */
+			sval->integer = (int16_t)val / 8;
+			sval->fraction = (int16_t)(val - (sval->integer * 8)) * 125;
+		} else {
+			return SENSOR_UNSPECIFIED_ERROR;
+		}
+
 		break;
 	case PMBUS_READ_TEMPERATURE_1:
 		/* 1 Degree C/LSB, 2's complement */
@@ -185,7 +206,7 @@ uint8_t mp2971_read(uint8_t sensor_num, int *reading)
 		sval->integer = val;
 		break;
 	case PMBUS_READ_POUT:
-		/* 2 Watt/LSB, 2's complement */
+
 		val = val & BIT_MASK(11);
 		ret = vr_adjust_of_twos_complement(offset, &val);
 		if (ret == false) {
@@ -194,7 +215,16 @@ uint8_t mp2971_read(uint8_t sensor_num, int *reading)
 			return SENSOR_UNSPECIFIED_ERROR;
 		}
 
-		sval->integer = val * 2;
+		if (page == 0) {
+			/* 2 Watt/LSB, 2's complement */
+			sval->integer = val * 2;
+		} else if (page == 1) {
+			/* 0.25 Watt/LSB, 2's complement */
+			sval->integer = val * 0.25;
+		} else {
+			return SENSOR_UNSPECIFIED_ERROR;
+		}
+
 		break;
 	default:
 		printf("[%s] not support offset: 0x%x\n", __func__, offset);
@@ -210,9 +240,8 @@ uint8_t mp2971_init(uint8_t sensor_num)
 	if (sensor_num > SENSOR_NUM_MAX) {
 		return SENSOR_INIT_UNSPECIFIED_ERROR;
 	}
-    
+
 	//Victor test
-	
 
 	sensor_config[sensor_config_index_map[sensor_num]].read = mp2971_read;
 	return SENSOR_INIT_SUCCESS;
