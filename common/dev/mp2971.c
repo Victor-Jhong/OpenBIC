@@ -20,6 +20,9 @@
 #include "hal_i2c.h"
 #include "pmbus.h"
 #include "mp2971.h"
+//#include <logging/log.h>
+
+//LOG_MODULE_REGISTER(mp2971);
 
 #define PAGE 0x00
 #define MFR_RESO_SET 0xC7
@@ -32,7 +35,6 @@ bool get_page(uint16_t *val, uint8_t sensor_num)
 
 	I2C_MSG msg;
 	uint8_t retry = 5;
-	int val = 0;
 
 	msg.bus = sensor_config[sensor_config_index_map[sensor_num]].port;
 	msg.target_addr = sensor_config[sensor_config_index_map[sensor_num]].target_addr;
@@ -41,7 +43,7 @@ bool get_page(uint16_t *val, uint8_t sensor_num)
 	msg.data[0] = MFR_RESO_SET;
 
 	if (i2c_master_read(&msg, retry)) {
-		LOG_WRN("i2c read failed.\n");
+		//LOG_WRN("i2c read failed.\n");
 		return SENSOR_FAIL_TO_ACCESS;
 	}
 
@@ -57,7 +59,6 @@ bool get_mfr_resolution_set(uint16_t *val, uint8_t sensor_num)
 
 	I2C_MSG msg;
 	uint8_t retry = 5;
-	int val = 0;
 
 	msg.bus = sensor_config[sensor_config_index_map[sensor_num]].port;
 	msg.target_addr = sensor_config[sensor_config_index_map[sensor_num]].target_addr;
@@ -66,7 +67,7 @@ bool get_mfr_resolution_set(uint16_t *val, uint8_t sensor_num)
 	msg.data[0] = MFR_RESO_SET;
 
 	if (i2c_master_read(&msg, retry)) {
-		LOG_WRN("i2c read failed.\n");
+		//LOG_WRN("i2c read failed.\n");
 		return SENSOR_FAIL_TO_ACCESS;
 	}
 
@@ -74,7 +75,7 @@ bool get_mfr_resolution_set(uint16_t *val, uint8_t sensor_num)
 	return 0;
 }
 
-bool adjust_of_twos_complement(uint8_t offset, int *val)
+bool vr_adjust_of_twos_complement(uint8_t offset, int *val)
 {
 	if (val == NULL) {
 		printf("[%s] input value is NULL\n", __func__);
@@ -164,7 +165,7 @@ uint8_t mp2971_read(uint8_t sensor_num, int *reading)
 	case PMBUS_READ_IOUT:
 		/* 1 A/LSB, 2's complement */
 		val = val & BIT_MASK(11);
-		ret = adjust_of_twos_complement(offset, &val);
+		ret = vr_adjust_of_twos_complement(offset, &val);
 		if (ret == false) {
 			printf("[%s] adjust reading IOUT value failed - sensor number: 0x%x\n",
 			       __func__, sensor_num);
@@ -186,7 +187,7 @@ uint8_t mp2971_read(uint8_t sensor_num, int *reading)
 	case PMBUS_READ_POUT:
 		/* 2 Watt/LSB, 2's complement */
 		val = val & BIT_MASK(11);
-		ret = adjust_of_twos_complement(offset, &val);
+		ret = vr_adjust_of_twos_complement(offset, &val);
 		if (ret == false) {
 			printf("[%s] adjust reading POUT value failed - sensor number: 0x%x\n",
 			       __func__, sensor_num);
@@ -209,6 +210,9 @@ uint8_t mp2971_init(uint8_t sensor_num)
 	if (sensor_num > SENSOR_NUM_MAX) {
 		return SENSOR_INIT_UNSPECIFIED_ERROR;
 	}
+    
+	//Victor test
+	
 
 	sensor_config[sensor_config_index_map[sensor_num]].read = mp2971_read;
 	return SENSOR_INIT_SUCCESS;
