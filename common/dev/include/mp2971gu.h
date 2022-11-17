@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef mp2971gu_H
-#define mp2971gu_H
+#ifndef mp2971_H
+#define mp2971_H
 
 #define TWO_COMPLEMENT_NEGATIVE_BIT BIT(10)
 #define ADJUST_IOUT_RANGE 2

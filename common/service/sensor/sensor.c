@@ -98,6 +98,7 @@ const char *const sensor_type_name[] = {
 	sensor_name_to_num(mp2856gut)
 	sensor_name_to_num(ddr5_power)
 	sensor_name_to_num(ddr5_temp)
+	sensor_name_to_num(mp2971)
 };
 // clang-format on
 
@@ -133,6 +134,7 @@ SENSOR_DRIVE_INIT_DECLARE(g788p81u);
 SENSOR_DRIVE_INIT_DECLARE(mp2856gut);
 SENSOR_DRIVE_INIT_DECLARE(ddr5_power);
 SENSOR_DRIVE_INIT_DECLARE(ddr5_temp);
+SENSOR_DRIVE_INIT_DECLARE(mp2971);
 
 struct sensor_drive_api {
 	enum SENSOR_DEV dev;
@@ -170,6 +172,7 @@ struct sensor_drive_api {
 	SENSOR_DRIVE_TYPE_INIT_MAP(mp2856gut),
 	SENSOR_DRIVE_TYPE_INIT_MAP(ddr5_power),
 	SENSOR_DRIVE_TYPE_INIT_MAP(ddr5_temp),
+	SENSOR_DRIVE_TYPE_INIT_MAP(mp2971),
 };
 
 static void init_sensor_num(void)
@@ -567,8 +570,8 @@ static inline bool init_drive_type(sensor_cfg *p, uint16_t current_drive)
 
 static void drive_init(void)
 {
-	const uint16_t max_drive_num = ARRAY_SIZE(sensor_drive_tbl);
 	uint16_t current_drive;
+	const uint16_t max_drive_num = ARRAY_SIZE(sensor_drive_tbl);
 
 	for (int i = 0; i < sdr_count; i++) {
 		sensor_cfg *p = sensor_config + i;

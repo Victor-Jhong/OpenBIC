@@ -457,75 +457,75 @@ sensor_cfg xdpe12284_vr_sensor_config_table[] = {
 };
 
 //Victor test
-sensor_cfg mp2971gu_vr_sensor_config_table[] = {
+sensor_cfg mp2971_vr_sensor_config_table[] = {
 	/* number,                  type,       port,      address,      offset,
     access check arg0, arg1, sample_count, cache, cache_status, mux_address, mux_offset,
     pre_sensor_read_fn, pre_sensor_read_args, post_sensor_read_fn, post_sensor_read_fn  */
 	/* PEX 0 */
-	{ SENSOR_NUM_TEMP_PEX_0, sensor_dev_mp2971gu, I2C_BUS6, PEX_0_1_P0V8_VR_ADDR,
+	{ SENSOR_NUM_TEMP_PEX_0, sensor_dev_mp2971, I2C_BUS6, PEX_0_1_P0V8_VR_ADDR,
 	  PMBUS_READ_TEMPERATURE_1, stby_access, 0, 0, SAMPLE_COUNT_DEFAULT, POLL_TIME_DEFAULT,
 	  ENABLE_SENSOR_POLLING, 0, SENSOR_INIT_STATUS, pre_vr_read, &vr_pre_read_args[0],
 	  post_i2c_bus_read, NULL, NULL },
-	{ SENSOR_NUM_P0V8_VOLT_PEX_0, sensor_dev_mp2971gu, I2C_BUS6, PEX_0_1_P0V8_VR_ADDR,
+	{ SENSOR_NUM_P0V8_VOLT_PEX_0, sensor_dev_mp2971, I2C_BUS6, PEX_0_1_P0V8_VR_ADDR,
 	  PMBUS_READ_VOUT, stby_access, 0, 0, SAMPLE_COUNT_DEFAULT, POLL_TIME_DEFAULT,
 	  ENABLE_SENSOR_POLLING, 0, SENSOR_INIT_STATUS, pre_vr_read, &vr_pre_read_args[0],
 	  post_i2c_bus_read, NULL, NULL },
-	{ SENSOR_NUM_P0V8_IOUT_PEX_0, sensor_dev_mp2971gu, I2C_BUS6, PEX_0_1_P0V8_VR_ADDR,
+	{ SENSOR_NUM_P0V8_IOUT_PEX_0, sensor_dev_mp2971, I2C_BUS6, PEX_0_1_P0V8_VR_ADDR,
 	  PMBUS_READ_IOUT, stby_access, 0, 0, SAMPLE_COUNT_DEFAULT, POLL_TIME_DEFAULT,
 	  ENABLE_SENSOR_POLLING, 0, SENSOR_INIT_STATUS, pre_vr_read, &vr_pre_read_args[0],
 	  post_i2c_bus_read, NULL, NULL },
-	{ SENSOR_NUM_P0V8_POUT_PEX_0, sensor_dev_mp2971gu, I2C_BUS6, PEX_0_1_P0V8_VR_ADDR,
+	{ SENSOR_NUM_P0V8_POUT_PEX_0, sensor_dev_mp2971, I2C_BUS6, PEX_0_1_P0V8_VR_ADDR,
 	  PMBUS_READ_POUT, stby_access, 0, 0, SAMPLE_COUNT_DEFAULT, POLL_TIME_DEFAULT,
 	  ENABLE_SENSOR_POLLING, 0, SENSOR_INIT_STATUS, pre_vr_read, &vr_pre_read_args[0],
 	  post_i2c_bus_read, NULL, NULL },
 	/* PEX 1 */
-	{ SENSOR_NUM_TEMP_PEX_1, sensor_dev_mp2971gu, I2C_BUS6, PEX_0_1_P0V8_VR_ADDR,
+	{ SENSOR_NUM_TEMP_PEX_1, sensor_dev_mp2971, I2C_BUS6, PEX_0_1_P0V8_VR_ADDR,
 	  PMBUS_READ_TEMPERATURE_1, stby_access, 0, 0, SAMPLE_COUNT_DEFAULT, POLL_TIME_DEFAULT,
 	  ENABLE_SENSOR_POLLING, 0, SENSOR_INIT_STATUS, pre_vr_read, &vr_pre_read_args[1],
 	  post_i2c_bus_read, NULL, NULL },
-	{ SENSOR_NUM_P0V8_VOLT_PEX_1, sensor_dev_mp2971gu, I2C_BUS6, PEX_0_1_P0V8_VR_ADDR,
+	{ SENSOR_NUM_P0V8_VOLT_PEX_1, sensor_dev_mp2971, I2C_BUS6, PEX_0_1_P0V8_VR_ADDR,
 	  PMBUS_READ_VOUT, stby_access, 0, 0, SAMPLE_COUNT_DEFAULT, POLL_TIME_DEFAULT,
 	  ENABLE_SENSOR_POLLING, 0, SENSOR_INIT_STATUS, pre_vr_read, &vr_pre_read_args[1],
 	  post_i2c_bus_read, NULL, NULL },
-	{ SENSOR_NUM_P0V8_IOUT_PEX_1, sensor_dev_mp2971gu, I2C_BUS6, PEX_0_1_P0V8_VR_ADDR,
+	{ SENSOR_NUM_P0V8_IOUT_PEX_1, sensor_dev_mp2971, I2C_BUS6, PEX_0_1_P0V8_VR_ADDR,
 	  PMBUS_READ_IOUT, stby_access, 0, 0, SAMPLE_COUNT_DEFAULT, POLL_TIME_DEFAULT,
 	  ENABLE_SENSOR_POLLING, 0, SENSOR_INIT_STATUS, pre_vr_read, &vr_pre_read_args[1],
 	  post_i2c_bus_read, NULL, NULL },
-	{ SENSOR_NUM_P0V8_POUT_PEX_1, sensor_dev_mp2971gu, I2C_BUS6, PEX_0_1_P0V8_VR_ADDR,
+	{ SENSOR_NUM_P0V8_POUT_PEX_1, sensor_dev_mp2971, I2C_BUS6, PEX_0_1_P0V8_VR_ADDR,
 	  PMBUS_READ_POUT, stby_access, 0, 0, SAMPLE_COUNT_DEFAULT, POLL_TIME_DEFAULT,
 	  ENABLE_SENSOR_POLLING, 0, SENSOR_INIT_STATUS, pre_vr_read, &vr_pre_read_args[1],
 	  post_i2c_bus_read, NULL, NULL },
 	/* PEX 2 */
-	{ SENSOR_NUM_TEMP_PEX_2, sensor_dev_mp2971gu, I2C_BUS6, PEX_2_3_P0V8_VR_ADDR,
+	{ SENSOR_NUM_TEMP_PEX_2, sensor_dev_mp2971, I2C_BUS6, PEX_2_3_P0V8_VR_ADDR,
 	  PMBUS_READ_TEMPERATURE_1, stby_access, 0, 0, SAMPLE_COUNT_DEFAULT, POLL_TIME_DEFAULT,
 	  ENABLE_SENSOR_POLLING, 0, SENSOR_INIT_STATUS, pre_vr_read, &vr_pre_read_args[2],
 	  post_i2c_bus_read, NULL, NULL },
-	{ SENSOR_NUM_P0V8_VOLT_PEX_2, sensor_dev_mp2971gu, I2C_BUS6, PEX_2_3_P0V8_VR_ADDR,
+	{ SENSOR_NUM_P0V8_VOLT_PEX_2, sensor_dev_mp2971, I2C_BUS6, PEX_2_3_P0V8_VR_ADDR,
 	  PMBUS_READ_VOUT, stby_access, 0, 0, SAMPLE_COUNT_DEFAULT, POLL_TIME_DEFAULT,
 	  ENABLE_SENSOR_POLLING, 0, SENSOR_INIT_STATUS, pre_vr_read, &vr_pre_read_args[2],
 	  post_i2c_bus_read, NULL, NULL },
-	{ SENSOR_NUM_P0V8_IOUT_PEX_2, sensor_dev_mp2971gu, I2C_BUS6, PEX_2_3_P0V8_VR_ADDR,
+	{ SENSOR_NUM_P0V8_IOUT_PEX_2, sensor_dev_mp2971, I2C_BUS6, PEX_2_3_P0V8_VR_ADDR,
 	  PMBUS_READ_IOUT, stby_access, 0, 0, SAMPLE_COUNT_DEFAULT, POLL_TIME_DEFAULT,
 	  ENABLE_SENSOR_POLLING, 0, SENSOR_INIT_STATUS, pre_vr_read, &vr_pre_read_args[2],
 	  post_i2c_bus_read, NULL, NULL },
-	{ SENSOR_NUM_P0V8_POUT_PEX_2, sensor_dev_mp2971gu, I2C_BUS6, PEX_2_3_P0V8_VR_ADDR,
+	{ SENSOR_NUM_P0V8_POUT_PEX_2, sensor_dev_mp2971, I2C_BUS6, PEX_2_3_P0V8_VR_ADDR,
 	  PMBUS_READ_POUT, stby_access, 0, 0, SAMPLE_COUNT_DEFAULT, POLL_TIME_DEFAULT,
 	  ENABLE_SENSOR_POLLING, 0, SENSOR_INIT_STATUS, pre_vr_read, &vr_pre_read_args[2],
 	  post_i2c_bus_read, NULL, NULL },
 	/* PEX 3 */
-	{ SENSOR_NUM_TEMP_PEX_3, sensor_dev_mp2971gu, I2C_BUS6, PEX_2_3_P0V8_VR_ADDR,
+	{ SENSOR_NUM_TEMP_PEX_3, sensor_dev_mp2971, I2C_BUS6, PEX_2_3_P0V8_VR_ADDR,
 	  PMBUS_READ_TEMPERATURE_1, stby_access, 0, 0, SAMPLE_COUNT_DEFAULT, POLL_TIME_DEFAULT,
 	  ENABLE_SENSOR_POLLING, 0, SENSOR_INIT_STATUS, pre_vr_read, &vr_pre_read_args[3],
 	  post_i2c_bus_read, NULL, NULL },
-	{ SENSOR_NUM_P0V8_VOLT_PEX_3, sensor_dev_mp2971gu, I2C_BUS6, PEX_2_3_P0V8_VR_ADDR,
+	{ SENSOR_NUM_P0V8_VOLT_PEX_3, sensor_dev_mp2971, I2C_BUS6, PEX_2_3_P0V8_VR_ADDR,
 	  PMBUS_READ_VOUT, stby_access, 0, 0, SAMPLE_COUNT_DEFAULT, POLL_TIME_DEFAULT,
 	  ENABLE_SENSOR_POLLING, 0, SENSOR_INIT_STATUS, pre_vr_read, &vr_pre_read_args[3],
 	  post_i2c_bus_read, NULL, NULL },
-	{ SENSOR_NUM_P0V8_IOUT_PEX_3, sensor_dev_mp2971gu, I2C_BUS6, PEX_2_3_P0V8_VR_ADDR,
+	{ SENSOR_NUM_P0V8_IOUT_PEX_3, sensor_dev_mp2971, I2C_BUS6, PEX_2_3_P0V8_VR_ADDR,
 	  PMBUS_READ_IOUT, stby_access, 0, 0, SAMPLE_COUNT_DEFAULT, POLL_TIME_DEFAULT,
 	  ENABLE_SENSOR_POLLING, 0, SENSOR_INIT_STATUS, pre_vr_read, &vr_pre_read_args[3],
 	  post_i2c_bus_read, NULL, NULL },
-	{ SENSOR_NUM_P0V8_POUT_PEX_3, sensor_dev_mp2971gu, I2C_BUS6, PEX_2_3_P0V8_VR_ADDR,
+	{ SENSOR_NUM_P0V8_POUT_PEX_3, sensor_dev_mp2971, I2C_BUS6, PEX_2_3_P0V8_VR_ADDR,
 	  PMBUS_READ_POUT, stby_access, 0, 0, SAMPLE_COUNT_DEFAULT, POLL_TIME_DEFAULT,
 	  ENABLE_SENSOR_POLLING, 0, SENSOR_INIT_STATUS, pre_vr_read, &vr_pre_read_args[3],
 	  post_i2c_bus_read, NULL, NULL },
@@ -1517,9 +1517,9 @@ static void load_vr_sensor_table()
 		sensor_config_count += ARRAY_SIZE(xdpe12284_vr_sensor_config_table);
 	} else if (1) { //Victor test
 		LOG_INF("The VR is MPS MP2971");
-		memcpy(&sensor_config[sensor_config_count], mp2971gu_vr_sensor_config_table,
-		       ARRAY_SIZE(mp2971gu_vr_sensor_config_table) * sizeof(sensor_cfg));
-		sensor_config_count += ARRAY_SIZE(mp2971gu_vr_sensor_config_table);
+		memcpy(&sensor_config[sensor_config_count], mp2971_vr_sensor_config_table,
+		       ARRAY_SIZE(mp2971_vr_sensor_config_table) * sizeof(sensor_cfg));
+		sensor_config_count += ARRAY_SIZE(mp2971_vr_sensor_config_table);
 	} else {
 		LOG_ERR("Unknown VR type, (%d.%d V)", (uint16_t)voltage_vr_type_adc,
 			(uint16_t)((voltage_vr_type_adc - (uint16_t)voltage_vr_type_adc) * 100));

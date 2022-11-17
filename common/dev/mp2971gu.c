@@ -19,7 +19,7 @@
 #include "sensor.h"
 #include "hal_i2c.h"
 #include "pmbus.h"
-#include "mp2971gu.h"
+#include "mp2971.h"
 
 #define PAGE 0x00
 #define MFR_RESO_SET 0xC7
@@ -111,7 +111,7 @@ bool adjust_of_twos_complement(uint8_t offset, int *val)
 	return ret;
 }
 
-uint8_t mp2971gu_read(uint8_t sensor_num, int *reading)
+uint8_t mp2971_read(uint8_t sensor_num, int *reading)
 {
 	if (reading == NULL || (sensor_num > SENSOR_NUM_MAX)) {
 		return SENSOR_UNSPECIFIED_ERROR;
@@ -204,12 +204,12 @@ uint8_t mp2971gu_read(uint8_t sensor_num, int *reading)
 	return SENSOR_READ_SUCCESS;
 }
 
-uint8_t mp2971gu_init(uint8_t sensor_num)
+uint8_t mp2971_init(uint8_t sensor_num)
 {
 	if (sensor_num > SENSOR_NUM_MAX) {
 		return SENSOR_INIT_UNSPECIFIED_ERROR;
 	}
 
-	sensor_config[sensor_config_index_map[sensor_num]].read = mp2971gu_read;
+	sensor_config[sensor_config_index_map[sensor_num]].read = mp2971_read;
 	return SENSOR_INIT_SUCCESS;
 }
