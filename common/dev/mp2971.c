@@ -118,6 +118,27 @@ uint8_t mp2971_read(uint8_t sensor_num, int *reading)
 		return SENSOR_UNSPECIFIED_ERROR;
 	}
 
+	//Victor test
+	LOG_WRN("mp2971_read sensor_num = %d  \n", sensor_num);
+
+	//get page
+	bool page_ret = false;
+	uint16_t page = 0;
+	page_ret = get_page(&page, sensor_num);
+	if (page_ret != 0) {
+		return SENSOR_UNSPECIFIED_ERROR;
+	}
+	//Victor test
+	LOG_WRN("mp2971_read page = %d  \n", page);
+
+	//get mfr resolution
+	// bool res_ret = false;
+	// uint16_t mfr_resolution = 0;
+	// res_ret = get_mfr_resolution_set(&mfr_resolution, sensor_num);
+	// if (res_ret != 0) {
+	// 	return SENSOR_UNSPECIFIED_ERROR;
+	// }
+
 	bool ret = false;
 	uint8_t retry = 5;
 	int val = 0;
@@ -136,21 +157,8 @@ uint8_t mp2971_read(uint8_t sensor_num, int *reading)
 		return SENSOR_FAIL_TO_ACCESS;
 	}
 
-	//get page
-	bool page_ret = false;
-	uint16_t page = 0;
-	page_ret = get_page(&page, sensor_num);
-	if (page_ret != 0) {
-		return SENSOR_UNSPECIFIED_ERROR;
-	}
-
-	//get mfr resolution
-	// bool res_ret = false;
-	// uint16_t mfr_resolution = 0;
-	// res_ret = get_mfr_resolution_set(&mfr_resolution, sensor_num);
-	// if (res_ret != 0) {
-	// 	return SENSOR_UNSPECIFIED_ERROR;
-	// }
+	//Victor test
+	LOG_WRN("mp2971_read val = %d  \n", val);
 
 	uint8_t offset = sensor_config[sensor_config_index_map[sensor_num]].offset;
 	val = (msg.data[1] << 8) | msg.data[0];
