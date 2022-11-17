@@ -20,9 +20,9 @@
 #include "hal_i2c.h"
 #include "pmbus.h"
 #include "mp2971.h"
-//#include <logging/log.h>
+#include <logging/log.h>
 
-//LOG_MODULE_REGISTER(mp2971);
+LOG_MODULE_REGISTER(mp2971);
 
 #define PAGE 0x00
 #define MFR_RESO_SET 0xC7
@@ -43,7 +43,7 @@ bool get_page(uint16_t *val, uint8_t sensor_num)
 	msg.data[0] = MFR_RESO_SET;
 
 	if (i2c_master_read(&msg, retry)) {
-		//LOG_WRN("i2c read failed.\n");
+		LOG_WRN("i2c read failed.\n");
 		return SENSOR_FAIL_TO_ACCESS;
 	}
 
@@ -67,7 +67,7 @@ bool get_mfr_resolution_set(uint16_t *val, uint8_t sensor_num)
 	msg.data[0] = MFR_RESO_SET;
 
 	if (i2c_master_read(&msg, retry)) {
-		//LOG_WRN("i2c read failed.\n");
+		LOG_WRN("i2c read failed.\n");
 		return SENSOR_FAIL_TO_ACCESS;
 	}
 
