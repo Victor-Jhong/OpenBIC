@@ -1441,7 +1441,7 @@ static void load_vr_sensor_table()
 		       ARRAY_SIZE(xdpe12284_vr_sensor_config_table) * sizeof(sensor_cfg));
 		sensor_config_count += ARRAY_SIZE(xdpe12284_vr_sensor_config_table);
 	} else if (1) { //Victor test
-		LOG_INF("The VR is MPS MP2971");
+		LOG_INF("The VR is MPS MP2971"); //Victor test
 
 	} else {
 		LOG_ERR("Unknown VR type, (%d.%d V)", (uint16_t)voltage_vr_type_adc,
