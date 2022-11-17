@@ -17,7 +17,7 @@
 #ifndef mp2971_H
 #define mp2971_H
 
-#define TWO_COMPLEMENT_NEGATIVE_BIT BIT(10)
+#define TWO_COMPLEMENT_NEGATIVE_BIT BIT(11)
 #define ADJUST_IOUT_RANGE 2
 
 #endif

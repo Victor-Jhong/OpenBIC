@@ -27,7 +27,7 @@ LOG_MODULE_REGISTER(mp2971);
 #define PAGE 0x00
 #define MFR_RESO_SET 0xC7
 
-bool get_page(uint16_t *val, uint8_t sensor_num)
+bool get_page(uint8_t *val, uint8_t sensor_num)
 {
 	if ((val == NULL) || (sensor_num > SENSOR_NUM_MAX)) {
 		return -1;
@@ -40,12 +40,15 @@ bool get_page(uint16_t *val, uint8_t sensor_num)
 	msg.target_addr = sensor_config[sensor_config_index_map[sensor_num]].target_addr;
 	msg.tx_len = 1;
 	msg.rx_len = 1;
-	msg.data[0] = MFR_RESO_SET;
+	msg.data[0] = PAGE;
 
 	if (i2c_master_read(&msg, retry)) {
 		LOG_WRN("i2c read failed.\n");
 		return SENSOR_FAIL_TO_ACCESS;
 	}
+
+	//Victor test
+	//LOG_WRN("get_page  = %x  \n \n \n ", msg.data[0]);
 
 	*val = msg.data[0];
 	return 0;
@@ -119,17 +122,18 @@ uint8_t mp2971_read(uint8_t sensor_num, int *reading)
 	}
 
 	//Victor test
-	LOG_WRN("mp2971_read sensor_num = %d  \n", sensor_num);
+	//LOG_WRN("mp2971_read sensor_num = %x  \n", sensor_num);
 
 	//get page
 	bool page_ret = false;
-	uint16_t page = 0;
+	uint8_t page = 0;
 	page_ret = get_page(&page, sensor_num);
 	if (page_ret != 0) {
 		return SENSOR_UNSPECIFIED_ERROR;
 	}
 	//Victor test
-	LOG_WRN("mp2971_read page = %d  \n", page);
+	page = 1;
+	//LOG_WRN("mp2971_read page = %x  \n", page);
 
 	//get mfr resolution
 	// bool res_ret = false;
@@ -158,10 +162,13 @@ uint8_t mp2971_read(uint8_t sensor_num, int *reading)
 	}
 
 	//Victor test
-	LOG_WRN("mp2971_read val = %d  \n", val);
+	//LOG_WRN("mp2971_read val = %x  \n", val);
 
 	uint8_t offset = sensor_config[sensor_config_index_map[sensor_num]].offset;
 	val = (msg.data[1] << 8) | msg.data[0];
+
+
+
 
 	switch (offset) {
 	case PMBUS_READ_VOUT:
