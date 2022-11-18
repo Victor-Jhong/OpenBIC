@@ -99,6 +99,8 @@ float get_resolution(uint8_t sensor_num)
 	}
 
 	page = msg.data[0];
+	//Victor test
+	LOG_WRN("page = %d  \n", page);
 
 	//Victor test check if it is need to do twice
 	msg.bus = sensor_config[sensor_config_index_map[sensor_num]].port;
@@ -113,48 +115,51 @@ float get_resolution(uint8_t sensor_num)
 	}
 
 	mfr_reso_set = (msg.data[1] << 8) | msg.data[0];
+	//Victor test
+	LOG_WRN("page = %x  \n", mfr_reso_set);
 
+	printf("[%s] not support sensor number: 0x%x\n", __func__, sensor_num);
 	switch (sensor_num) {
 	case PMBUS_READ_VOUT:
-		if (page = 0) {
+		if (page == 0) {
 			res = 0.001;
-		} else if (page = 1) {
+		} else if (page == 1) {
 			res = 0.001;
 		} else {
 			printf("[%s] not support page: 0x%d\n", __func__, page);
 		}
 		break;
 	case PMBUS_READ_IOUT:
-		if (page = 0) {
+		if (page == 0) {
 			res = 1;
-		} else if (page = 1) {
+		} else if (page == 1) {
 			res = 0.25;
 		} else {
 			printf("[%s] not support page: 0x%d\n", __func__, page);
 		}
 		break;
 	case PMBUS_READ_IIN:
-		if (page = 0) {
+		if (page == 0) {
 			res = 0.25;
-		} else if (page = 1) {
+		} else if (page == 1) {
 			res = 0.125;
 		} else {
 			printf("[%s] not support page: 0x%d\n", __func__, page);
 		}
 		break;
 	case PMBUS_READ_TEMPERATURE_1:
-		if (page = 0) {
+		if (page == 0) {
 			res = 1;
-		} else if (page = 1) {
+		} else if (page == 1) {
 			res = 1;
 		} else {
 			printf("[%s] not support page: 0x%d\n", __func__, page);
 		}
 		break;
 	case PMBUS_READ_POUT:
-		if (page = 0) {
+		if (page == 0) {
 			res = 2;
-		} else if (page = 1) {
+		} else if (page == 1) {
 			res = 0.25;
 		} else {
 			printf("[%s] not support page: 0x%d\n", __func__, page);
