@@ -78,6 +78,97 @@ bool get_mfr_resolution_set(uint16_t *val, uint8_t sensor_num)
 	return 0;
 }
 
+float get_resolution(uint8_t sensor_num)
+{
+	uint8_t page = 0;
+	uint16_t mfr_reso_set = 0;
+	float res = 0;
+
+	I2C_MSG msg;
+	uint8_t retry = 5;
+
+	msg.bus = sensor_config[sensor_config_index_map[sensor_num]].port;
+	msg.target_addr = sensor_config[sensor_config_index_map[sensor_num]].target_addr;
+	msg.tx_len = 1;
+	msg.rx_len = 1;
+	msg.data[0] = PAGE;
+
+	if (i2c_master_read(&msg, retry)) {
+		LOG_WRN("i2c read failed.\n");
+		return SENSOR_FAIL_TO_ACCESS;
+	}
+
+	page = msg.data[0];
+
+	//Victor test check if it is need to do twice
+	msg.bus = sensor_config[sensor_config_index_map[sensor_num]].port;
+	msg.target_addr = sensor_config[sensor_config_index_map[sensor_num]].target_addr;
+	msg.tx_len = 1;
+	msg.rx_len = 2;
+	msg.data[0] = MFR_RESO_SET;
+
+	if (i2c_master_read(&msg, retry)) {
+		LOG_WRN("i2c read failed.\n");
+		return SENSOR_FAIL_TO_ACCESS;
+	}
+
+	mfr_reso_set = (msg.data[1] << 8) | msg.data[0];
+
+	switch (sensor_num) {
+	case PMBUS_READ_VOUT:
+		if (page = 0) {
+			res = 0.001;
+		} else if (page = 1) {
+			res = 0.001;
+		} else {
+			printf("[%s] not support page: 0x%d\n", __func__, page);
+		}
+		break;
+	case PMBUS_READ_IOUT:
+		if (page = 0) {
+			res = 1;
+		} else if (page = 1) {
+			res = 0.25;
+		} else {
+			printf("[%s] not support page: 0x%d\n", __func__, page);
+		}
+		break;
+	case PMBUS_READ_IIN:
+		if (page = 0) {
+			res = 0.25;
+		} else if (page = 1) {
+			res = 0.125;
+		} else {
+			printf("[%s] not support page: 0x%d\n", __func__, page);
+		}
+		break;
+	case PMBUS_READ_TEMPERATURE_1:
+		if (page = 0) {
+			res = 1;
+		} else if (page = 1) {
+			res = 1;
+		} else {
+			printf("[%s] not support page: 0x%d\n", __func__, page);
+		}
+		break;
+	case PMBUS_READ_POUT:
+		if (page = 0) {
+			res = 2;
+		} else if (page = 1) {
+			res = 0.25;
+		} else {
+			printf("[%s] not support page: 0x%d\n", __func__, page);
+		}
+		break;
+	default:
+		printf("[%s] not support sensor number: 0x%x\n", __func__, sensor_num);
+		ret = false;
+		break;
+	}
+
+	return res;
+}
+
 bool vr_adjust_of_twos_complement(uint8_t offset, int *val)
 {
 	if (val == NULL) {
@@ -125,25 +216,26 @@ uint8_t mp2971_read(uint8_t sensor_num, int *reading)
 	//LOG_WRN("mp2971_read sensor_num = %x  \n", sensor_num);
 
 	//get page
-	bool page_ret = false;
-	uint8_t page = 0;
-	page_ret = get_page(&page, sensor_num);
-	if (page_ret != 0) {
-		return SENSOR_UNSPECIFIED_ERROR;
-	}
+	// bool page_ret = false;
+	// uint8_t page = 0;
+	// page_ret = get_page(&page, sensor_num);
+	// if (page_ret != 0) {
+	// 	return SENSOR_UNSPECIFIED_ERROR;
+	// }
+
 	//Victor test
 	//page = 1;
-	LOG_WRN("mp2971_read page = %x  \n", page);
+	//LOG_WRN("mp2971_read page = %x  \n", page);
 
 	//get mfr resolution
-	bool res_ret = false;
-	uint16_t mfr_resolution = 0;
-	res_ret = get_mfr_resolution_set(&mfr_resolution, sensor_num);
-	if (res_ret != 0) {
-		return SENSOR_UNSPECIFIED_ERROR;
-	}
-	//Victor test
-	LOG_WRN("mfr resolution = %x  \n", mfr_resolution);
+	// bool res_ret = false;
+	// uint16_t mfr_resolution = 0;
+	// res_ret = get_mfr_resolution_set(&mfr_resolution, sensor_num);
+	// if (res_ret != 0) {
+	// 	return SENSOR_UNSPECIFIED_ERROR;
+	// }
+	// //Victor test
+	// LOG_WRN("mfr resolution = %x  \n", mfr_resolution);
 
 	bool ret = false;
 	uint8_t retry = 5;
@@ -169,15 +261,19 @@ uint8_t mp2971_read(uint8_t sensor_num, int *reading)
 	uint8_t offset = sensor_config[sensor_config_index_map[sensor_num]].offset;
 	val = (msg.data[1] << 8) | msg.data[0];
 
-
-
+	// float reso = 0;
+	sval->integer = (int16_t)(val / (1 / get_resolution(sensor_num)));
+	sval->fraction = (int16_t)(val - (sval->integer * (1 / get_resolution(sensor_num)))) *
+			 (get_resolution(sensor_num) / 0.001);
 
 	switch (offset) {
 	case PMBUS_READ_VOUT:
 		/* 1 mV/LSB, unsigned integer */
 		val = val & BIT_MASK(12);
-		sval->integer = val / 1000;
-		sval->fraction = val % 1000;
+		sval->integer = (int16_t)(val / (1 / get_resolution(sensor_num)));
+		sval->fraction =
+			(int16_t)(val - (sval->integer * (1 / get_resolution(sensor_num)))) *
+			(get_resolution(sensor_num) / 0.001);
 		break;
 	case PMBUS_READ_IOUT:
 		val = val & BIT_MASK(11);
@@ -188,47 +284,27 @@ uint8_t mp2971_read(uint8_t sensor_num, int *reading)
 			return SENSOR_UNSPECIFIED_ERROR;
 		}
 
-		if (page == 0) {
-			/* 0.5 A/LSB, 2's complement */
-			sval->integer = (int16_t)val / 2;
-			sval->fraction = (int16_t)(val - (sval->integer * 2)) * 500;
-		} else if (page == 1) {
-			/* 0.25 A/LSB, 2's complement */
-			sval->integer = (int16_t)val / 4;
-			sval->fraction = (int16_t)(val - (sval->integer * 4)) * 250;
-		} else {
-			return SENSOR_UNSPECIFIED_ERROR;
-		}
-
+		sval->integer = (int16_t)(val / (1 / get_resolution(sensor_num)));
+		sval->fraction =
+			(int16_t)(val - (sval->integer * (1 / get_resolution(sensor_num)))) *
+			(get_resolution(sensor_num) / 0.001);
 		break;
 	case PMBUS_READ_IIN:
-
 		val = val & BIT_MASK(11);
-
-		if (page == 0) {
-			/* 0.5 A/LSB, 2's complement */
-			sval->integer = (int16_t)val / 2;
-			sval->fraction = (int16_t)(val - (sval->integer * 2)) * 500;
-
-			/* 0.25 A/LSB, 2's complement */
-			// sval->integer = (int16_t)val / 4;
-			// sval->fraction = (int16_t)(val - (sval->integer * 4)) * 250;
-		} else if (page == 1) {
-			/* 0.125 A/LSB, 2's complement */
-			sval->integer = (int16_t)val / 8;
-			sval->fraction = (int16_t)(val - (sval->integer * 8)) * 125;
-		} else {
-			return SENSOR_UNSPECIFIED_ERROR;
-		}
+		sval->integer = (int16_t)(val / (1 / get_resolution(sensor_num)));
+		sval->fraction =
+			(int16_t)(val - (sval->integer * (1 / get_resolution(sensor_num)))) *
+			(get_resolution(sensor_num) / 0.001);
 
 		break;
 	case PMBUS_READ_TEMPERATURE_1:
-		/* 1 Degree C/LSB, 2's complement */
 		val = val & BIT_MASK(8);
-		sval->integer = val;
+		sval->integer = (int16_t)(val / (1 / get_resolution(sensor_num)));
+		sval->fraction =
+			(int16_t)(val - (sval->integer * (1 / get_resolution(sensor_num)))) *
+			(get_resolution(sensor_num) / 0.001);
 		break;
 	case PMBUS_READ_POUT:
-
 		val = val & BIT_MASK(11);
 		ret = vr_adjust_of_twos_complement(offset, &val);
 		if (ret == false) {
@@ -237,15 +313,10 @@ uint8_t mp2971_read(uint8_t sensor_num, int *reading)
 			return SENSOR_UNSPECIFIED_ERROR;
 		}
 
-		if (page == 0) {
-			/* 2 Watt/LSB, 2's complement */
-			sval->integer = val * 2;
-		} else if (page == 1) {
-			/* 0.25 Watt/LSB, 2's complement */
-			sval->integer = val * 0.25;
-		} else {
-			return SENSOR_UNSPECIFIED_ERROR;
-		}
+		sval->integer = (int16_t)(val / (1 / get_resolution(sensor_num)));
+		sval->fraction =
+			(int16_t)(val - (sval->integer * (1 / get_resolution(sensor_num)))) *
+			(get_resolution(sensor_num) / 0.001);
 
 		break;
 	default:
