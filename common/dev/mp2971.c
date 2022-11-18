@@ -93,6 +93,7 @@ float get_resolution(uint8_t sensor_num)
 	msg.rx_len = 1;
 	msg.data[0] = PAGE;
 
+	//get page
 	if (i2c_master_read(&msg, retry)) {
 		LOG_WRN("i2c read failed.\n");
 		return SENSOR_FAIL_TO_ACCESS;
@@ -109,6 +110,7 @@ float get_resolution(uint8_t sensor_num)
 	msg.rx_len = 2;
 	msg.data[0] = MFR_RESO_SET;
 
+	//get reso set
 	if (i2c_master_read(&msg, retry)) {
 		LOG_WRN("i2c read failed.\n");
 		return SENSOR_FAIL_TO_ACCESS;
