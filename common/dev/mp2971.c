@@ -167,7 +167,6 @@ float get_resolution(uint8_t sensor_num)
 		break;
 	default:
 		printf("[%s] not support sensor number: 0x%x\n", __func__, sensor_num);
-		ret = false;
 		break;
 	}
 
