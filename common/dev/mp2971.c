@@ -49,10 +49,10 @@ float get_resolution(uint8_t sensor_num)
 
 	page = msg.data[0];
 
-	//Victor test check if it is need to do twice
-	msg.bus = sensor_config[sensor_config_index_map[sensor_num]].port;
-	msg.target_addr = sensor_config[sensor_config_index_map[sensor_num]].target_addr;
-	msg.tx_len = 1;
+	//Victor test, check if it is need to do twice
+	//msg.bus = sensor_config[sensor_config_index_map[sensor_num]].port;
+	//msg.target_addr = sensor_config[sensor_config_index_map[sensor_num]].target_addr;
+	//msg.tx_len = 1;
 	msg.rx_len = 2;
 	msg.data[0] = MFR_RESO_SET;
 
@@ -82,13 +82,12 @@ float get_resolution(uint8_t sensor_num)
 		iin_reso_set = (mfr_reso_set & GENMASK(3, 2)) >> 2;
 		pout_reso_set = (mfr_reso_set & GENMASK(1, 0));
 
-		//Victor test
-		LOG_WRN("page 0 vout_reso_set = %x  \n", vout_reso_set);
-		//if (vout_reso_set == 2 || vout_reso_set == 3) {
-		if (1) {
+		if (vout_reso_set == 1) {
+			vout_reso = 0.001;
+		} else if (vout_reso_set == 2) {
 			vout_reso = 0.001;
 		} else {
-			printf("[%s] not supported vout_reso_set: 0x%x\n", __func__, vout_reso_set);
+			LOG_WRN("not supported vout_reso_set: 0x%x\n", vout_reso_set);
 		}
 
 		if (iout_reso_set == 0) {
@@ -98,7 +97,7 @@ float get_resolution(uint8_t sensor_num)
 		} else if (iout_reso_set == 2) {
 			iout_reso = 0.5;
 		} else {
-			printf("[%s] not supported vout_reso_set: 0x%x\n", __func__, iout_reso_set);
+			LOG_WRN("not supported vout_reso_set: 0x%x\n", iout_reso_set);
 		}
 
 		if (iin_reso_set == 0) {
@@ -108,7 +107,7 @@ float get_resolution(uint8_t sensor_num)
 		} else if (iin_reso_set == 2) {
 			iin_reso = 0.125;
 		} else {
-			printf("[%s] not supported vout_reso_set: 0x%x\n", __func__, iin_reso_set);
+			LOG_WRN("not supported vout_reso_set: 0x%x\n", iin_reso_set);
 		}
 
 		if (pout_reso_set == 0) {
@@ -118,7 +117,7 @@ float get_resolution(uint8_t sensor_num)
 		} else if (pout_reso_set == 2) {
 			pout_reso = 0.5;
 		} else {
-			printf("[%s] not supported vout_reso_set: 0x%x\n", __func__, pout_reso_set);
+			LOG_WRN("not supported vout_reso_set: 0x%x\n", pout_reso_set);
 		}
 
 	} else if (page == 1) {
@@ -130,7 +129,7 @@ float get_resolution(uint8_t sensor_num)
 		if (vout_reso_set == 2 || vout_reso_set == 3) {
 			vout_reso = 0.001;
 		} else {
-			printf("[%s] not supported vout_reso_set: 0x%x\n", __func__, vout_reso_set);
+			LOG_WRN("not supported vout_reso_set: 0x%x\n", vout_reso_set);
 		}
 
 		if (iout_reso_set == 0) {
@@ -138,14 +137,14 @@ float get_resolution(uint8_t sensor_num)
 		} else if (iout_reso_set == 1) {
 			iout_reso = 0.25;
 		} else {
-			printf("[%s] not supported vout_reso_set: 0x%x\n", __func__, iout_reso_set);
+			LOG_WRN("not supported vout_reso_set: 0x%x\n", iout_reso_set);
 		}
 
 		//Victor test, must be checked
 		if (1) {
 			iin_reso = 0.125;
 		} else {
-			printf("[%s] not supported vout_reso_set: 0x%x\n", __func__, iin_reso_set);
+			LOG_WRN("not supported vout_reso_set: 0x%x\n", iin_reso_set);
 		}
 
 		if (pout_reso_set == 0) {
@@ -153,14 +152,14 @@ float get_resolution(uint8_t sensor_num)
 		} else if (pout_reso_set == 1) {
 			pout_reso = 0.25;
 		} else {
-			printf("[%s] not supported vout_reso_set: 0x%x\n", __func__, pout_reso_set);
+			LOG_WRN("not supported vout_reso_set: 0x%x\n", pout_reso_set);
 		}
 	} else {
-		printf("[%s] not support page: 0x%d\n", __func__, page);
+		LOG_WRN("not support page: 0x%d\n", page);
 	}
 
 	uint8_t offset = sensor_config[sensor_config_index_map[sensor_num]].offset;
-	//printf("[%s] sensor number: 0x%x\n", __func__, sensor_num);
+
 	switch (offset) {
 	case PMBUS_READ_VOUT:
 		return vout_reso;
@@ -178,7 +177,7 @@ float get_resolution(uint8_t sensor_num)
 		return pout_reso;
 		break;
 	default:
-		printf("[%s] not support offset: 0x%x\n", __func__, offset);
+		LOG_WRN("not support offset: 0x%x\n", offset);
 		break;
 	}
 	return 0;
@@ -187,7 +186,7 @@ float get_resolution(uint8_t sensor_num)
 bool vr_adjust_of_twos_complement(uint8_t offset, int *val)
 {
 	if (val == NULL) {
-		printf("[%s] input value is NULL\n", __func__);
+		LOG_WRN("input value is NULL\n");
 		return false;
 	}
 	int adjust_val = *val;
@@ -214,7 +213,7 @@ bool vr_adjust_of_twos_complement(uint8_t offset, int *val)
 		}
 		break;
 	default:
-		printf("[%s] not support offset: 0x%x\n", __func__, offset);
+		LOG_WRN("not support offset: 0x%x\n", offset);
 		ret = false;
 		break;
 	}
@@ -266,8 +265,8 @@ uint8_t mp2971_read(uint8_t sensor_num, int *reading)
 		val = val & BIT_MASK(11);
 		ret = vr_adjust_of_twos_complement(offset, &val);
 		if (ret == false) {
-			printf("[%s] adjust reading IOUT value failed - sensor number: 0x%x\n",
-			       __func__, sensor_num);
+			LOG_WRN("adjust reading IOUT value failed - sensor number: 0x%x\n",
+				sensor_num);
 			return SENSOR_UNSPECIFIED_ERROR;
 		}
 
@@ -295,8 +294,8 @@ uint8_t mp2971_read(uint8_t sensor_num, int *reading)
 		val = val & BIT_MASK(11);
 		ret = vr_adjust_of_twos_complement(offset, &val);
 		if (ret == false) {
-			printf("[%s] adjust reading POUT value failed - sensor number: 0x%x\n",
-			       __func__, sensor_num);
+			LOG_WRN("adjust reading POUT value failed - sensor number: 0x%x\n",
+				sensor_num);
 			return SENSOR_UNSPECIFIED_ERROR;
 		}
 
@@ -307,7 +306,7 @@ uint8_t mp2971_read(uint8_t sensor_num, int *reading)
 
 		break;
 	default:
-		printf("[%s] not support offset: 0x%x\n", __func__, offset);
+		LOG_WRN("not support offset: 0x%x\n", offset);
 		return SENSOR_FAIL_TO_ACCESS;
 		break;
 	}
