@@ -115,62 +115,123 @@ float get_resolution(uint8_t sensor_num)
 	}
 
 	mfr_reso_set = (msg.data[1] << 8) | msg.data[0];
+
+	uint8_t vout_reso_set;
+	uint8_t iout_reso_set;
+	uint8_t iin_reso_set;
+	uint8_t pout_reso_set;
+
+	float vout_reso;
+	float iout_reso;
+	float iin_reso;
+	float pout_reso;
+	float temp_reso = 1;
+
+	//get reso from MFR_RESO_SET(C7h)
+	if (page = 0) {
+		vout_reso_set = (mfr_reso_set & GENMASK(7, 6)) >> 6;
+		iout_reso_set = (mfr_reso_set & GENMASK(5, 4)) >> 4;
+		iin_reso_set = (mfr_reso_set & GENMASK(3, 2)) >> 2;
+		pout_reso_set = (mfr_reso_set & GENMASK(1, 0));
+
+		if (vout_reso_set == 2 || vout_reso_set == 3) {
+			vout_reso = 0.001;
+		} else {
+			printf("[%s] not supported vout_reso_set: 0x%x\n", __func__, vout_reso_set);
+		}
+
+		if (iout_reso_set == 0) {
+			iout_reso = 2;
+		} else if (iout_reso_set == 1) {
+			iout_reso = 1;
+		} else if (iout_reso_set == 2) {
+			iout_reso = 0.5;
+		} else {
+			printf("[%s] not supported vout_reso_set: 0x%x\n", __func__, iout_reso_set);
+		}
+
+		if (iin_reso_set == 0) {
+			iin_reso = 0.5;
+		} else if (iin_reso_set == 1) {
+			iin_reso = 0.25;
+		} else if (iin_reso_set == 2) {
+			iin_reso = 0.125;
+		} else {
+			printf("[%s] not supported vout_reso_set: 0x%x\n", __func__, iin_reso_set);
+		}
+
+		if (pout_reso_set == 0) {
+			pout_reso = 2;
+		} else if (pout_reso_set == 1) {
+			pout_reso = 1;
+		} else if (pout_reso_set == 2) {
+			pout_reso = 0.5;
+		} else {
+			printf("[%s] not supported vout_reso_set: 0x%x\n", __func__, pout_reso_set);
+		}
+
+	} else if (page == 1) {
+		vout_reso_set = (mfr_reso_set & GENMASK(4, 3)) >> 3;
+		iout_reso_set = (mfr_reso_set & GENMASK(2, 2)) >> 2;
+		//iin_reso_set = 0;
+		pout_reso_set = (mfr_reso_set & GENMASK(0, 0));
+
+		if (vout_reso_set == 2 || vout_reso_set == 3) {
+			vout_reso = 0.001;
+		} else {
+			printf("[%s] not supported vout_reso_set: 0x%x\n", __func__, vout_reso_set);
+		}
+
+		if (iout_reso_set == 0) {
+			iout_reso = 0.5;
+		} else if (iout_reso_set == 1) {
+			iout_reso = 0.25;
+		} else {
+			printf("[%s] not supported vout_reso_set: 0x%x\n", __func__, iout_reso_set);
+		}
+
+		//Victor test, must be checked
+		if (1) {
+			iin_reso = 0.125;
+		} else {
+			printf("[%s] not supported vout_reso_set: 0x%x\n", __func__, iin_reso_set);
+		}
+
+		if (pout_reso_set == 0) {
+			pout_reso = 0.5;
+		} else if (pout_reso_set == 1) {
+			pout_reso = 0.25;
+		} else {
+			printf("[%s] not supported vout_reso_set: 0x%x\n", __func__, pout_reso_set);
+		}
+	} else {
+		printf("[%s] not support page: 0x%d\n", __func__, page);
+	}
+
 	//Victor test
 	LOG_WRN("page = %x  \n", mfr_reso_set);
 
 	printf("[%s] not support sensor number: 0x%x\n", __func__, sensor_num);
 	switch (sensor_num) {
 	case PMBUS_READ_VOUT:
-		if (page == 0) {
-			res = 0.001;
-		} else if (page == 1) {
-			res = 0.001;
-		} else {
-			printf("[%s] not support page: 0x%d\n", __func__, page);
-		}
+		return vout_reso;
 		break;
 	case PMBUS_READ_IOUT:
-		if (page == 0) {
-			res = 1;
-		} else if (page == 1) {
-			res = 0.25;
-		} else {
-			printf("[%s] not support page: 0x%d\n", __func__, page);
-		}
+		return iout_reso;
 		break;
 	case PMBUS_READ_IIN:
-		if (page == 0) {
-			res = 0.25;
-		} else if (page == 1) {
-			res = 0.125;
-		} else {
-			printf("[%s] not support page: 0x%d\n", __func__, page);
-		}
+		return iin_reso;
 		break;
 	case PMBUS_READ_TEMPERATURE_1:
-		if (page == 0) {
-			res = 1;
-		} else if (page == 1) {
-			res = 1;
-		} else {
-			printf("[%s] not support page: 0x%d\n", __func__, page);
-		}
+		return temp_reso;
 		break;
 	case PMBUS_READ_POUT:
-		if (page == 0) {
-			res = 2;
-		} else if (page == 1) {
-			res = 0.25;
-		} else {
-			printf("[%s] not support page: 0x%d\n", __func__, page);
-		}
+		return pout_reso;
 		break;
 	default:
 		printf("[%s] not support sensor number: 0x%x\n", __func__, sensor_num);
 		break;
 	}
-
-	return res;
 }
 
 bool vr_adjust_of_twos_complement(uint8_t offset, int *val)
