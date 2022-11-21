@@ -118,7 +118,7 @@ enum SENSOR_DEV {
 	sensor_dev_mp2856gut = 0x1C,
 	sensor_dev_ddr5_power = 0x1D,
 	sensor_dev_ddr5_temp = 0x1E,
-	sensor_dev_mp2971 = 0x1F, //Victor test
+	sensor_dev_mp2971 = 0x1F,
 	sensor_dev_max
 };
 

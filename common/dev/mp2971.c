@@ -35,13 +35,13 @@ float get_resolution(uint8_t sensor_num)
 	I2C_MSG msg;
 	uint8_t retry = 5;
 
+	//get page
 	msg.bus = sensor_config[sensor_config_index_map[sensor_num]].port;
 	msg.target_addr = sensor_config[sensor_config_index_map[sensor_num]].target_addr;
 	msg.tx_len = 1;
 	msg.rx_len = 1;
 	msg.data[0] = PAGE;
 
-	//get page
 	if (i2c_master_read(&msg, retry)) {
 		LOG_WRN("i2c read failed.\n");
 		return SENSOR_FAIL_TO_ACCESS;
@@ -49,14 +49,10 @@ float get_resolution(uint8_t sensor_num)
 
 	page = msg.data[0];
 
-	//Victor test, check if it is need to do twice
-	//msg.bus = sensor_config[sensor_config_index_map[sensor_num]].port;
-	//msg.target_addr = sensor_config[sensor_config_index_map[sensor_num]].target_addr;
-	//msg.tx_len = 1;
+	//get reso set
 	msg.rx_len = 2;
 	msg.data[0] = MFR_RESO_SET;
 
-	//get reso set
 	if (i2c_master_read(&msg, retry)) {
 		LOG_WRN("i2c read failed.\n");
 		return SENSOR_FAIL_TO_ACCESS;
@@ -82,9 +78,7 @@ float get_resolution(uint8_t sensor_num)
 		iin_reso_set = (mfr_reso_set & GENMASK(3, 2)) >> 2;
 		pout_reso_set = (mfr_reso_set & GENMASK(1, 0));
 
-		if (vout_reso_set == 1) {
-			vout_reso = 0.001;
-		} else if (vout_reso_set == 2) {
+		if (vout_reso_set == 2 || vout_reso_set == 3) {
 			vout_reso = 0.001;
 		} else {
 			LOG_WRN("not supported vout_reso_set: 0x%x\n", vout_reso_set);
@@ -123,7 +117,6 @@ float get_resolution(uint8_t sensor_num)
 	} else if (page == 1) {
 		vout_reso_set = (mfr_reso_set & GENMASK(4, 3)) >> 3;
 		iout_reso_set = (mfr_reso_set & GENMASK(2, 2)) >> 2;
-		//iin_reso_set = 0;
 		pout_reso_set = (mfr_reso_set & GENMASK(0, 0));
 
 		if (vout_reso_set == 2 || vout_reso_set == 3) {
@@ -140,12 +133,7 @@ float get_resolution(uint8_t sensor_num)
 			LOG_WRN("not supported vout_reso_set: 0x%x\n", iout_reso_set);
 		}
 
-		//Victor test, must be checked
-		if (1) {
-			iin_reso = 0.125;
-		} else {
-			LOG_WRN("not supported vout_reso_set: 0x%x\n", iin_reso_set);
-		}
+		iin_reso = 0.125;
 
 		if (pout_reso_set == 0) {
 			pout_reso = 0.5;
@@ -246,11 +234,6 @@ uint8_t mp2971_read(uint8_t sensor_num, int *reading)
 
 	uint8_t offset = sensor_config[sensor_config_index_map[sensor_num]].offset;
 	val = (msg.data[1] << 8) | msg.data[0];
-
-	// float reso = 0;
-	sval->integer = (int16_t)(val / (1 / get_resolution(sensor_num)));
-	sval->fraction = (int16_t)(val - (sval->integer * (1 / get_resolution(sensor_num)))) *
-			 (get_resolution(sensor_num) / 0.001);
 
 	switch (offset) {
 	case PMBUS_READ_VOUT:
