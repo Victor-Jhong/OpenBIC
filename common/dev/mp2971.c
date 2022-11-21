@@ -171,50 +171,12 @@ float get_resolution(uint8_t sensor_num)
 	return 0;
 }
 
-bool vr_adjust_of_twos_complement(uint8_t offset, int *val)
-{
-	if (val == NULL) {
-		LOG_WRN("input value is NULL\n");
-		return false;
-	}
-	int adjust_val = *val;
-	bool is_negative_val = ((adjust_val & TWO_COMPLEMENT_NEGATIVE_BIT) == 0 ? false : true);
-	bool ret = true;
-
-	switch (offset) {
-	case PMBUS_READ_IOUT:
-		// Convert two's complement to usigned integer
-		if (is_negative_val == true) {
-			adjust_val = ~(adjust_val - 1);
-		}
-
-		// Set reading value to 0 if reading value in range -0.2A ~ 0.2A
-		// Because register report unit is 0.1A , set reading value to 0 if register report value is lower than 2 units
-		if (adjust_val < ADJUST_IOUT_RANGE) {
-			*val = 0;
-		}
-		break;
-	case PMBUS_READ_POUT:
-		// Set reading value to 0 if reading value is negative
-		if (is_negative_val == true) {
-			*val = 0;
-		}
-		break;
-	default:
-		LOG_WRN("not support offset: 0x%x\n", offset);
-		ret = false;
-		break;
-	}
-	return ret;
-}
-
 uint8_t mp2971_read(uint8_t sensor_num, int *reading)
 {
 	if (reading == NULL || (sensor_num > SENSOR_NUM_MAX)) {
 		return SENSOR_UNSPECIFIED_ERROR;
 	}
 
-	bool ret = false;
 	uint8_t retry = 5;
 	int val = 0;
 	sensor_val *sval = (sensor_val *)reading;
@@ -239,60 +201,28 @@ uint8_t mp2971_read(uint8_t sensor_num, int *reading)
 	case PMBUS_READ_VOUT:
 		/* 1 mV/LSB, unsigned integer */
 		val = val & BIT_MASK(12);
-		sval->integer = (int16_t)(val / (1 / get_resolution(sensor_num)));
-		sval->fraction =
-			(int16_t)(val - (sval->integer * (1 / get_resolution(sensor_num)))) *
-			(get_resolution(sensor_num) / 0.001);
 		break;
 	case PMBUS_READ_IOUT:
 		val = val & BIT_MASK(11);
-		ret = vr_adjust_of_twos_complement(offset, &val);
-		if (ret == false) {
-			LOG_WRN("adjust reading IOUT value failed - sensor number: 0x%x\n",
-				sensor_num);
-			return SENSOR_UNSPECIFIED_ERROR;
-		}
-
-		sval->integer = (int16_t)(val / (1 / get_resolution(sensor_num)));
-		sval->fraction =
-			(int16_t)(val - (sval->integer * (1 / get_resolution(sensor_num)))) *
-			(get_resolution(sensor_num) / 0.001);
 		break;
 	case PMBUS_READ_IIN:
 		val = val & BIT_MASK(11);
-		sval->integer = (int16_t)(val / (1 / get_resolution(sensor_num)));
-		sval->fraction =
-			(int16_t)(val - (sval->integer * (1 / get_resolution(sensor_num)))) *
-			(get_resolution(sensor_num) / 0.001);
-
 		break;
 	case PMBUS_READ_TEMPERATURE_1:
 		val = val & BIT_MASK(8);
-		sval->integer = (int16_t)(val / (1 / get_resolution(sensor_num)));
-		sval->fraction =
-			(int16_t)(val - (sval->integer * (1 / get_resolution(sensor_num)))) *
-			(get_resolution(sensor_num) / 0.001);
 		break;
 	case PMBUS_READ_POUT:
 		val = val & BIT_MASK(11);
-		ret = vr_adjust_of_twos_complement(offset, &val);
-		if (ret == false) {
-			LOG_WRN("adjust reading POUT value failed - sensor number: 0x%x\n",
-				sensor_num);
-			return SENSOR_UNSPECIFIED_ERROR;
-		}
-
-		sval->integer = (int16_t)(val / (1 / get_resolution(sensor_num)));
-		sval->fraction =
-			(int16_t)(val - (sval->integer * (1 / get_resolution(sensor_num)))) *
-			(get_resolution(sensor_num) / 0.001);
-
 		break;
 	default:
 		LOG_WRN("not support offset: 0x%x\n", offset);
 		return SENSOR_FAIL_TO_ACCESS;
 		break;
 	}
+
+	sval->integer = (int16_t)(val / (1 / get_resolution(sensor_num)));
+	sval->fraction = (int16_t)(val - (sval->integer * (1 / get_resolution(sensor_num)))) *
+			 (get_resolution(sensor_num) / 0.001);
 
 	return SENSOR_READ_SUCCESS;
 }
