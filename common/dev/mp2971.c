@@ -24,25 +24,26 @@
 
 LOG_MODULE_REGISTER(mp2971);
 
-#define PAGE 0x00
 #define MFR_RESO_SET 0xC7
 
 float get_resolution(uint8_t sensor_num)
 {
+	sensor_cfg *cfg = &sensor_config[sensor_config_index_map[sensor_num]];
+
 	uint8_t page = 0;
 	uint16_t mfr_reso_set = 0;
 
 	I2C_MSG msg;
-	uint8_t retry = 5;
+	uint8_t i2c_max_retry = 5;
 
 	//get page
-	msg.bus = sensor_config[sensor_config_index_map[sensor_num]].port;
-	msg.target_addr = sensor_config[sensor_config_index_map[sensor_num]].target_addr;
+	msg.bus = cfg->port;
+	msg.target_addr = cfg->target_addr;
 	msg.tx_len = 1;
 	msg.rx_len = 1;
-	msg.data[0] = PAGE;
+	msg.data[0] = PMBUS_PAGE;
 
-	if (i2c_master_read(&msg, retry)) {
+	if (i2c_master_read(&msg, i2c_max_retry)) {
 		LOG_WRN("i2c read failed.\n");
 		return SENSOR_FAIL_TO_ACCESS;
 	}
@@ -53,7 +54,7 @@ float get_resolution(uint8_t sensor_num)
 	msg.rx_len = 2;
 	msg.data[0] = MFR_RESO_SET;
 
-	if (i2c_master_read(&msg, retry)) {
+	if (i2c_master_read(&msg, i2c_max_retry)) {
 		LOG_WRN("i2c read failed.\n");
 		return SENSOR_FAIL_TO_ACCESS;
 	}
@@ -78,7 +79,7 @@ float get_resolution(uint8_t sensor_num)
 		iin_reso_set = (mfr_reso_set & GENMASK(3, 2)) >> 2;
 		pout_reso_set = (mfr_reso_set & GENMASK(1, 0));
 
-		if (vout_reso_set == 2 || vout_reso_set == 3) {
+		if (vout_reso_set & BIT(1)) {
 			vout_reso = 0.001;
 		} else {
 			LOG_WRN("not supported vout_reso_set: 0x%x\n", vout_reso_set);
@@ -119,7 +120,7 @@ float get_resolution(uint8_t sensor_num)
 		iout_reso_set = (mfr_reso_set & GENMASK(2, 2)) >> 2;
 		pout_reso_set = (mfr_reso_set & GENMASK(0, 0));
 
-		if (vout_reso_set == 2 || vout_reso_set == 3) {
+		if (vout_reso_set & BIT(1)) {
 			vout_reso = 0.001;
 		} else {
 			LOG_WRN("not supported vout_reso_set: 0x%x\n", vout_reso_set);
@@ -173,28 +174,31 @@ float get_resolution(uint8_t sensor_num)
 
 uint8_t mp2971_read(uint8_t sensor_num, int *reading)
 {
-	if (reading == NULL || (sensor_num > SENSOR_NUM_MAX)) {
+	CHECK_NULL_ARG_WITH_RETURN(reading, SENSOR_UNSPECIFIED_ERROR);
+	if (sensor_num > SENSOR_NUM_MAX) {
 		return SENSOR_UNSPECIFIED_ERROR;
 	}
 
-	uint8_t retry = 5;
+	sensor_cfg *cfg = &sensor_config[sensor_config_index_map[sensor_num]];
+
+	uint8_t i2c_max_retry = 5;
 	int val = 0;
 	sensor_val *sval = (sensor_val *)reading;
 	I2C_MSG msg;
 	memset(sval, 0, sizeof(sensor_val));
 
-	msg.bus = sensor_config[sensor_config_index_map[sensor_num]].port;
-	msg.target_addr = sensor_config[sensor_config_index_map[sensor_num]].target_addr;
+	msg.bus = cfg->port;
+	msg.target_addr = cfg->target_addr;
 	msg.tx_len = 1;
 	msg.rx_len = 2;
-	msg.data[0] = sensor_config[sensor_config_index_map[sensor_num]].offset;
+	msg.data[0] = cfg->offset;
 
-	if (i2c_master_read(&msg, retry)) {
+	if (i2c_master_read(&msg, i2c_max_retry)) {
 		/* read fail */
 		return SENSOR_FAIL_TO_ACCESS;
 	}
 
-	uint8_t offset = sensor_config[sensor_config_index_map[sensor_num]].offset;
+	uint8_t offset = cfg->offset;
 	val = (msg.data[1] << 8) | msg.data[0];
 
 	switch (offset) {
@@ -220,9 +224,12 @@ uint8_t mp2971_read(uint8_t sensor_num, int *reading)
 		break;
 	}
 
-	sval->integer = (int16_t)(val / (1 / get_resolution(sensor_num)));
-	sval->fraction = (int16_t)(val - (sval->integer * (1 / get_resolution(sensor_num)))) *
-			 (get_resolution(sensor_num) / 0.001);
+	float resolution = get_resolution(sensor_num);
+	if (resolution == 0) {
+		return SENSOR_FAIL_TO_ACCESS;
+	}
+	sval->integer = (int16_t)(val * resolution);
+	sval->fraction = (int16_t)((val - (sval->integer / resolution)) * (resolution * 1000));
 
 	return SENSOR_READ_SUCCESS;
 }

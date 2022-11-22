@@ -570,8 +570,8 @@ static inline bool init_drive_type(sensor_cfg *p, uint16_t current_drive)
 
 static void drive_init(void)
 {
-	uint16_t current_drive;
 	const uint16_t max_drive_num = ARRAY_SIZE(sensor_drive_tbl);
+	uint16_t current_drive;
 
 	for (int i = 0; i < sdr_count; i++) {
 		sensor_cfg *p = sensor_config + i;
