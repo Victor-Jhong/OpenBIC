@@ -147,7 +147,7 @@ float get_resolution(uint8_t sensor_num)
 		LOG_WRN("not support page: 0x%d\n", page);
 	}
 
-	uint8_t offset = sensor_config[sensor_config_index_map[sensor_num]].offset;
+	uint8_t offset = cfg->offset;
 
 	switch (offset) {
 	case PMBUS_READ_VOUT:
