@@ -127,9 +127,9 @@ float get_resolution(uint8_t sensor_num)
 		}
 
 		if (iout_reso_set == 0) {
-			iout_reso = 0.5;
+			iout_reso = 1;
 		} else if (iout_reso_set == 1) {
-			iout_reso = 0.25;
+			iout_reso = 0.5;
 		} else {
 			LOG_WRN("not supported vout_reso_set: 0x%x\n", iout_reso_set);
 		}
@@ -137,9 +137,9 @@ float get_resolution(uint8_t sensor_num)
 		iin_reso = 0.125;
 
 		if (pout_reso_set == 0) {
-			pout_reso = 0.5;
+			pout_reso = 1;
 		} else if (pout_reso_set == 1) {
-			pout_reso = 0.25;
+			pout_reso = 0.5;
 		} else {
 			LOG_WRN("not supported vout_reso_set: 0x%x\n", pout_reso_set);
 		}
