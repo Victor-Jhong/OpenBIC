@@ -25,11 +25,16 @@
 #include "plat_sensor_table.h"
 #include "sensor.h"
 #include "plat_class.h"
+#include "plat_hook.h"
 
 LOG_MODULE_REGISTER(plat_class);
 
 #define NUMBER_OF_ADC_CHANNEL 16
 #define AST1030_ADC_BASE_ADDR 0x7e6e9000
+
+#define IO_EXPENDER_ADDRESS 0xEE
+#define IO_EXPENDER_PORT1_OUTPUT_OFFSET 0x03
+#define IO_EXPENDER_PORT1_CONFIG_OFFSET 0x07
 
 /* ADC information for each channel
  * offset: register offset
@@ -95,4 +100,152 @@ bool get_adc_voltage(int channel, float *voltage)
 GT_STAGE_REVISION_ID get_stage_by_rev_id()
 {
 	return (gpio_get(REV_ID0) | (gpio_get(REV_ID1) << 1) | (gpio_get(REV_ID2) << 2));
+}
+
+bool system_led_init()
+{
+	I2C_MSG msg;
+	uint8_t i2c_max_retry = 5;
+
+	msg.bus = I2C_BUS5;
+	msg.target_addr = IO_EXPENDER_ADDRESS >> 1;
+	msg.tx_len = 1;
+	msg.rx_len = 1;
+	msg.data[0] = IO_EXPENDER_PORT1_CONFIG_OFFSET;
+
+	if (i2c_master_read(&msg, i2c_max_retry)) {
+		LOG_ERR("write register fails after retry %d times\n", i2c_max_retry);
+		return false;
+	}
+
+	uint8_t read_write_data = msg.data[0];
+	read_write_data &= 0x3F;
+
+	msg.tx_len = 2;
+	msg.rx_len = 0;
+	msg.data[0] = IO_EXPENDER_PORT1_CONFIG_OFFSET;
+	msg.data[1] = read_write_data;
+
+	if (i2c_master_write(&msg, i2c_max_retry)) {
+		LOG_ERR("write register fails after retry %d times\n", i2c_max_retry);
+		return false;
+	}
+
+	set_system_led(POWR_LED, SYS_LED_OFF, SYS_LED_USER_BIC);
+	set_system_led(FAULT_LED, SYS_LED_OFF, SYS_LED_USER_BIC);
+
+	check_light_fault_led();
+	check_light_dc_on_led();
+
+	return true;
+}
+
+bool set_system_led(uint8_t led_type, bool set_status, uint8_t fun_user)
+{
+	LOG_INF("%d set led %d status %d \n", fun_user, led_type, set_status);
+
+	static uint8_t led_user = 0;
+
+	if (set_status == SYS_LED_ON) {
+		if (fun_user == SYS_LED_USER_BIC) {
+			led_user |= 0x01;
+		} else if (fun_user == SYS_LED_USER_BMC) {
+			led_user |= 0x02;
+		}
+	} else if (set_status == SYS_LED_OFF) {
+		if (fun_user == SYS_LED_USER_BIC) {
+			led_user &= 0xFE;
+		} else if (fun_user == SYS_LED_USER_BMC) {
+			led_user &= 0xFD;
+		}
+
+		if (led_user == 0x01) {
+			LOG_INF("%d was turn on by BIC \n", led_type);
+			return true;
+
+		} else if (led_user == 0x02) {
+			LOG_INF("%d was turn on by BMC \n", led_type);
+			return true;
+		}
+	}
+
+	I2C_MSG msg;
+	uint8_t i2c_max_retry = 5;
+
+	msg.bus = I2C_BUS5;
+	msg.target_addr = IO_EXPENDER_ADDRESS >> 1;
+	msg.tx_len = 1;
+	msg.rx_len = 1;
+	msg.data[0] = IO_EXPENDER_PORT1_OUTPUT_OFFSET;
+
+	if (i2c_master_read(&msg, i2c_max_retry)) {
+		LOG_ERR("write register fails after retry %d times\n", i2c_max_retry);
+		return false;
+	}
+
+	uint8_t read_write_data = msg.data[0];
+
+	switch (led_type) {
+	case POWR_LED:
+		if (set_status == SYS_LED_OFF) {
+			read_write_data &= 0x7F;
+		} else if (set_status == SYS_LED_ON) {
+			read_write_data |= 0x80;
+		} else {
+			LOG_WRN("Unsupported fault led status: %d\n", set_status);
+			return false;
+		}
+		break;
+	case FAULT_LED:
+		if (set_status == SYS_LED_OFF) {
+			read_write_data &= 0xBF;
+		} else if (set_status == SYS_LED_ON) {
+			read_write_data |= 0x40;
+		} else {
+			LOG_WRN("Unsupported fault led status: %d\n", set_status);
+			return false;
+		}
+		break;
+	default:
+		LOG_WRN("Unsupported led type: %d\n", led_type);
+		break;
+	}
+
+	msg.tx_len = 2;
+	msg.rx_len = 0;
+	msg.data[0] = IO_EXPENDER_PORT1_OUTPUT_OFFSET;
+	msg.data[1] = read_write_data;
+
+	if (i2c_master_write(&msg, i2c_max_retry)) {
+		LOG_ERR("write register fails after retry %d times. \n", i2c_max_retry);
+		return false;
+	}
+
+	return true;
+}
+
+bool is_system_fault()
+{
+	return !gpio_get(NIC_ADC_ALERT_N) | !gpio_get(SSD_0_7_ADC_ALERT_N) |
+	       !gpio_get(SSD_8_15_ADC_ALERT_N) | !gpio_get(PEX_ADC_ALERT_N) |
+	       !gpio_get(SMB_FPGA_ALERT_R_N) | !gpio_get(SMB_ALERT_PMBUS_R_N) |
+	       !gpio_get(SMB_ALERT_HSC_R_N);
+}
+
+void check_light_fault_led()
+{
+	if (is_system_fault()) {
+		set_system_led(FAULT_LED, SYS_LED_ON, SYS_LED_USER_BIC);
+	} else {
+		set_system_led(FAULT_LED, SYS_LED_OFF, SYS_LED_USER_BIC);
+	}
+}
+
+void check_light_dc_on_led()
+{
+	if (is_mb_dc_on()) {
+		set_system_led(POWR_LED, SYS_LED_ON, SYS_LED_USER_BIC);
+	} else {
+		set_system_led(POWR_LED, SYS_LED_OFF, SYS_LED_USER_BIC);
+	}
 }

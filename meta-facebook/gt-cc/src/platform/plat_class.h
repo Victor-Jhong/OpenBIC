@@ -28,13 +28,34 @@ enum GT_COMPONENT_TYPE_ADC_CHANNEL {
 };
 
 typedef enum {
-	EVT = 1,
-	EVT2 = 2,
-	DVT = 3,
-	DVT2 = 4,
+	GT_STAGE_EVT = 1,
+	GT_STAGE_EVT2 = 2,
+	GT_STAGE_DVT = 3,
+	GT_STAGE_DVT2 = 4,
 } GT_STAGE_REVISION_ID;
 
 bool get_adc_voltage(int channel, float *voltage);
 GT_STAGE_REVISION_ID get_stage_by_rev_id();
+
+enum led_type {
+	POWR_LED = 0,
+	FAULT_LED = 1,
+};
+
+enum system_led_status {
+	SYS_LED_OFF = 0,
+	SYS_LED_ON = 1,
+};
+
+enum system_led_user {
+	SYS_LED_USER_BIC = 0,
+	SYS_LED_USER_BMC = 1,
+};
+
+bool system_led_init();
+bool set_system_led(uint8_t led_type, bool set_status, uint8_t fun_user);
+bool is_system_fault();
+void check_light_fault_led();
+void check_light_dc_on_led();
 
 #endif

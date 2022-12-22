@@ -23,6 +23,7 @@
 #include "ipmi.h"
 #include "pldm.h"
 #include "plat_mctp.h"
+#include "plat_class.h"
 
 SCU_CFG scu_cfg[] = {
 	//register    value
@@ -44,6 +45,7 @@ void pal_pre_init()
 void pal_post_init()
 {
 	plat_mctp_init();
+	system_led_init();
 }
 
 void pal_set_sys_status()
