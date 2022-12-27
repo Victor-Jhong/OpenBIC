@@ -90,6 +90,7 @@ enum pldm_effecter_operational_state {
 
 enum pldm_oem_effecter_type {
 	OEM_EFFECTER_TYPE_GPIO = 0xFF,
+	OEM_EFFECTER_TYPE_PLAT = 0xE0,
 };
 
 enum set_request {

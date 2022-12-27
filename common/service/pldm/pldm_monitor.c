@@ -492,6 +492,162 @@ static void oem_set_effecter_type_gpio_handler(uint8_t *buf, uint16_t len, uint8
 	}
 }
 
+//Victor test, enable
+// __weak void oem_set_effecter_type_plat_handler(buf, len, resp, resp_len)
+// {
+// 	return;
+// }
+
+//Victor test , move to plat
+#define PLDM_PLATFORM_POWER_LED_EFFECTER_STATE_FIELD_COUNT 1
+#define PLDM_PLATFORM_FAULT_LED_EFFECTER_STATE_FIELD_COUNT 1
+#include "plat_class.h"
+enum oem_effecter_states_plat_led_value {
+	EFFECTER_STATE_PLAT_LED_VALUE_UNKNOWN = 0x00,
+	EFFECTER_STATE_PLAT_LED_VALUE_OFF = 0x01,
+	EFFECTER_STATE_PLAT_LED_VALUE_ON = 0x02,
+	EFFECTER_STATE_PLAT_LED_VALUE_MAX,
+};
+enum pldm_plat_effecter_type {
+	PLAT_EFFECTER_TYPE_POWER_LED = 0xFF,
+	PLAT_EFFECTER_TYPE_FAULT_LED = 0xFE,
+};
+
+//Victor test , move to plat  (plat handler)
+void plat_set_effecter_type_power_led_handler(uint8_t *buf, uint16_t len, uint8_t *resp,
+					      uint16_t *resp_len)
+{
+	CHECK_NULL_ARG(buf);
+	CHECK_NULL_ARG(resp);
+	CHECK_NULL_ARG(resp_len);
+
+	struct pldm_set_state_effecter_states_req *req_p =
+		(struct pldm_set_state_effecter_states_req *)buf;
+	uint8_t *completion_code_p = resp;
+	*resp_len = 1;
+
+	if (req_p->composite_effecter_count != PLDM_PLATFORM_POWER_LED_EFFECTER_STATE_FIELD_COUNT) {
+		LOG_ERR("Unsupport power led effecter count, (%d)",
+			req_p->composite_effecter_count);
+		*completion_code_p = PLDM_ERROR_INVALID_DATA;
+		return;
+	}
+
+	set_effecter_state_field_t *power_led_val_state = &req_p->field[0];
+
+	if (power_led_val_state->set_request >= PLDM_SET_REQUEST_MAX) {
+		//LOG_ERR("Unsupport power led effecter set request");
+		*completion_code_p = PLDM_PLATFORM_UNSUPPORTED_EFFECTERSTATE;
+		return;
+	}
+
+	if (power_led_val_state->effecter_state >= EFFECTER_STATE_PLAT_LED_VALUE_MAX) {
+		//LOG_ERR("Unsupport power led effecter state");
+		*completion_code_p = PLDM_PLATFORM_INVALID_STATE_VALUE;
+		return;
+	}
+
+	if (power_led_val_state->set_request == PLDM_NO_CHANGE) {
+		*completion_code_p = PLDM_SUCCESS;
+		return;
+	} else {
+		if (power_led_val_state->effecter_state == EFFECTER_STATE_PLAT_LED_VALUE_UNKNOWN) {
+			*completion_code_p = PLDM_OEM_GPIO_EFFECTER_VALUE_UNKNOWN;
+			return;
+		} else {
+			uint8_t power_led_val = ((power_led_val_state->effecter_state ==
+						  EFFECTER_STATE_PLAT_LED_VALUE_OFF) ?
+							 SYS_LED_OFF :
+							 SYS_LED_ON);
+			set_system_led(POWER_LED, power_led_val, SYS_LED_USER_BMC);
+			*completion_code_p = PLDM_SUCCESS;
+			return;
+		}
+	}
+}
+
+//Victor test , move to plat  (plat handler)
+void plat_set_effecter_type_fault_led_handler(uint8_t *buf, uint16_t len, uint8_t *resp,
+					      uint16_t *resp_len)
+{
+	CHECK_NULL_ARG(buf);
+	CHECK_NULL_ARG(resp);
+	CHECK_NULL_ARG(resp_len);
+
+	struct pldm_set_state_effecter_states_req *req_p =
+		(struct pldm_set_state_effecter_states_req *)buf;
+	uint8_t *completion_code_p = resp;
+	*resp_len = 1;
+
+	if (req_p->composite_effecter_count != PLDM_PLATFORM_FAULT_LED_EFFECTER_STATE_FIELD_COUNT) {
+		LOG_ERR("Unsupport power led effecter count, (%d)",
+			req_p->composite_effecter_count);
+		*completion_code_p = PLDM_ERROR_INVALID_DATA;
+		return;
+	}
+
+	set_effecter_state_field_t *fault_led_val_state = &req_p->field[0];
+
+	if (fault_led_val_state->set_request >= PLDM_SET_REQUEST_MAX) {
+		//LOG_ERR("Unsupport power led effecter set request");
+		*completion_code_p = PLDM_PLATFORM_UNSUPPORTED_EFFECTERSTATE;
+		return;
+	}
+
+	if (fault_led_val_state->effecter_state >= EFFECTER_STATE_PLAT_LED_VALUE_MAX) {
+		//LOG_ERR("Unsupport power led effecter state");
+		*completion_code_p = PLDM_PLATFORM_INVALID_STATE_VALUE;
+		return;
+	}
+
+	if (fault_led_val_state->set_request == PLDM_NO_CHANGE) {
+		*completion_code_p = PLDM_SUCCESS;
+		return;
+	} else {
+		if (fault_led_val_state->effecter_state == EFFECTER_STATE_PLAT_LED_VALUE_UNKNOWN) {
+			*completion_code_p = PLDM_OEM_GPIO_EFFECTER_VALUE_UNKNOWN;
+			return;
+		} else {
+			uint8_t fault_led_val = ((fault_led_val_state->effecter_state ==
+						  EFFECTER_STATE_PLAT_LED_VALUE_OFF) ?
+							 SYS_LED_OFF :
+							 SYS_LED_ON);
+			set_system_led(FAULT_LED, fault_led_val, SYS_LED_USER_BMC);
+			*completion_code_p = PLDM_SUCCESS;
+			return;
+		}
+	}
+}
+
+//Victor test , move to plat
+void oem_set_effecter_type_plat_handler(uint8_t *buf, uint16_t len, uint8_t *resp,
+					uint16_t *resp_len)
+{
+	CHECK_NULL_ARG(buf);
+	CHECK_NULL_ARG(resp);
+	CHECK_NULL_ARG(resp_len);
+
+	struct pldm_set_state_effecter_states_req *req_p =
+		(struct pldm_set_state_effecter_states_req *)buf;
+	uint8_t *completion_code_p = resp;
+	*resp_len = 1;
+
+	uint8_t plat_effecter_type = req_p->effecter_id & BIT_MASK(8);
+
+	switch (plat_effecter_type) {
+	case PLAT_EFFECTER_TYPE_POWER_LED:
+		plat_set_effecter_type_power_led_handler(buf, len, resp, resp_len);
+		break;
+	case PLAT_EFFECTER_TYPE_FAULT_LED:
+		plat_set_effecter_type_fault_led_handler(buf, len, resp, resp_len);
+		break;
+	default:
+		LOG_ERR("Unsupport plat effecter type, (%d)", plat_effecter_type);
+		*completion_code_p = PLDM_PLATFORM_INVALID_EFFECTER_ID;
+		break;
+	}
+}
+
 uint8_t pldm_set_state_effecter_states(void *mctp_inst, uint8_t *buf, uint16_t len, uint8_t *resp,
 				       uint16_t *resp_len, void *ext_params)
 {
@@ -522,6 +678,9 @@ uint8_t pldm_set_state_effecter_states(void *mctp_inst, uint8_t *buf, uint16_t l
 	switch (oem_effecter_type) {
 	case OEM_EFFECTER_TYPE_GPIO:
 		oem_set_effecter_type_gpio_handler(buf, len, resp, resp_len);
+		break;
+	case OEM_EFFECTER_TYPE_PLAT:
+		oem_set_effecter_type_plat_handler(buf, len, resp, resp_len);
 		break;
 	default:
 		LOG_ERR("Unsupport effecter type, (%d)", oem_effecter_type);
