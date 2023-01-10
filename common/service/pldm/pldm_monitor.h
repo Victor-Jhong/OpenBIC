@@ -90,6 +90,7 @@ enum pldm_effecter_operational_state {
 
 enum pldm_oem_effecter_type {
 	OEM_EFFECTER_TYPE_GPIO = 0xFF,
+	OEM_EFFECTER_TYPE_PLAT = 0xE0,
 };
 
 enum set_request {
@@ -301,6 +302,9 @@ uint16_t pldm_platform_monitor_read(void *mctp_inst, mctp_ext_params ext_params,
 
 uint8_t pldm_send_platform_event(uint8_t event_class, uint16_t id, uint8_t ext_class,
 				 const uint8_t *event_data, uint8_t event_data_length);
+
+void oem_set_effecter_type_plat_handler(uint8_t *buf, uint16_t len, uint8_t *resp,
+					uint16_t *resp_len);
 
 #ifdef __cplusplus
 }

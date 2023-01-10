@@ -31,6 +31,7 @@
 #include "pldm.h"
 #include "plat_mctp.h"
 #include "plat_hook.h"
+#include "plat_class.h"
 
 LOG_MODULE_REGISTER(plat_isr);
 
@@ -97,6 +98,31 @@ void dc_on_send_cmd_to_dev()
 	send_cmd_to_dev(NULL);
 }
 
+bool is_system_fault()
+{
+	return !gpio_get(NIC_ADC_ALERT_N) | !gpio_get(SSD_0_7_ADC_ALERT_N) |
+	       !gpio_get(SSD_8_15_ADC_ALERT_N) | !gpio_get(PEX_ADC_ALERT_N) |
+	       !gpio_get(SMB_ALERT_PMBUS_R_N) | !gpio_get(SMB_ALERT_HSC_R_N);
+}
+
+void check_light_fault_led()
+{
+	if (is_system_fault()) {
+		set_system_led(FAULT_LED, SYS_LED_ON, SYS_LED_USER_BIC);
+	} else {
+		set_system_led(FAULT_LED, SYS_LED_OFF, SYS_LED_USER_BIC);
+	}
+}
+
+void check_light_dc_on_led()
+{
+	if (is_mb_dc_on()) {
+		set_system_led(POWER_LED, SYS_LED_ON, SYS_LED_USER_BIC);
+	} else {
+		set_system_led(POWER_LED, SYS_LED_OFF, SYS_LED_USER_BIC);
+	}
+}
+
 void ISR_DC_ON()
 {
 	LOG_INF("System is DC %s", is_mb_dc_on() ? "on" : "off");
@@ -105,4 +131,60 @@ void ISR_DC_ON()
 		k_work_schedule(&dc_on_send_cmd_to_dev_work, K_SECONDS(DC_ON_5_SECOND));
 		k_work_schedule(&dc_on_init_pex_work, K_SECONDS(DC_ON_5_SECOND));
 	}
+
+	check_light_dc_on_led();
+}
+
+void ISR_NIC_ADC_ALERT_N()
+{
+	if (gpio_get(NIC_ADC_ALERT_N) == 0) {
+		LOG_ERR("NIC_ADC_ALERT");
+	}
+
+	check_light_fault_led();
+}
+
+void ISR_SSD_0_7_ADC_ALERT_N()
+{
+	if (gpio_get(SSD_0_7_ADC_ALERT_N) == 0) {
+		LOG_ERR("SSD_0_7_ADC_ALERT");
+	}
+
+	check_light_fault_led();
+}
+
+void ISR_SSD_8_15_ADC_ALERT_N()
+{
+	if (gpio_get(SSD_8_15_ADC_ALERT_N) == 0) {
+		LOG_ERR("SSD_8_15_ADC_ALERT");
+	}
+
+	check_light_fault_led();
+}
+
+void ISR_PEX_ADC_ALERT_N()
+{
+	if (gpio_get(PEX_ADC_ALERT_N) == 0) {
+		LOG_ERR("PEX_ADC_ALERT");
+	}
+
+	check_light_fault_led();
+}
+
+void ISR_SMB_ALERT_PMBUS_R_N()
+{
+	if (gpio_get(SMB_ALERT_PMBUS_R_N) == 0) {
+		LOG_ERR("SMB_ALERT_PMBUS_R");
+	}
+
+	check_light_fault_led();
+}
+
+void ISR_SMB_ALERT_HSC_R_N()
+{
+	if (gpio_get(SMB_ALERT_HSC_R_N) == 0) {
+		LOG_ERR("SMB_ALERT_HSC_R");
+	}
+
+	check_light_fault_led();
 }

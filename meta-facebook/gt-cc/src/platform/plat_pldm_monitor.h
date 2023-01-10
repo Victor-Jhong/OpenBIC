@@ -14,15 +14,19 @@
  * limitations under the License.
  */
 
-#ifndef PLAT_FUNC_H
-#define PLAT_FUNC_H
+#ifndef PLAT_SDR_TABLE_H
+#define PLAT_SDR_TABLE_H
 
-void ISR_DC_ON();
-void ISR_NIC_ADC_ALERT_N();
-void ISR_SSD_0_7_ADC_ALERT_N();
-void ISR_SSD_8_15_ADC_ALERT_N();
-void ISR_PEX_ADC_ALERT_N();
-void ISR_SMB_ALERT_PMBUS_R_N();
-void ISR_SMB_ALERT_HSC_R_N();
+//Victor test
+enum oem_effecter_states_plat_led_value {
+	EFFECTER_STATE_PLAT_LED_VALUE_UNKNOWN = 0x00,
+	EFFECTER_STATE_PLAT_LED_VALUE_OFF,
+	EFFECTER_STATE_PLAT_LED_VALUE_ON,
+	EFFECTER_STATE_PLAT_LED_VALUE_MAX,
+};
+enum pldm_plat_effecter_id {
+	PLAT_EFFECTER_ID_POWER_LED = 0x00,
+	PLAT_EFFECTER_ID_FAULT_LED = 0x01,
+};
 
 #endif

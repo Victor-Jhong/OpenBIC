@@ -492,6 +492,12 @@ static void oem_set_effecter_type_gpio_handler(uint8_t *buf, uint16_t len, uint8
 	}
 }
 
+__weak void oem_set_effecter_type_plat_handler(uint8_t *buf, uint16_t len, uint8_t *resp,
+					       uint16_t *resp_len)
+{
+	return;
+}
+
 uint8_t pldm_set_state_effecter_states(void *mctp_inst, uint8_t *buf, uint16_t len, uint8_t *resp,
 				       uint16_t *resp_len, void *ext_params)
 {
@@ -522,6 +528,9 @@ uint8_t pldm_set_state_effecter_states(void *mctp_inst, uint8_t *buf, uint16_t l
 	switch (oem_effecter_type) {
 	case OEM_EFFECTER_TYPE_GPIO:
 		oem_set_effecter_type_gpio_handler(buf, len, resp, resp_len);
+		break;
+	case OEM_EFFECTER_TYPE_PLAT:
+		oem_set_effecter_type_plat_handler(buf, len, resp, resp_len);
 		break;
 	default:
 		LOG_ERR("Unsupport effecter type, (%d)", oem_effecter_type);

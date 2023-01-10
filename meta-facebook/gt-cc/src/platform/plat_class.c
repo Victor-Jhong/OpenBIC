@@ -25,11 +25,19 @@
 #include "plat_sensor_table.h"
 #include "sensor.h"
 #include "plat_class.h"
+#include "plat_hook.h"
 
 LOG_MODULE_REGISTER(plat_class);
 
 #define NUMBER_OF_ADC_CHANNEL 16
 #define AST1030_ADC_BASE_ADDR 0x7e6e9000
+
+#define IO_EXPENDER_BUS I2C_BUS5
+#define IO_EXPENDER_ADDRESS 0xEE
+#define IO_EXPENDER_PORT1_OUTPUT_OFFSET 0x03
+#define IO_EXPENDER_PORT1_CONFIG_OFFSET 0x07
+#define IO_EXPENDER_PORT1_FAULT_LED_PIN 6
+#define IO_EXPENDER_PORT1_POWER_LED_PIN 7
 
 /* ADC information for each channel
  * offset: register offset
@@ -95,4 +103,112 @@ bool get_adc_voltage(int channel, float *voltage)
 GT_STAGE_REVISION_ID get_stage_by_rev_id()
 {
 	return (gpio_get(REV_ID0) | (gpio_get(REV_ID1) << 1) | (gpio_get(REV_ID2) << 2));
+}
+
+bool set_system_led(uint8_t led_type, uint8_t set_status, uint8_t func_user)
+{
+	LOG_INF("%d set led %d status %d \n", func_user, led_type, set_status);
+
+	if ((led_type >= LED_TYPE_MAX) | (set_status >= SYS_LED_MAX) |
+	    (func_user >= SYS_LED_USER_MAX)) {
+		return false;
+	}
+
+	static uint8_t led_user = 0;
+
+	/*check who is setting LED high or low*/
+	if (set_status == SYS_LED_ON) {
+		led_user |= BIT(func_user);
+
+	} else if (set_status == SYS_LED_OFF) {
+		led_user &= ~BIT(func_user);
+
+		//fault led could not turn off if another user wants to trun on
+		if ((led_user != 0) && (led_type == FAULT_LED)) {
+			return true;
+		}
+	}
+
+	static uint8_t value_set_high = 0;
+	I2C_MSG msg = { 0 };
+	uint8_t i2c_max_retry = 5;
+
+	/*set 2 LED pin value high once*/
+	if (value_set_high == 0) {
+		msg.bus = IO_EXPENDER_BUS;
+		msg.target_addr = IO_EXPENDER_ADDRESS >> 1;
+		msg.tx_len = 1;
+		msg.rx_len = 1;
+		msg.data[0] = IO_EXPENDER_PORT1_OUTPUT_OFFSET;
+
+		if (i2c_master_read(&msg, i2c_max_retry)) {
+			LOG_ERR("write register fails after retry %d times\n", i2c_max_retry);
+			return false;
+		}
+
+		uint8_t read_write_data = msg.data[0];
+
+		/*adjust value, set 2 pin high*/
+		read_write_data |= BIT(IO_EXPENDER_PORT1_POWER_LED_PIN);
+		read_write_data |= BIT(IO_EXPENDER_PORT1_FAULT_LED_PIN);
+
+		msg.tx_len = 2;
+		msg.rx_len = 0;
+		msg.data[0] = IO_EXPENDER_PORT1_OUTPUT_OFFSET;
+		msg.data[1] = read_write_data;
+
+		if (i2c_master_write(&msg, i2c_max_retry)) {
+			LOG_ERR("write register fails after retry %d times. \n", i2c_max_retry);
+			return false;
+		}
+
+		value_set_high++;
+	}
+
+	/*set 2 LED pin input/output to set LED on/off*/
+	msg.bus = IO_EXPENDER_BUS;
+	msg.target_addr = IO_EXPENDER_ADDRESS >> 1;
+	msg.tx_len = 1;
+	msg.rx_len = 1;
+	msg.data[0] = IO_EXPENDER_PORT1_CONFIG_OFFSET;
+
+	if (i2c_master_read(&msg, i2c_max_retry)) {
+		LOG_ERR("write register fails after retry %d times\n", i2c_max_retry);
+		return false;
+	}
+
+	uint8_t read_write_data = msg.data[0];
+
+	switch (set_status) {
+	case SYS_LED_ON:
+		//set port output
+		if (led_type == POWER_LED) {
+			read_write_data &= ~BIT(IO_EXPENDER_PORT1_POWER_LED_PIN);
+		} else if (led_type == FAULT_LED) {
+			read_write_data &= ~BIT(IO_EXPENDER_PORT1_FAULT_LED_PIN);
+		}
+		break;
+	case SYS_LED_OFF:
+		//set port input
+		if (led_type == POWER_LED) {
+			read_write_data |= BIT(IO_EXPENDER_PORT1_POWER_LED_PIN);
+		} else if (led_type == FAULT_LED) {
+			read_write_data |= BIT(IO_EXPENDER_PORT1_FAULT_LED_PIN);
+		}
+		break;
+	default:
+		break;
+	}
+
+	msg.tx_len = 2;
+	msg.rx_len = 0;
+	msg.data[0] = IO_EXPENDER_PORT1_CONFIG_OFFSET;
+	msg.data[1] = read_write_data;
+
+	if (i2c_master_write(&msg, i2c_max_retry)) {
+		LOG_ERR("write register fails after retry %d times\n", i2c_max_retry);
+		return false;
+	}
+
+	return true;
 }

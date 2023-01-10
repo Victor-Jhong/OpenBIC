@@ -1343,7 +1343,7 @@ void pal_extend_sensor_config()
 {
 	uint8_t stage = get_stage_by_rev_id();
 
-	if (stage == EVT) {
+	if (stage == GT_STAGE_EVT) {
 		LOG_INF("The board is in EVT stage");
 		memcpy(&sensor_config[sensor_config_count], evt_pex_sensor_config_table,
 		       ARRAY_SIZE(evt_pex_sensor_config_table) * sizeof(sensor_cfg));
@@ -1390,7 +1390,7 @@ void pal_extend_sensor_config()
 			LOG_ERR("Unsupported VR type");
 			break;
 		}
-	} else if (stage == DVT) {
+	} else if (stage == GT_STAGE_DVT) {
 		LOG_INF("The board is in DVT stage");
 		memcpy(&sensor_config[sensor_config_count], dvt_pex_sensor_config_table,
 		       ARRAY_SIZE(dvt_pex_sensor_config_table) * sizeof(sensor_cfg));
@@ -1409,7 +1409,7 @@ uint8_t pal_get_extend_sensor_config()
 	uint8_t extend_sensor_config_size = 0;
 	uint8_t stage = get_stage_by_rev_id();
 
-	if (stage == EVT) {
+	if (stage == GT_STAGE_EVT) {
 		extend_sensor_config_size += ARRAY_SIZE(evt_pex_sensor_config_table);
 		switch (check_vr_type()) {
 		case VR_RNS_ISL69259:
@@ -1428,7 +1428,7 @@ uint8_t pal_get_extend_sensor_config()
 			LOG_ERR("Unsupported VR type");
 			break;
 		}
-	} else if (stage == DVT) {
+	} else if (stage == GT_STAGE_DVT) {
 		extend_sensor_config_size += ARRAY_SIZE(dvt_pex_sensor_config_table);
 		extend_sensor_config_size += ARRAY_SIZE(mp5990_hsc_sensor_config_table);
 		extend_sensor_config_size += ARRAY_SIZE(isl69259_vr_sensor_config_table);
