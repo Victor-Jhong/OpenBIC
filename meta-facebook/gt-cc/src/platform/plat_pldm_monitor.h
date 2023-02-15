@@ -87,4 +87,20 @@ void ssd_alert_check(uint8_t group);
 void ssd_present_check();
 void nic_present_check();
 
+enum oem_effecter_states_plat_led_value {
+	EFFECTER_STATE_PLAT_LED_VALUE_UNKNOWN = 0x00,
+	EFFECTER_STATE_PLAT_LED_VALUE_OFF,
+	EFFECTER_STATE_PLAT_LED_VALUE_ON,
+	EFFECTER_STATE_PLAT_LED_VALUE_MAX,
+};
+enum pldm_plat_effecter_id {
+	PLAT_EFFECTER_ID_POWER_LED = 0x00,
+	PLAT_EFFECTER_ID_FAULT_LED = 0x01,
+};
+
+void plat_set_effecter_fault_led_handler(const uint8_t *buf, uint16_t len, uint8_t *resp,
+					 uint16_t *resp_len);
+void plat_set_effecter_power_led_handler(const uint8_t *buf, uint16_t len, uint8_t *resp,
+					 uint16_t *resp_len);
+
 #endif
