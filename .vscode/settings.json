@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "plat_pldm_monitor.h": "c",
+        "pldm.h": "c",
+        "plat_class.h": "c"
+    }
+}

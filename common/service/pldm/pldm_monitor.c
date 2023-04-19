@@ -435,6 +435,32 @@ uint8_t pldm_set_event_receiver(void *mctp_inst, uint8_t *buf, uint16_t len, uin
 	return PLDM_SUCCESS;
 }
 
+uint8_t pldm_platform_event_message(void *mctp_inst, uint8_t *buf, uint16_t len,
+				    uint8_t instance_id, uint8_t *resp, uint16_t *resp_len,
+				    void *ext_params)
+{
+	CHECK_NULL_ARG_WITH_RETURN(mctp_inst, PLDM_ERROR);
+	CHECK_NULL_ARG_WITH_RETURN(buf, PLDM_ERROR);
+	CHECK_NULL_ARG_WITH_RETURN(resp, PLDM_ERROR);
+	CHECK_NULL_ARG_WITH_RETURN(resp_len, PLDM_ERROR);
+	CHECK_NULL_ARG_WITH_RETURN(ext_params, PLDM_ERROR);
+
+	// struct pldm_platform_event_message_req *req_p =
+	// 	(struct pldm_platform_event_message_req *)buf;
+	struct pldm_platform_event_message_resp *res_p =
+		(struct pldm_platform_event_message_resp *)resp;
+
+	res_p->completion_code = 0x00;
+	res_p->platform_event_status = 0x00;
+
+	*resp_len = 2;
+
+	LOG_INF("pldm_platform_event_message recieved \n");
+	LOG_HEXDUMP_WRN(buf, len, __func__);
+
+	return PLDM_SUCCESS;
+}
+
 void set_effecter_state_gpio_handler(const uint8_t *buf, uint16_t len, uint8_t *resp,
 				     uint16_t *resp_len, uint8_t gpio_pin)
 {
@@ -633,6 +659,7 @@ uint8_t pldm_get_state_effecter_states(void *mctp_inst, uint8_t *buf, uint16_t l
 static pldm_cmd_handler pldm_monitor_cmd_tbl[] = {
 	{ PLDM_MONITOR_CMD_CODE_GET_SENSOR_READING, pldm_get_sensor_reading },
 	{ PLDM_MONITOR_CMD_CODE_SET_EVENT_RECEIVER, pldm_set_event_receiver },
+	{ PLDM_MONITOR_CMD_CODE_PLATFORM_EVENT_MESSAGE, pldm_platform_event_message },
 	{ PLDM_MONITOR_CMD_CODE_SET_STATE_EFFECTER_STATES, pldm_set_state_effecter_states },
 	{ PLDM_MONITOR_CMD_CODE_GET_STATE_EFFECTER_STATES, pldm_get_state_effecter_states },
 };

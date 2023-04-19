@@ -25,6 +25,7 @@
 #include "plat_pmic.h"
 #include "plat_apml.h"
 #include "plat_kcs.h"
+#include "plat_mctp.h"
 #include "rg3mxxb12.h"
 #include "util_worker.h"
 
@@ -65,6 +66,7 @@ void pal_pre_init()
 
 void pal_post_init()
 {
+	plat_mctp_init();
 	kcs_init();
 }
 
