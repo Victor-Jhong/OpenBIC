@@ -141,8 +141,6 @@ static void set_dev_endpoint(void)
 	}
 }
 
-//Victor test
-
 uint8_t get_mctp_route_info(uint8_t dest_endpoint, void **mctp_inst, mctp_ext_params *ext_params)
 {
 	CHECK_NULL_ARG_WITH_RETURN(mctp_inst, MCTP_ERROR);
@@ -190,7 +188,7 @@ static void set_tid(void)
 
 	//set req data
 	struct _set_tid_req req = { 0 };
-	req.tid = 0x01; //Victor test
+	req.tid = 0x01;
 
 	pmsg.buf = (uint8_t *)&req;
 	pmsg.len = sizeof(req);
@@ -198,7 +196,8 @@ static void set_tid(void)
 	// Send request to PLDM/MCTP thread and get response
 	resp_len = mctp_pldm_read(mctp_inst, &pmsg, resp_buf, sizeof(resp_buf));
 	if (resp_len == 0) {
-		LOG_ERR("mctp_pldm_read fail");
+		LOG_ERR("mctp pldm read fail, set tid no response");
+		return;
 	}
 
 	LOG_HEXDUMP_INF(resp_buf, resp_len, "set tid");
@@ -231,7 +230,7 @@ static void set_event_receiver(void)
 
 	//set req data
 	struct pldm_set_event_receiver_req req = { 0 };
-	req.event_message_global_enable = 0x02; //Victor test
+	req.event_message_global_enable = 0x02;
 	req.transport_protocol_type = 0x00;
 	req.event_receiver_address_info = 0x0A;
 	req.heartbeat_timer = 0x0000;
@@ -242,7 +241,8 @@ static void set_event_receiver(void)
 	// Send request to PLDM/MCTP thread and get response
 	resp_len = mctp_pldm_read(mctp_inst, &pmsg, resp_buf, sizeof(resp_buf));
 	if (resp_len == 0) {
-		LOG_ERR("mctp_pldm_read fail");
+		LOG_ERR("mctp pldm read fail, set event receiver no response");
+		return;
 	}
 
 	LOG_HEXDUMP_INF(resp_buf, resp_len, "receiver response");
@@ -283,7 +283,8 @@ static void event_message_buffer_size(void)
 	// Send request to PLDM/MCTP thread and get response
 	resp_len = mctp_pldm_read(mctp_inst, &pmsg, resp_buf, sizeof(resp_buf));
 	if (resp_len == 0) {
-		LOG_ERR("mctp_pldm_read fail");
+		LOG_ERR("mctp pldm read fail, event message buffer size no response");
+		return;
 	}
 
 	LOG_HEXDUMP_INF(resp_buf, resp_len, "event message buffer size");
@@ -322,15 +323,12 @@ void send_cmd_to_dev_handler(struct k_work *work)
 {
 	/* init the device endpoint */
 	set_dev_endpoint();
-	/* get device parameters */
 
 	/**
  * test NIC card pldm 
  */
 	set_tid();
 
-	LOG_INF("prepare set_event_receiver");
-	//Victor test set event receiver
 	set_event_receiver();
 
 	event_message_buffer_size();
