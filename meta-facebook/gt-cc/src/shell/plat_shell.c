@@ -17,6 +17,7 @@
 #include <zephyr.h>
 #include <shell/shell.h>
 #include "plat_shell_e1s.h"
+#include "mctp_shell.h"
 
 /* Sub-command Level 2 of command test */
 SHELL_STATIC_SUBCMD_SET_CREATE(sub_e1s_cmds,
@@ -31,3 +32,15 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_test_cmds,
 
 /* Root of command test */
 SHELL_CMD_REGISTER(test, &sub_test_cmds, "Test commands for GT", NULL);
+
+/* shell command test */
+
+/* Sub-command Level 1 of command test */
+SHELL_STATIC_SUBCMD_SET_CREATE(sub_mctp_cmds,
+			       SHELL_CMD(mctp_control, &sub_mctp_control_cmds,
+					 "mctp_control related command", NULL),
+			       SHELL_CMD(pldm, &sub_pldm_cmds, "pldm related command", NULL),
+			       SHELL_SUBCMD_SET_END);
+
+/* Root of command test */
+SHELL_CMD_REGISTER(mctp, &sub_mctp_cmds, "mctp commands for GT", NULL);

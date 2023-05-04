@@ -51,6 +51,9 @@ void send_cmd_to_dev(struct k_timer *timer);
 void send_cmd_to_dev_handler(struct k_work *work);
 bool mctp_add_sel_to_ipmi(common_addsel_msg_t *sel_msg);
 
+mctp *find_mctp_by_smbus(uint8_t bus);
+uint8_t get_mctp_route_info(uint8_t dest_endpoint, void **mctp_inst, mctp_ext_params *ext_params);
+
 extern struct pldm_variable_field nic_vesion[];
 
 #endif /* _PLAT_MCTP_h */

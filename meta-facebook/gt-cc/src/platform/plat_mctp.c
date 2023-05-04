@@ -113,7 +113,7 @@ mctp_route_entry mctp_route_tbl[] = {
 	{ MCTP_EID_NIC_7, I2C_BUS_NIC_7, I2C_ADDR_NIC, PRSNT_NIC7_R_N },
 };
 
-static mctp *find_mctp_by_smbus(uint8_t bus)
+mctp *find_mctp_by_smbus(uint8_t bus)
 {
 	uint8_t i;
 	for (i = 0; i < ARRAY_SIZE(smbus_port); i++) {
@@ -331,8 +331,7 @@ static uint8_t mctp_msg_recv(void *mctp_p, uint8_t *buf, uint32_t len, mctp_ext_
 	return MCTP_SUCCESS;
 }
 
-static uint8_t get_mctp_route_info(uint8_t dest_endpoint, void **mctp_inst,
-				   mctp_ext_params *ext_params)
+uint8_t get_mctp_route_info(uint8_t dest_endpoint, void **mctp_inst, mctp_ext_params *ext_params)
 {
 	if (!mctp_inst || !ext_params)
 		return MCTP_ERROR;
