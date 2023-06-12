@@ -42,5 +42,7 @@ void ISR_SSD12_PRESENT();
 void ISR_SSD13_PRESENT();
 void ISR_SSD14_PRESENT();
 void ISR_SSD15_PRESENT();
+void monitor_hsc_alert_thread_init();
+bool get_hsc_alert_status();
 
 #endif

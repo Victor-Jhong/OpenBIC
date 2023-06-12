@@ -24,6 +24,8 @@
 #include "plat_hook.h"
 #include "plat_led.h"
 #include "plat_pldm_monitor.h"
+#include "plat_class.h"
+#include "plat_isr.h"
 
 LOG_MODULE_REGISTER(plat_led);
 
@@ -128,11 +130,13 @@ void light_fault_led_check()
 	bool is_alert = 0;
 	const uint8_t sys_alert_pin[] = {
 		NIC_ADC_ALERT_N, SSD_0_7_ADC_ALERT_N, SSD_8_15_ADC_ALERT_N,
-		PEX_ADC_ALERT_N, SMB_ALERT_PMBUS_R_N, SMB_ALERT_HSC_R_N,
+		PEX_ADC_ALERT_N, SMB_ALERT_PMBUS_R_N,
 	};
 
 	for (uint8_t i = 0; i < ARRAY_SIZE(sys_alert_pin); i++)
 		is_alert |= !gpio_get(sys_alert_pin[i]);
+
+	is_alert |= get_hsc_alert_status();
 
 	if (!fault_led_control(LED_CTRL_SRC_BIC, is_alert ? LED_CTRL_ON : LED_CTRL_OFF))
 		LOG_ERR("Control fault LED failed");

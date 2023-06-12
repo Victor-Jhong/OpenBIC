@@ -35,6 +35,7 @@
 #include "plat_pldm_monitor.h"
 #include "plat_led.h"
 #include "plat_pldm_fw_update.h"
+#include "plat_class.h"
 
 LOG_MODULE_REGISTER(plat_isr);
 
@@ -207,11 +208,18 @@ void ISR_VR_PMBUS_ALERT()
 	light_fault_led_check();
 }
 
+static bool is_hsc_module_alert;
+
+bool get_hsc_alert_status()
+{
+	return (get_hsc_type() == HSC_LTC4282) ? is_hsc_module_alert : !gpio_get(SMB_ALERT_HSC_R_N);
+}
+
 void ISR_HSC_SMB_ALERT()
 {
 	struct pldm_sensor_event_state_sensor_state event;
 
-	bool is_alert = !gpio_get(SMB_ALERT_HSC_R_N);
+	bool is_alert = get_hsc_alert_status();
 
 	event.sensor_offset = PLDM_STATE_SET_OFFSET_DEVICE_STATUS;
 	event.event_state = is_alert ? PLDM_STATE_SET_OEM_DEVICE_STATUS_ALERT :
@@ -227,6 +235,78 @@ void ISR_HSC_SMB_ALERT()
 		LOG_ERR("Send HSC SMB alert event log failed");
 	}
 	light_fault_led_check();
+}
+
+#define MONITOR_HSC_ALERT_STACK_SIZE 2048
+
+struct k_thread monitor_hsc_alert_thread;
+
+K_THREAD_STACK_DEFINE(monitor_hsc_alert_stack, MONITOR_HSC_ALERT_STACK_SIZE);
+
+static void monitor_hsc_alert_handler(void *arg0, void *arg1, void *arg2)
+{
+	sensor_cfg *cfg = &sensor_config[sensor_config_index_map[SENSOR_NUM_VOUT_PDB_HSC]];
+	I2C_MSG msg = { 0 };
+	msg.bus = cfg->port;
+	msg.target_addr = cfg->target_addr;
+
+	//Init reg 0x02 to enable OV_ALERT
+	if (!pre_i2c_bus_read((void *)cfg, &mux_conf_addr_0xe0[6])) {
+		LOG_ERR("Pre i2c bus read failed");
+	}
+	msg.tx_len = 0x02;
+	msg.rx_len = 0x00;
+	msg.data[0] = 0x02;
+	msg.data[1] = 0x01;
+
+	if (i2c_master_write(&msg, 5)) {
+		LOG_ERR("I2c read fail");
+		LOG_ERR("Init hsc fail");
+	}
+
+	if (!post_i2c_bus_read((void *)cfg, NULL, NULL)) {
+		LOG_ERR("post i2c bus read failed");
+	}
+
+	static bool hsc_previous_alert = 0;
+
+	while (1) {
+		if (!pre_i2c_bus_read((void *)cfg, &mux_conf_addr_0xe0[6])) {
+			LOG_ERR("Pre i2c bus read failed");
+			continue;
+		}
+		msg.tx_len = 0x01;
+		msg.rx_len = 0x01;
+		msg.data[0] = 0x1C;
+
+		if (i2c_master_read(&msg, 5)) {
+			LOG_ERR("I2c read fail");
+			continue;
+		}
+
+		if (!post_i2c_bus_read((void *)cfg, NULL, NULL)) {
+			LOG_ERR("post i2c bus read failed");
+			continue;
+		}
+
+		is_hsc_module_alert = msg.data[0] & BIT_MASK(8);
+
+		// Call ISR func on status change only
+		if (hsc_previous_alert ^ is_hsc_module_alert) {
+			ISR_HSC_SMB_ALERT();
+		}
+		hsc_previous_alert = is_hsc_module_alert;
+
+		k_msleep(1000);
+	}
+}
+
+void monitor_hsc_alert_thread_init()
+{
+	k_thread_create(&monitor_hsc_alert_thread, monitor_hsc_alert_stack,
+			K_THREAD_STACK_SIZEOF(monitor_hsc_alert_stack), monitor_hsc_alert_handler,
+			NULL, NULL, NULL, CONFIG_MAIN_THREAD_PRIORITY, 0, K_NO_WAIT);
+	k_thread_name_set(&monitor_hsc_alert_thread, "monitor_hsc_alert_handler");
 }
 
 #define ISR_SSD_PRESENT_HANDLER(idx)                                                               \

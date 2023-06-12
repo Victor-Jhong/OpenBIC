@@ -26,6 +26,7 @@
 #include "plat_class.h"
 #include "plat_pldm_monitor.h"
 #include "plat_led.h"
+#include "plat_isr.h"
 
 SCU_CFG scu_cfg[] = {
 	//register    value
@@ -62,6 +63,9 @@ void pal_post_init()
 
 	sys_led_init_and_check();
 	plat_pldm_assign_gpio_effecter_id();
+
+	if (get_hsc_type() == HSC_LTC4282)
+		monitor_hsc_alert_thread_init();
 }
 
 void pal_set_sys_status()
