@@ -26,6 +26,7 @@
 #include "plat_class.h"
 #include "plat_pldm_monitor.h"
 #include "plat_led.h"
+#include "plat_hook.h"
 
 SCU_CFG scu_cfg[] = {
 	//register    value
@@ -59,6 +60,9 @@ void pal_post_init()
 	}
 
 	gpio_set(BIC_SYS_READY_N, GPIO_LOW);
+
+	//reinit ssd temp sensor
+	ssd_drive_init();
 
 	sys_led_init_and_check();
 	plat_pldm_assign_gpio_effecter_id();

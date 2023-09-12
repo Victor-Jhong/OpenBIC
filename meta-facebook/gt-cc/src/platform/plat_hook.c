@@ -26,6 +26,7 @@
 #include "i2c-mux-tca9548.h"
 #include "pex89000.h"
 #include "pmbus.h"
+#include "nvme.h"
 
 #include <logging/log.h>
 
@@ -1141,6 +1142,61 @@ struct k_mutex *find_bus_mutex(sensor_cfg *cfg)
 		return NULL;
 
 	return mutex;
+}
+
+// bool ssd_init_drive_type(sensor_cfg *p)
+// {
+// 	bool ret = false;
+
+// 	ret = nvme_init(p);
+// 	if (ret != SENSOR_INIT_SUCCESS) {
+// 		LOG_ERR("Sensor num %d initial fail, ret %d", p->num, ret);
+// 	} else {
+// 		printf("Sensor num %d initial success, ret %d \n", p->num, ret);
+// 	}
+
+// 	return true;
+// }
+
+bool is_ssd_temp_sensor_number(uint8_t sensor_num)
+{
+	if (sensor_num >= 0x80 && sensor_num <= 0xBC && ((sensor_num & GENMASK(3, 0)) % 4 == 0))
+		return true;
+	else
+		return false;
+}
+
+//This is for ssd drive reinitialize
+void ssd_drive_init(void)
+{
+	disable_sensor_poll();
+
+	uint16_t table_index = 0;
+	uint8_t sensor_index = 0;
+
+	sensor_cfg *cfg_table = sensor_monitor_table[table_index].monitor_sensor_cfg;
+
+	for (sensor_index = 0; sensor_index < sensor_monitor_table[table_index].cfg_count;
+	     ++sensor_index) {
+		sensor_cfg *cfg = &cfg_table[sensor_index];
+
+		if (!is_ssd_temp_sensor_number(cfg->num))
+			continue;
+
+		if (cfg->read == nvme_read) {
+			LOG_INF("sensor number 0x%x cfg->read = nvme_read", cfg->num);
+			continue;
+		}
+
+		LOG_INF("sensor number 0x%x cfg->read != nvme_read", cfg->num);
+
+		nvme_init(cfg);
+		//TODO :send event message
+
+		// ssd_init_drive_type(cfg);
+	}
+
+	enable_sensor_poll();
 }
 
 bool is_mb_dc_on()
