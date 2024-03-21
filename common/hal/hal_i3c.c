@@ -319,13 +319,13 @@ int i3c_controller_write(I3C_MSG *msg)
 int i3c_set_pid(I3C_MSG *msg, uint16_t slot_pid)
 {
 	CHECK_NULL_ARG_WITH_RETURN(msg, -EINVAL);
-
+#ifdef CONFIG_I3C_ASPEED
 	int ret = i3c_set_pid_extra_info(dev_i3c[msg->bus], slot_pid);
 	if (ret != 0) {
 		LOG_ERR("Failed to set pid to bus 0x%d, ret: %d", msg->bus, ret);
 		return false;
 	}
-
+#endif
 	return true;
 }
 
@@ -591,12 +591,12 @@ int i3c_target_set_address(I3C_MSG *msg)
 	if (!dev_i3c[msg->bus]) {
 		return -ENODEV;
 	}
-
+#ifdef CONFIG_I3C_ASPEED
 	int ret = i3c_slave_set_static_addr(dev_i3c[msg->bus], msg->target_addr);
 	if (ret != 0) {
 		LOG_ERR("Failed to set address 0x%x, ret: %d", msg->target_addr, ret);
 		return -1;
 	}
-
+#endif
 	return 0;
 }

@@ -2,6 +2,8 @@ manifest:
   remotes:
     - name: aspeed
       url-base: https://github.com/AspeedTech-BMC
+    - name: nuvoton
+      url-base: https://github.com/Eddie043
 
   # Please add items below based on alphabetical order.
   # These dependencies may need updating if new features are added to the firmware.
@@ -14,6 +16,11 @@ manifest:
         name-allowlist:
           - cmsis
           - mcuboot
+
+    - name: zephyr_nuvoton
+      remote: nuvoton
+      path: zephyr_nuvoton
+      revision: c9699358904844d0a3e78cc20770801a3cc7cb46
 
   self:
     path: openbic
