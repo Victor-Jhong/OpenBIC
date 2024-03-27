@@ -1,0 +1,67 @@
+&adc0 {
+    status = "disabled";
+};
+
+&i2c1a {
+	status = "disabled";
+};
+
+&i2c3a {
+	status = "disabled";
+};
+
+&i2c4a {
+	status = "disabled";
+};
+
+&i2c5a {
+	status = "disabled";
+};
+
+&spip1 {
+    status = "disabled";
+};
+
+&usbd0 {
+    status = "disabled";
+};
+
+&jtag1 {
+    status = "disabled";
+};
+
+&i3c4 {
+    status = "disabled";
+};
+
+&i3c5 {
+    status = "disabled";
+};
+
+&peci0 {
+    status = "disabled";
+};
+
+&espi0 {
+    status = "disabled";
+};
+
+&kcs1 {
+    status = "disabled";
+};
+
+&kcs2 {
+    status = "disabled";
+};
+
+&kcs3 {
+    status = "disabled";
+};
+
+&kcs4 {
+    status = "disabled";
+};
+
+&spi_fiu0 {
+    status = "disabled";
+};

@@ -35,6 +35,10 @@ struct k_work gpio_work[TOTAL_GPIO_NUM];
 uint8_t gpio_ind_to_num_table[TOTAL_GPIO_NUM];
 uint8_t gpio_ind_to_num_table_cnt;
 
+static const char *gpio_dev_str[] = {
+    FOREACH_GPIO(GEN_STR)
+};
+
 __weak char *gpio_name[] = {};
 GPIO_CFG gpio_cfg[GPIO_CFG_SIZE] = {
 	//  chip,      number,   is_init, direction,    status,     property,    int_type,           int_cb
@@ -42,12 +46,32 @@ GPIO_CFG gpio_cfg[GPIO_CFG_SIZE] = {
 };
 
 uint32_t GPIO_GROUP_REG_ACCESS[GPIO_GROUP_NUM] = {
+#if defined(CONFIG_GPIO_ASPEED)
 	REG_GPIO_BASE + 0x00, /* GPIO_A/B/C/D Data Value Register */
 	REG_GPIO_BASE + 0x20, /* GPIO_E/F/G/H Data Value Register */
 	REG_GPIO_BASE + 0x70, /* GPIO_I/J/K/L Data Value Register */
 	REG_GPIO_BASE + 0x78, /* GPIO_M/N/O/P Data Value Register */
 	REG_GPIO_BASE + 0x80, /* GPIO_Q/R/S/T Data Value Register */
 	REG_GPIO_BASE + 0x88, /* GPIO_U Data Value Register */
+#elif(CONFIG_GPIO_NPCM4XX)
+	REG_GPIO_BASE, 			 /* GPIO_0 Register */
+	REG_GPIO_BASE + 0x2000,  /* GPIO_1 Register */
+	REG_GPIO_BASE + 0x4000,  /* GPIO_2 Register */
+	REG_GPIO_BASE + 0x6000,  /* GPIO_3 Register */
+	REG_GPIO_BASE + 0x8000,  /* GPIO_4 Register */
+	REG_GPIO_BASE + 0xA000,  /* GPIO_5 Register */
+	REG_GPIO_BASE + 0xC000,  /* GPIO_6 Register */
+	REG_GPIO_BASE + 0xE000,  /* GPIO_7 Register */
+	REG_GPIO_BASE + 0x10000, /* GPIO_8 Register */
+	REG_GPIO_BASE + 0x12000, /* GPIO_9 Register */
+	REG_GPIO_BASE + 0x14000, /* GPIO_A Register */
+	REG_GPIO_BASE + 0x16000, /* GPIO_B Register */
+	REG_GPIO_BASE + 0x18000, /* GPIO_C Register */
+	REG_GPIO_BASE + 0x1A000, /* GPIO_D Register */
+	REG_GPIO_BASE + 0x1C000, /* GPIO_E Register */
+	REG_GPIO_BASE + 0x1E000  /* GPIO_F Register */
+#else /* defined(CONFIG_GPIO_ASPEED) */
+#endif /* defined(CONFIG_GPIO_ASPEED) */
 };
 
 uint32_t GPIO_MULTI_FUNC_PIN_CTL_REG_ACCESS[] = {
@@ -80,22 +104,18 @@ __weak bool plat_gpio_immediate_int_cb(uint8_t gpio_num)
 
 void irq_callback(const struct device *dev, struct gpio_callback *cb, uint32_t pins)
 {
-	uint8_t group, index, gpio_num;
+	uint8_t index, gpio_num;
+	uint8_t group = 0xFF;
 
-	if (dev == dev_gpio[GPIO_A_D]) {
-		group = GPIO_A_D;
-	} else if (dev == dev_gpio[GPIO_E_H]) {
-		group = GPIO_E_H;
-	} else if (dev == dev_gpio[GPIO_I_L]) {
-		group = GPIO_I_L;
-	} else if (dev == dev_gpio[GPIO_M_P]) {
-		group = GPIO_M_P;
-	} else if (dev == dev_gpio[GPIO_Q_T]) {
-		group = GPIO_Q_T;
-	} else if (dev == dev_gpio[GPIO_U_V]) {
-		group = GPIO_U_V;
-	} else {
-		LOG_ERR("Invalid dev group for isr cb");
+	for (int i = 0; i < ARRAY_SIZE(dev_gpio); i++) {
+		if (dev == dev_gpio[i]) {
+			group = i;
+			break;
+		}
+	}
+
+	if (group == 0xFF) {
+		LOG_ERR("Invalid gpio dev for isr cb");
 		return;
 	}
 
@@ -130,11 +150,17 @@ static void gpio_init_cb(uint8_t gpio_num)
 
 static int gpio_add_cb(uint8_t gpio_num)
 {
+	if (!dev_gpio[gpio_num / GPIO_GROUP_SIZE])
+		return -1;
+
 	return gpio_add_callback(dev_gpio[gpio_num / GPIO_GROUP_SIZE], &callbacks[gpio_num]);
 }
 
 int gpio_interrupt_conf(uint8_t gpio_num, gpio_flags_t flags)
 {
+	if (!dev_gpio[gpio_num / GPIO_GROUP_SIZE])
+		return -1;
+
 	return gpio_pin_interrupt_configure(dev_gpio[gpio_num / GPIO_GROUP_SIZE],
 					    (gpio_num % GPIO_GROUP_SIZE), flags);
 }
@@ -160,8 +186,11 @@ void gpio_cb_irq_init(uint8_t gpio_num, gpio_flags_t flags)
 	k_work_init(&gpio_work[gpio_num], gpio_cfg[gpio_num].int_cb);
 }
 
-uint8_t gpio_conf(uint8_t gpio_num, int dir)
+int gpio_conf(uint8_t gpio_num, int dir)
 {
+	if (!dev_gpio[gpio_num / GPIO_GROUP_SIZE])
+		return -1;
+
 	return gpio_pin_configure(dev_gpio[gpio_num / GPIO_GROUP_SIZE],
 				  (gpio_num % GPIO_GROUP_SIZE), dir);
 }
@@ -193,6 +222,9 @@ int gpio_get(uint8_t gpio_num)
 		return false;
 	}
 
+	if (!dev_gpio[gpio_num / GPIO_GROUP_SIZE])
+		return false;
+
 	return gpio_pin_get(dev_gpio[gpio_num / GPIO_GROUP_SIZE], (gpio_num % GPIO_GROUP_SIZE));
 }
 
@@ -200,11 +232,14 @@ int gpio_set(uint8_t gpio_num, uint8_t status)
 {
 	if (gpio_num >= TOTAL_GPIO_NUM) {
 		LOG_ERR("Unable to set invalid gpio number %d", gpio_num);
-		return false;
+		return -1;
 	}
 
 	uint8_t gpio_group = gpio_num / GPIO_GROUP_SIZE;
 	uint8_t gpio_group_index = gpio_num % GPIO_GROUP_SIZE;
+
+	if (!dev_gpio[gpio_group])
+		return -1;
 
 	if (gpio_cfg[gpio_num].property == OPEN_DRAIN) { // should release gpio ctrl for OD high
 		if (status == GPIO_HIGH) {
@@ -231,24 +266,8 @@ void gpio_index_to_num(void)
 
 void init_gpio_dev(void)
 {
-#ifdef DEV_GPIO_A_D
-	dev_gpio[GPIO_A_D] = device_get_binding("GPIO0_A_D");
-#endif
-#ifdef DEV_GPIO_E_H
-	dev_gpio[GPIO_E_H] = device_get_binding("GPIO0_E_H");
-#endif
-#ifdef DEV_GPIO_I_L
-	dev_gpio[GPIO_I_L] = device_get_binding("GPIO0_I_L");
-#endif
-#ifdef DEV_GPIO_M_P
-	dev_gpio[GPIO_M_P] = device_get_binding("GPIO0_M_P");
-#endif
-#ifdef DEV_GPIO_Q_T
-	dev_gpio[GPIO_Q_T] = device_get_binding("GPIO0_Q_T");
-#endif
-#ifdef DEV_GPIO_U_V
-	dev_gpio[GPIO_U_V] = device_get_binding("GPIO0_U_V");
-#endif
+	for (int i = 0; i < GPIO_GROUP_NUM; i++)
+		dev_gpio[i] = device_get_binding(gpio_dev_str[i]);
 }
 
 void scu_init(SCU_CFG cfg[], size_t size)
@@ -283,6 +302,10 @@ int gpio_init(const struct device *args)
 			   K_PRIO_PREEMPT(CONFIG_MAIN_THREAD_PRIORITY), NULL);
 	k_thread_name_set(&gpio_work_queue.thread, "gpio_workq");
 
+	LOG_INF("TOTAL_GPIO_NUM: %d", TOTAL_GPIO_NUM);
+	for (i = 0; i < ARRAY_SIZE(gpio_dev_str); i++)
+		LOG_INF("gpio_dev_str[%d]: %s", i, gpio_dev_str[i]);
+
 	for (i = 0; i < TOTAL_GPIO_NUM; i++) {
 		if (gpio_cfg[i].is_init == ENABLE) {
 			if ((gpio_cfg[i].is_latch == ENABLE) && !is_ac_lost()) {
@@ -291,6 +314,12 @@ int gpio_init(const struct device *args)
 			if (gpio_cfg[i].chip == CHIP_GPIO) {
 				gpio_group = gpio_cfg[i].number / GPIO_GROUP_SIZE;
 				gpio_group_index = gpio_cfg[i].number % GPIO_GROUP_SIZE;
+
+				if (!dev_gpio[gpio_group]) {
+					LOG_ERR("Invalid gpio group %d", gpio_group);
+					continue;
+				}
+
 				switch (gpio_cfg[i].direction) {
 				case GPIO_INPUT:
 					gpio_conf(gpio_cfg[i].number, gpio_cfg[i].direction);
