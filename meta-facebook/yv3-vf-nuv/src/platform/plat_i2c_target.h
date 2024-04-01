@@ -14,33 +14,13 @@
  * limitations under the License.
  */
 
-#ifndef PLAT_I2C_h
-#define PLAT_I2C_h
+#ifndef PLAT_I2C_SLAVE_H
+#define PLAT_I2C_SLAVE_H
 
-#include "hal_i2c.h"
+#include <drivers/i2c.h>
+#include "hal_i2c_target.h"
 
-// map i2c bus to peripherial bus
-// i2c peripheral 1 based, as used i2c index 0 in firmware.
-#define I2C_BUS1 0
-#define I2C_BUS2 1
-#define I2C_BUS3 2
-#define I2C_BUS4 3
-#define I2C_BUS5 4
-
-// for build code pass
-#define I2C_BUS6 I2C_BUS1
-#define I2C_BUS7 I2C_BUS1
-#define I2C_BUS8 I2C_BUS1
-#define I2C_BUS9 I2C_BUS1
-#define I2C_BUS10 I2C_BUS1
-
-#define I2C_BUS_M2A I2C_BUS6
-#define I2C_BUS_M2B I2C_BUS5
-#define I2C_BUS_M2C I2C_BUS4
-#define I2C_BUS_M2D I2C_BUS3
-
-#define I2C_BUS_MB_CPLD I2C_BUS1
-
-#define I2C_BUS_MAX_NUM 5
+#define TARGET_ENABLE 1
+#define TARGET_DISABLE 0
 
 #endif

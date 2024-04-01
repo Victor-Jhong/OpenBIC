@@ -37,6 +37,11 @@
 #include <logging/log.h>
 #include <logging/log_ctrl.h>
 
+__weak void pal_pre_init_i2c_test()
+{
+	return;
+}
+
 __weak void pal_pre_init()
 {
 	return;
@@ -62,12 +67,14 @@ void main(void)
 	printf("Hello, welcome to %s %s %x%x.%x.%x\n", PLATFORM_NAME, PROJECT_NAME, BIC_FW_YEAR_MSB,
 	       BIC_FW_YEAR_LSB, BIC_FW_WEEK, BIC_FW_VER);
 
-	while (1)
-		k_msleep(1000);
-
 	wdt_init();
 	util_init_timer();
 	util_init_I2C();
+	pal_pre_init_i2c_test();
+	
+		while (1)
+		k_msleep(1000);
+
 	util_init_i3c();
 	pal_pre_init();
 	sensor_init();

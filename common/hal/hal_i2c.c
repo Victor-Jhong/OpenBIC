@@ -27,6 +27,7 @@
 
 LOG_MODULE_REGISTER(hal_i2c);
 
+// #if defined(CONFIG_I2C_ASPEED)  //keep for build code pass
 #define AST_1030_I2C_BASE 0x7e7b0080
 #define AST_1030_I2C_REG_LEN 0x80
 #define AST_1030_SLAVE_EN BIT(1)
@@ -34,6 +35,25 @@ LOG_MODULE_REGISTER(hal_i2c);
 /* 0x40 : Slave Device Address Register */
 #define AST_I2CS_ADDR_CTRL 0x40
 #define AST_I2CS_ADDR1_MASK 0x7F
+
+// #elif(CONFIG_I2C_NPCM4XX)
+#define NPCM4XX_I2C_BASE 0x40003000
+#define NPCM4XX_I2C_REG_LEN 0x1000
+
+
+#define NPCM4XX_SMBnST 0x02
+
+#define NPCM4XX_SMBnCTL1 0x06
+#define NPCM4XX_SMBnCTL1_INTEN  2
+#define NPCM4XX_SMBnCTL1_NMINTE 6
+
+#define NPCM4XX_SMBnADDR1 0x08
+#define NPCM4XX_I2CS_ADDR1_MASK 0x7F
+#define NPCM4XX_SMBnADDR_SAEN 7
+// #else
+// #error "Unsupported I2C driver"
+// #endif /* CONFIG_I2C_ASPEED */
+
 
 static const struct device *dev_i2c[I2C_BUS_MAX_NUM];
 
@@ -71,9 +91,24 @@ int i2c_addr_set(uint8_t i2c_bus, uint8_t i2c_addr)
 
 	i2c_addr = i2c_addr >> 1; // to 7-bit target address
 
+	#if defined(CONFIG_I2C_ASPEED)
 	uint32_t base = AST_1030_I2C_BASE + (i2c_bus * AST_1030_I2C_REG_LEN);
 	sys_write32(i2c_addr | (sys_read32(base + AST_I2CS_ADDR_CTRL) & ~AST_I2CS_ADDR1_MASK),
 		    base + AST_I2CS_ADDR_CTRL);
+	#elif(CONFIG_I2C_NPCM4XX)
+	uint32_t base = NPCM4XX_I2C_BASE + ((i2c_bus + 1) * NPCM4XX_I2C_REG_LEN);
+
+	//i2c bus index is 0 based.
+	if((i2c_addr == 0)) {
+		sys_write8((sys_read8(base + NPCM4XX_SMBnADDR1) & ~BIT(NPCM4XX_SMBnADDR_SAEN)), base + NPCM4XX_SMBnADDR1);
+	} else if((i2c_addr != 0)){
+		/* set slave addr 1 */
+		sys_write8( ((i2c_addr | (sys_read8(base + NPCM4XX_SMBnADDR1) & ~NPCM4XX_I2CS_ADDR1_MASK)) | BIT(NPCM4XX_SMBnADDR_SAEN)),
+				base + NPCM4XX_SMBnADDR1);
+	}
+	#else
+	#error "Unsupported I2C driver"
+	#endif /* CONFIG_I2C_ASPEED */
 
 	return 0;
 }
@@ -376,6 +411,7 @@ void util_init_I2C(void)
 	if (status)
 		LOG_ERR("i2c4 mutex init fail");
 #endif
+#if defined(CONFIG_I2C_ASPEED)
 #ifdef DEV_I2C_5
 	dev_i2c[5] = device_get_binding("I2C_5");
 	status = k_mutex_init(&i2c_mutex[5]);
@@ -442,6 +478,7 @@ void util_init_I2C(void)
 	if (status)
 		LOG_ERR("i2c15 mutex init fail");
 #endif
+#endif /* CONFIG_I2C_ASPEED */
 }
 
 int check_i2c_bus_valid(uint8_t bus)

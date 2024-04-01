@@ -31,6 +31,8 @@
 #include "plat_led.h"
 #include "plat_gpio.h"
 #include "plat_util.h"
+#include "plat_i2c.h"
+#include "plat_i2c_target.h"
 #include <logging/log.h>
 
 LOG_MODULE_REGISTER(plat_init);
@@ -47,6 +49,36 @@ static void BICup5secTickHandler(struct k_work *work);
 
 K_WORK_DELAYABLE_DEFINE(up_1sec_handler, BICup1secTickHandler);
 K_WORK_DELAYABLE_DEFINE(up_5sec_handler, BICup5secTickHandler);
+
+void pal_pre_init_i2c_test()
+{
+	/* init i2c target */
+	for (int index = 0; index < MAX_TARGET_NUM; index++) {
+		if (I2C_TARGET_ENABLE_TABLE[index])
+			i2c_target_control(
+				index, (struct _i2c_target_config *)&I2C_TARGET_CONFIG_TABLE[index],
+				1);
+	}
+
+	I2C_MSG msg = { 0 };
+
+	msg.bus = I2C_BUS4; //I2C5A
+	msg.target_addr = 0x40;
+	msg.tx_len = 2;
+	msg.rx_len = 0;
+	msg.data[0] = 0x01;
+	msg.data[1] = 0x01;
+
+	if (i2c_master_write(&msg, 5)) {
+		printf("Read SELF_I2C_ADDRESS failed\n");
+		return;
+	}
+
+	printf("Read SELF_I2C_ADDRESS success\n");
+
+}
+
+
 
 void pal_pre_init()
 {
