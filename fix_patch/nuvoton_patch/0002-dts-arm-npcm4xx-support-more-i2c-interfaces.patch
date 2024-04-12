@@ -1,0 +1,427 @@
+From b4a0e58bef34f940dfc7846ccf00c0372874b536 Mon Sep 17 00:00:00 2001
+From: Tyrone Ting <kfting@nuvoton.com>
+Date: Wed, 10 Apr 2024 14:25:06 +0800
+Subject: [PATCH] dts: arm: npcm4xx: support more i2c interfaces
+
+Following i2c interfaces are disabled by default:
+
+1. i2c1b
+2. i2c4b
+3. i2c6a
+4. i2c6b
+
+Signed-off-by: Tyrone Ting <kfting@nuvoton.com>
+---
+ boards/arm/npcm400f_evb/fun_def_list.h       |  36 ++++++
+ boards/arm/npcm400f_evb/npcm400f_evb.dts     |  45 +++++++
+ dts/arm/nuvoton/npcm4xx.dtsi                 | 116 ++++++++++++++++++-
+ dts/arm/nuvoton/npcm4xx/npcm4xx-pinctrl.dtsi |   9 ++
+ soc/arm/npcm4xx/npcm400f/sig_def_list.h      |  63 ++++++++++
+ 5 files changed, 265 insertions(+), 4 deletions(-)
+
+diff --git a/boards/arm/npcm400f_evb/fun_def_list.h b/boards/arm/npcm400f_evb/fun_def_list.h
+index 282f33f0d1..d9d27c5151 100644
+--- a/boards/arm/npcm400f_evb/fun_def_list.h
++++ b/boards/arm/npcm400f_evb/fun_def_list.h
+@@ -21,6 +21,10 @@ FUN_DEFINE(DT_NODELABEL(pinctrl_i2c1a_default), SCL1A, SDA1A)
+ FUN_DEFINE(DT_NODELABEL(pinctrl_i2c1b_default), SCL1B, SDA1B)
+ #endif
+ 
++#if DT_NODE_HAS_STATUS(DT_NODELABEL(i2c2a), okay) && CONFIG_I2C_NPCM4XX
++FUN_DEFINE(DT_NODELABEL(pinctrl_i2c2a_default), SCL2A, SDA2A)
++#endif
++
+ #if DT_NODE_HAS_STATUS(DT_NODELABEL(i2c3a), okay) && CONFIG_I2C_NPCM4XX
+ FUN_DEFINE(DT_NODELABEL(pinctrl_i2c3a_default), SCL3A, SDA3A)
+ #endif
+@@ -29,6 +33,10 @@ FUN_DEFINE(DT_NODELABEL(pinctrl_i2c3a_default), SCL3A, SDA3A)
+ FUN_DEFINE(DT_NODELABEL(pinctrl_i2c4a_default), SCL4A, SDA4A)
+ #endif
+ 
++#if DT_NODE_HAS_STATUS(DT_NODELABEL(i2c4b), okay) && CONFIG_I2C_NPCM4XX
++FUN_DEFINE(DT_NODELABEL(pinctrl_i2c4b_default), SCL4B, SDA4B)
++#endif
++
+ #if DT_NODE_HAS_STATUS(DT_NODELABEL(i2c5a), okay) && CONFIG_I2C_NPCM4XX
+ FUN_DEFINE(DT_NODELABEL(pinctrl_i2c5a_default), SCL5A, SDA5A)
+ #endif
+@@ -37,6 +45,34 @@ FUN_DEFINE(DT_NODELABEL(pinctrl_i2c5a_default), SCL5A, SDA5A)
+ FUN_DEFINE(DT_NODELABEL(pinctrl_i2c6a_default), SCL6A, SDA6A)
+ #endif
+ 
++#if DT_NODE_HAS_STATUS(DT_NODELABEL(i2c6b), okay) && CONFIG_I2C_NPCM4XX
++FUN_DEFINE(DT_NODELABEL(pinctrl_i2c6b_default), SCL6B, SDA6B)
++#endif
++
++#if DT_NODE_HAS_STATUS(DT_NODELABEL(i2c7a), okay) && CONFIG_I2C_NPCM4XX
++FUN_DEFINE(DT_NODELABEL(pinctrl_i2c7a_default), SCL7A, SDA7A)
++#endif
++
++#if DT_NODE_HAS_STATUS(DT_NODELABEL(i2c8a), okay) && CONFIG_I2C_NPCM4XX
++FUN_DEFINE(DT_NODELABEL(pinctrl_i2c8a_default), SCL8A, SDA8A)
++#endif
++
++#if DT_NODE_HAS_STATUS(DT_NODELABEL(i2c9a), okay) && CONFIG_I2C_NPCM4XX
++FUN_DEFINE(DT_NODELABEL(pinctrl_i2c9a_default), SCL9A, SDA9A)
++#endif
++
++#if DT_NODE_HAS_STATUS(DT_NODELABEL(i2c10a), okay) && CONFIG_I2C_NPCM4XX
++FUN_DEFINE(DT_NODELABEL(pinctrl_i2c10a_default), SCL10A, SDA10A)
++#endif
++
++#if DT_NODE_HAS_STATUS(DT_NODELABEL(i2c11a), okay) && CONFIG_I2C_NPCM4XX
++FUN_DEFINE(DT_NODELABEL(pinctrl_i2c11a_default), SCL11A, SDA11A)
++#endif
++
++#if DT_NODE_HAS_STATUS(DT_NODELABEL(i2c12a), okay) && CONFIG_I2C_NPCM4XX
++FUN_DEFINE(DT_NODELABEL(pinctrl_i2c12a_default), SCL12A, SDA12A)
++#endif
++
+ #if DT_NODE_HAS_STATUS(DT_NODELABEL(peci0), okay) && CONFIG_PECI_NPCM4XX
+ FUN_DEFINE(DT_NODELABEL(pinctrl_peci0_default), PECI)
+ #endif
+diff --git a/boards/arm/npcm400f_evb/npcm400f_evb.dts b/boards/arm/npcm400f_evb/npcm400f_evb.dts
+index 81b55f969e..ea9478870c 100644
+--- a/boards/arm/npcm400f_evb/npcm400f_evb.dts
++++ b/boards/arm/npcm400f_evb/npcm400f_evb.dts
+@@ -117,6 +117,11 @@
+ 	status = "okay";
+ };
+ 
++&i2c2a {
++	clock-frequency = <I2C_BITRATE_STANDARD>;
++	status = "okay";
++};
++
+ &i2c3a {
+ 	clock-frequency = <I2C_BITRATE_FAST>;
+ 	status = "okay";
+@@ -137,11 +142,51 @@
+ 	status = "disabled";
+ };
+ 
++&i2c7a {
++	clock-frequency = <I2C_BITRATE_STANDARD>;
++	status = "okay";
++};
++
++&i2c8a {
++	clock-frequency = <I2C_BITRATE_STANDARD>;
++	status = "okay";
++};
++
++&i2c9a {
++	clock-frequency = <I2C_BITRATE_STANDARD>;
++	status = "okay";
++};
++
++&i2c10a {
++	clock-frequency = <I2C_BITRATE_STANDARD>;
++	status = "okay";
++};
++
++&i2c11a {
++	clock-frequency = <I2C_BITRATE_STANDARD>;
++	status = "okay";
++};
++
++&i2c12a {
++	clock-frequency = <I2C_BITRATE_STANDARD>;
++	status = "okay";
++};
++
+ &i2c1b {
+ 	clock-frequency = <700000>;
+ 	status = "disabled";
+ };
+ 
++&i2c4b {
++	clock-frequency = <I2C_BITRATE_STANDARD>;
++	status = "disabled";
++};
++
++&i2c6b {
++	clock-frequency = <I2C_BITRATE_STANDARD>;
++	status = "disabled";
++};
++
+ &adc0 {
+ 	status = "okay";
+ 	/* Pin D7 have three type VIN16, THR16, TD2P, so it must only select one type for pin.
+diff --git a/dts/arm/nuvoton/npcm4xx.dtsi b/dts/arm/nuvoton/npcm4xx.dtsi
+index 4417780d34..5f505bbf81 100644
+--- a/dts/arm/nuvoton/npcm4xx.dtsi
++++ b/dts/arm/nuvoton/npcm4xx.dtsi
+@@ -313,6 +313,18 @@
+ 			status = "disabled";
+ 		};
+ 
++		i2c2a: i2c_a@40006200 {
++			compatible = "nuvoton,npcm4xx-i2c";
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x40006200 0x200>;
++			interrupts = <0 3>;
++			clocks = <&pcc NPCM4XX_CLOCK_BUS_APB3 NPCM4XX_PWDWN_CTL3 1>;
++			pinctrl-0 = <&pinctrl_i2c2a_default>;
++			label = "I2C_1";
++			status = "disabled";
++		};
++
+ 		i2c3a: i2c_a@40006400 {
+ 			compatible = "nuvoton,npcm4xx-i2c";
+ 			#address-cells = <1>;
+@@ -321,7 +333,7 @@
+ 			interrupts = <37 3>;
+ 			clocks = <&pcc NPCM4XX_CLOCK_BUS_APB3 NPCM4XX_PWDWN_CTL3 2>;
+ 			pinctrl-0 = <&pinctrl_i2c3a_default>;
+-			label = "I2C_1";
++			label = "I2C_2";
+ 			status = "disabled";
+ 		};
+ 
+@@ -333,7 +345,7 @@
+ 			interrupts = <38 3>;
+ 			clocks = <&pcc NPCM4XX_CLOCK_BUS_APB3 NPCM4XX_PWDWN_CTL3 3>;
+ 			pinctrl-0 = <&pinctrl_i2c4a_default>;
+-			label = "I2C_2";
++			label = "I2C_3";
+ 			status = "disabled";
+ 		};
+ 
+@@ -345,7 +357,7 @@
+ 			interrupts = <39 3>;
+ 			clocks = <&pcc NPCM4XX_CLOCK_BUS_APB3 NPCM4XX_PWDWN_CTL3 4>;
+ 			pinctrl-0 = <&pinctrl_i2c5a_default>;
+-			label = "I2C_3";
++			label = "I2C_4";
+ 			status = "disabled";
+ 		};
+ 
+@@ -357,7 +369,79 @@
+ 			interrupts = <20 3>;
+ 			clocks = <&pcc NPCM4XX_CLOCK_BUS_APB3 NPCM4XX_PWDWN_CTL3 5>;
+ 			pinctrl-0 = <&pinctrl_i2c6a_default>;
+-			label = "I2C_4";
++			label = "I2C_5";
++			status = "disabled";
++		};
++
++		i2c7a: i2c_a@40006c00 {
++			compatible = "nuvoton,npcm4xx-i2c";
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x40006c00 0x200>;
++			interrupts = <70 3>;
++			clocks = <&pcc NPCM4XX_CLOCK_BUS_APB3 NPCM4XX_PWDWN_CTL7 0>;
++			pinctrl-0 = <&pinctrl_i2c7a_default>;
++			label = "I2C_6";
++			status = "disabled";
++		};
++
++		i2c8a: i2c_a@40006e00 {
++			compatible = "nuvoton,npcm4xx-i2c";
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x40006e00 0x200>;
++			interrupts = <71 3>;
++			clocks = <&pcc NPCM4XX_CLOCK_BUS_APB3 NPCM4XX_PWDWN_CTL7 1>;
++			pinctrl-0 = <&pinctrl_i2c8a_default>;
++			label = "I2C_7";
++			status = "disabled";
++		};
++
++		i2c9a: i2c_a@40007000 {
++			compatible = "nuvoton,npcm4xx-i2c";
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x40007000 0x200>;
++			interrupts = <72 3>;
++			clocks = <&pcc NPCM4XX_CLOCK_BUS_APB3 NPCM4XX_PWDWN_CTL7 2>;
++			pinctrl-0 = <&pinctrl_i2c9a_default>;
++			label = "I2C_8";
++			status = "disabled";
++		};
++
++		i2c10a: i2c_a@40007200 {
++			compatible = "nuvoton,npcm4xx-i2c";
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x40007200 0x200>;
++			interrupts = <73 3>;
++			clocks = <&pcc NPCM4XX_CLOCK_BUS_APB3 NPCM4XX_PWDWN_CTL7 3>;
++			pinctrl-0 = <&pinctrl_i2c10a_default>;
++			label = "I2C_9";
++			status = "disabled";
++		};
++
++		i2c11a: i2c_a@40007400 {
++			compatible = "nuvoton,npcm4xx-i2c";
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x40007400 0x200>;
++			interrupts = <74 3>;
++			clocks = <&pcc NPCM4XX_CLOCK_BUS_APB3 NPCM4XX_PWDWN_CTL7 4>;
++			pinctrl-0 = <&pinctrl_i2c11a_default>;
++			label = "I2C_10";
++			status = "disabled";
++		};
++
++		i2c12a: i2c_a@40007600 {
++			compatible = "nuvoton,npcm4xx-i2c";
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x40007600 0x200>;
++			interrupts = <75 3>;
++			clocks = <&pcc NPCM4XX_CLOCK_BUS_APB3 NPCM4XX_PWDWN_CTL7 5>;
++			pinctrl-0 = <&pinctrl_i2c12a_default>;
++			label = "I2C_11";
+ 			status = "disabled";
+ 		};
+ 
+@@ -373,6 +457,30 @@
+ 			status = "disabled";
+ 		};
+ 
++		i2c4b: i2c_b@40006600 {
++			compatible = "nuvoton,npcm4xx-i2c";
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x40006600 0x200>;
++			interrupts = <38 3>;
++			clocks = <&pcc NPCM4XX_CLOCK_BUS_APB3 NPCM4XX_PWDWN_CTL3 3>;
++			pinctrl-0 = <&pinctrl_i2c4b_default>;
++			label = "I2C_3";
++			status = "disabled";
++		};
++
++		i2c6b: i2c_b@40006a00 {
++			compatible = "nuvoton,npcm4xx-i2c";
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x40006a00 0x200>;
++			interrupts = <20 3>;
++			clocks = <&pcc NPCM4XX_CLOCK_BUS_APB3 NPCM4XX_PWDWN_CTL3 5>;
++			pinctrl-0 = <&pinctrl_i2c6b_default>;
++			label = "I2C_5";
++			status = "disabled";
++		};
++
+ 		tach1: tach@400e1000 {
+ 			compatible = "nuvoton,npcx-tach";
+ 			reg = <0x400e1000 0x2000>;
+diff --git a/dts/arm/nuvoton/npcm4xx/npcm4xx-pinctrl.dtsi b/dts/arm/nuvoton/npcm4xx/npcm4xx-pinctrl.dtsi
+index fee4b2167b..0b27d00544 100644
+--- a/dts/arm/nuvoton/npcm4xx/npcm4xx-pinctrl.dtsi
++++ b/dts/arm/nuvoton/npcm4xx/npcm4xx-pinctrl.dtsi
+@@ -8,10 +8,19 @@
+ 	pinctrl_uart1_default: uart1_default {};
+ 	pinctrl_i2c1a_default: i2c1a_default {};
+ 	pinctrl_i2c1b_default: i2c1b_default {};
++	pinctrl_i2c2a_default: i2c2a_default {};
+ 	pinctrl_i2c3a_default: i2c3a_default {};
+ 	pinctrl_i2c4a_default: i2c4a_default {};
++	pinctrl_i2c4b_default: i2c4b_default {};
+ 	pinctrl_i2c5a_default: i2c5a_default {};
+ 	pinctrl_i2c6a_default: i2c6a_default {};
++	pinctrl_i2c6b_default: i2c6b_default {};
++	pinctrl_i2c7a_default: i2c7a_default {};
++	pinctrl_i2c8a_default: i2c8a_default {};
++	pinctrl_i2c9a_default: i2c9a_default {};
++	pinctrl_i2c10a_default: i2c10a_default {};
++	pinctrl_i2c11a_default: i2c11a_default {};
++	pinctrl_i2c12a_default: i2c12a_default {};
+ 	pinctrl_peci0_default: peci0_default {};
+ 	pinctrl_shd_spi_default: shd_spi_default{};
+ 	pinctrl_shd_spi_quad: shd_spi_quad{};
+diff --git a/soc/arm/npcm4xx/npcm400f/sig_def_list.h b/soc/arm/npcm4xx/npcm400f/sig_def_list.h
+index 6b9f26f4a2..fab4e0803f 100644
+--- a/soc/arm/npcm4xx/npcm400f/sig_def_list.h
++++ b/soc/arm/npcm4xx/npcm400f/sig_def_list.h
+@@ -79,6 +79,13 @@ SIG_DEFINE(SCL1B, M5, SIG_DESC_CLEAR(0x16, 2), SIG_DESC_CLEAR(0x16, 3), SIG_DESC
+ SIG_DEFINE(SDA1B, L5, SIG_DESC_CLEAR(0x16, 2), SIG_DESC_CLEAR(0x16, 3), SIG_DESC_SET(0x1A, 5))
+ #endif
+ 
++#if DT_NODE_HAS_STATUS(DT_NODELABEL(i2c2a), okay) && CONFIG_I2C_NPCM4XX
++/* DEVALTE */
++SIG_DEFINE(SCL2A, F3, SIG_DESC_SET(0x1E, 5))
++/* DEVALTE */
++SIG_DEFINE(SDA2A, G3, SIG_DESC_SET(0x1E, 5))
++#endif
++
+ #if DT_NODE_HAS_STATUS(DT_NODELABEL(i2c3a), okay) && CONFIG_I2C_NPCM4XX
+ /* DEVALT31, DEVALTA */
+ SIG_DEFINE(SCL3A, B2, SIG_DESC_CLEAR(0x31, 3), SIG_DESC_SET(0x1A, 1))
+@@ -93,6 +100,13 @@ SIG_DEFINE(SCL4A, L7, SIG_DESC_CLEAR(0x16, 2), SIG_DESC_CLEAR(0x17, 5), SIG_DESC
+ SIG_DEFINE(SDA4A, M7, SIG_DESC_CLEAR(0x16, 2), SIG_DESC_CLEAR(0x16, 3), SIG_DESC_CLEAR(0x13, 2), SIG_DESC_SET(0x1A, 2))
+ #endif
+ 
++#if DT_NODE_HAS_STATUS(DT_NODELABEL(i2c4b), okay) && CONFIG_I2C_NPCM4XX
++/* DEVALT34, DEVALT6D */
++SIG_DEFINE(SCL4B, B8, SIG_DESC_CLEAR(0x34, 6), SIG_DESC_SET(0x6D, 6))
++/* DEVALT34, DEVALT6D */
++SIG_DEFINE(SDA4B, A8, SIG_DESC_CLEAR(0x34, 6), SIG_DESC_SET(0x6D, 6))
++#endif
++
+ #if DT_NODE_HAS_STATUS(DT_NODELABEL(i2c5a), okay) && CONFIG_I2C_NPCM4XX
+ /* DEVALT31, DEVALT6 */
+ SIG_DEFINE(SCL5A, L6, SIG_DESC_CLEAR(0x31, 0), SIG_DESC_CLEAR(0x16, 2), SIG_DESC_SET(0x1A, 3))
+@@ -107,6 +121,55 @@ SIG_DEFINE(SCL6A, A5, SIG_DESC_CLEAR(0x17, 2), SIG_DESC_CLEAR(0x17, 3))
+ SIG_DEFINE(SDA6A, B5, SIG_DESC_CLEAR(0x17, 2), SIG_DESC_CLEAR(0x17, 4), SIG_DESC_CLEAR(0x15, 4))
+ #endif
+ 
++#if DT_NODE_HAS_STATUS(DT_NODELABEL(i2c6b), okay) && CONFIG_I2C_NPCM4XX
++/* DEVALTB, DEVALT6D */
++SIG_DEFINE(SCL6B, H2, SIG_DESC_CLEAR(0x1B, 4), SIG_DESC_SET(0x6D, 7))
++/* DEVALT7, DEVALTB, DEVALT6D */
++SIG_DEFINE(SDA6B, J4, SIG_DESC_CLEAR(0x17, 6), SIG_DESC_CLEAR(0x1B, 6), SIG_DESC_SET(0x6D, 7))
++#endif
++
++#if DT_NODE_HAS_STATUS(DT_NODELABEL(i2c7a), okay) && CONFIG_I2C_NPCM4XX
++/* DEVALT62, DEVALT6D */
++SIG_DEFINE(SCL7A, K2, SIG_DESC_CLEAR(0x62, 2), SIG_DESC_SET(0x6D, 0))
++/* DEVALT62, DEVALT6D */
++SIG_DEFINE(SDA7A, J2, SIG_DESC_CLEAR(0x62, 3), SIG_DESC_SET(0x6D, 0))
++#endif
++
++#if DT_NODE_HAS_STATUS(DT_NODELABEL(i2c8a), okay) && CONFIG_I2C_NPCM4XX
++/* DEVALT62, DEVALT6D */
++SIG_DEFINE(SCL8A, K3, SIG_DESC_CLEAR(0x62, 6), SIG_DESC_SET(0x6D, 1))
++/* DEVALT62, DEVALT6D */
++SIG_DEFINE(SDA8A, J3, SIG_DESC_CLEAR(0x62, 7), SIG_DESC_SET(0x6D, 1))
++#endif
++
++#if DT_NODE_HAS_STATUS(DT_NODELABEL(i2c9a), okay) && CONFIG_I2C_NPCM4XX
++/* DEVALT6B, DEVALT6, DEVALT6, DEVALT6D */
++SIG_DEFINE(SCL9A, J7, SIG_DESC_CLEAR(0x6B, 2), SIG_DESC_CLEAR(0x16, 2), SIG_DESC_CLEAR(0x16, 3), SIG_DESC_SET(0x6D, 2))
++/* DEVALT6B, DEVALT6, DEVALT6, DEVALT6D */
++SIG_DEFINE(SDA9A, K7, SIG_DESC_CLEAR(0x6B, 3), SIG_DESC_CLEAR(0x16, 2), SIG_DESC_CLEAR(0x16, 3), SIG_DESC_SET(0x6D, 2))
++#endif
++
++#if DT_NODE_HAS_STATUS(DT_NODELABEL(i2c10a), okay) && CONFIG_I2C_NPCM4XX
++/* DEVALT66, DEVALT6D */
++SIG_DEFINE(SCL10A, G10, SIG_DESC_CLEAR(0x66, 2), SIG_DESC_SET(0x6D, 3))
++/* DEVALT66, DEVALT6D */
++SIG_DEFINE(SDA10A, F10, SIG_DESC_CLEAR(0x66, 3), SIG_DESC_SET(0x6D, 3))
++#endif
++
++#if DT_NODE_HAS_STATUS(DT_NODELABEL(i2c11a), okay) && CONFIG_I2C_NPCM4XX
++/* DEVALT66, DEVALT6D */
++SIG_DEFINE(SCL11A, E11, SIG_DESC_CLEAR(0x66, 4), SIG_DESC_SET(0x6D, 4))
++/* DEVALT66, DEVALT6D */
++SIG_DEFINE(SDA11A, D11, SIG_DESC_CLEAR(0x66, 5), SIG_DESC_SET(0x6D, 4))
++#endif
++
++#if DT_NODE_HAS_STATUS(DT_NODELABEL(i2c12a), okay) && CONFIG_I2C_NPCM4XX
++/* DEVALT66, DEVALT6D */
++SIG_DEFINE(SCL12A, E10, SIG_DESC_CLEAR(0x66, 6), SIG_DESC_SET(0x6D, 5))
++/* DEVALT66, DEVALT6D */
++SIG_DEFINE(SDA12A, D10, SIG_DESC_CLEAR(0x66, 7), SIG_DESC_SET(0x6D, 5))
++#endif
++
+ #if DT_NODE_HAS_STATUS(DT_NODELABEL(peci0), okay) && CONFIG_PECI_NPCM4XX
+ /* DEVALT7, DEVALT5 */
+ SIG_DEFINE(PECI, B5, SIG_DESC_CLEAR(0x17, 4), SIG_DESC_SET(0x15, 4))
+-- 
+2.25.1
+
