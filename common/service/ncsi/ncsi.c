@@ -69,10 +69,6 @@ static bool unregister_instid(void *mctp_p, uint8_t inst_num)
 	}
 
 	mctp *mctp_inst = (mctp *)mctp_p;
-	if (!mctp_inst->ncsi_inst_table) {
-		LOG_ERR("Instance table not init!");
-		return false;
-	}
 
 	uint8_t cur_inst_table = inst_num / 32; //bit field of ncsi_inst_table is 32 bits
 	uint8_t cur_inst_num = inst_num % 32;
@@ -83,7 +79,7 @@ static bool unregister_instid(void *mctp_p, uint8_t inst_num)
 		LOG_ERR("Inatant id %d not register yet!", inst_num);
 		return false;
 	}
-	WRITE_BIT(mctp_inst->ncsi_inst_table[cur_inst_table], cur_inst_num % 32, 0);
+	WRITE_BIT(mctp_inst->ncsi_inst_table[cur_inst_table], cur_inst_num, 0);
 
 	return true;
 }
