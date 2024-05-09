@@ -34,8 +34,9 @@ uint8_t mellanox_cx7_set_self_recovery_setting(uint8_t mctp_dest_eid)
 	}
 
 	int resp_len = sizeof(struct mellanox_set_self_recovery_setting_resp);
-	uint8_t resp_buf[resp_len];
-	memset(resp_buf, 0, resp_len);
+	struct mellanox_set_self_recovery_setting_resp resp = { 0 };
+	uint8_t *resp_buf = (uint8_t *)&resp;
+
 	uint16_t req_len = (uint8_t)sizeof(struct mellanox_set_self_recovery_setting_req);
 	struct mellanox_set_self_recovery_setting_req req = { 0 };
 
