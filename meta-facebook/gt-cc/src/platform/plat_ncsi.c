@@ -35,7 +35,6 @@ uint8_t mellanox_cx7_set_self_recovery_setting(uint8_t mctp_dest_eid)
 
 	int resp_len = sizeof(struct mellanox_set_self_recovery_setting_resp);
 	struct mellanox_set_self_recovery_setting_resp resp = { 0 };
-	uint8_t *resp_buf = (uint8_t *)&resp;
 
 	uint16_t req_len = (uint8_t)sizeof(struct mellanox_set_self_recovery_setting_req);
 	struct mellanox_set_self_recovery_setting_req req = { 0 };
@@ -62,18 +61,15 @@ uint8_t mellanox_cx7_set_self_recovery_setting(uint8_t mctp_dest_eid)
 	msg.buf = (uint8_t *)&req;
 	msg.len = req_len;
 
-	if (mctp_ncsi_read(mctp_inst, &msg, resp_buf, resp_len) == 0) {
+	if (mctp_ncsi_read(mctp_inst, &msg, (uint8_t *)&resp, resp_len) == 0) {
 		LOG_ERR("MCTP NCSI fail, eid = 0x%x, command: 0x%x", mctp_dest_eid,
 			msg.hdr.command);
 		return false;
 	}
 
-	struct mellanox_set_self_recovery_setting_resp *res =
-		(struct mellanox_set_self_recovery_setting_resp *)resp_buf;
-
-	if ((res->response_code != NCSI_COMMAND_COMPLETED) || (res->reason_code != NCSI_NO_ERROR)) {
+	if ((resp.response_code != NCSI_COMMAND_COMPLETED) || (resp.reason_code != NCSI_NO_ERROR)) {
 		LOG_ERR("Failed to set self recovery setting, response_code = 0x%x, reason_code = 0x%x",
-			res->response_code, res->reason_code);
+			resp.response_code, resp.reason_code);
 		return false;
 	}
 
