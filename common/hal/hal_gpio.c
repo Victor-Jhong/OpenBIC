@@ -206,7 +206,12 @@ int gpio_get_direction(uint8_t gpio_num)
 
 	uint8_t gpio_group = gpio_num / GPIO_GROUP_SIZE;
 	uint8_t gpio_group_index = gpio_num % GPIO_GROUP_SIZE;
+#if defined(CONFIG_GPIO_ASPEED)
 	uint32_t g_dir = sys_read32(GPIO_GROUP_REG_ACCESS[gpio_group] + REG_DIRECTION_OFFSET);
+#elif (CONFIG_GPIO_NPCM4XX)
+	uint32_t g_dir = sys_read8(GPIO_GROUP_REG_ACCESS[gpio_group] + REG_DIRECTION_OFFSET);
+#else /* defined(CONFIG_GPIO_ASPEED) */
+#endif /* defined(CONFIG_GPIO_ASPEED) */
 	if (g_dir & BIT(gpio_group_index))
 		dir = 0x01;
 	else
