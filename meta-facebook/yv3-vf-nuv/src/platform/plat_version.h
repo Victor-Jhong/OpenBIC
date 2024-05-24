@@ -26,26 +26,24 @@
 /*
  * 0x07 Vernal Falls
  */
-#define BOARD_ID 0x07
+#define BOARD_ID 0x01
 #define DEVICE_ID 0x00
 #define DEVICE_REVISION 0x80
 
 #define FIRMWARE_REVISION_1 GET_FW_VERSION1(BOARD_ID, PROJECT_STAGE)
-#define FIRMWARE_REVISION_2 0x0D
+#define FIRMWARE_REVISION_2 0x04
 
 #define IPMI_VERSION 0x02
 #define ADDITIONAL_DEVICE_SUPPORT 0xBF
 #define PRODUCT_ID 0x0000
 #define AUXILIARY_FW_REVISION 0x00000000
-#define IANA_ID 0x009C9C // same as TI BIC
-#define IANA_ID2 0x00A015 // for OEM 1S command supports YV3.5
 
 #define BIC_FW_YEAR_MSB 0x20
 #define BIC_FW_YEAR_LSB 0x23
-#define BIC_FW_WEEK 0x40
-#define BIC_FW_VER 0x01
-#define BIC_FW_platform_0 0x76 // char: v
-#define BIC_FW_platform_1 0x66 // char: f
+#define BIC_FW_WEEK 0x50
+#define BIC_FW_VER 0xEE
+#define BIC_FW_platform_0 0x47 // char: v
+#define BIC_FW_platform_1 0x54 // char: f
 #define BIC_FW_platform_2 0x00 // char: '\0'
 
 #endif

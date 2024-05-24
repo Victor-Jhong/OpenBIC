@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-#include <stdio.h>
-#include "cmsis_os2.h"
-#include <string.h>
-#include "plat_i2c.h"
-#include "plat_ipmb.h"
-#include "plat_ipmi.h"
+#ifndef _PLAT_FWUPDATE_H_
+#define _PLAT_FWUPDATE_H_
 
-IPMB_config pal_IPMB_config_table[] = {
-	// index, interface, channel, bus, channel_target_address, enable_status, self_address,
-	// rx_thread_name, tx_thread_name
-};
+#include <stdbool.h>
+#include <stdint.h>
+#include "pldm_firmware_update.h"
+
+void load_pldmupdate_comp_config(void);
+void clear_pending_version(uint8_t activate_method);
+
+#endif /* _PLAT_FWUPDATE_H_ */

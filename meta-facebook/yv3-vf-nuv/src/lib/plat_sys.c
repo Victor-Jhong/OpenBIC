@@ -4,7 +4,7 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
@@ -14,14 +14,26 @@
  * limitations under the License.
  */
 
-#include <stdio.h>
-#include "cmsis_os2.h"
-#include <string.h>
-#include "plat_i2c.h"
-#include "plat_ipmb.h"
-#include "plat_ipmi.h"
+#include "plat_sys.h"
 
-IPMB_config pal_IPMB_config_table[] = {
-	// index, interface, channel, bus, channel_target_address, enable_status, self_address,
-	// rx_thread_name, tx_thread_name
-};
+#include "util_sys.h"
+#include "hal_gpio.h"
+#include "plat_gpio.h"
+#include <stdio.h>
+#include <logging/log.h>
+
+LOG_MODULE_REGISTER(plat_sys);
+
+/* BMC reset */
+void BMC_reset_handler()
+{
+	LOG_ERR("BMC reset not supported");
+}
+
+K_WORK_DELAYABLE_DEFINE(BMC_reset_work, BMC_reset_handler);
+int pal_submit_bmc_cold_reset()
+{
+	k_work_schedule(&BMC_reset_work, K_MSEC(1000));
+	return 0;
+}
+/* BMC reset */

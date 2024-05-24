@@ -304,42 +304,6 @@ uint8_t assert_func(DEASSERT_CHK_TYPE_E assert_type) // 0:success
 	return 0;
 }
 
-/*
- * use getdeviceid to set different sensor number(sel)
- * response:
- *	8 -> yv3 -> 0x46
- *	0 -> yv3(aspeed) -> 0x46
- *	0 -> yv3.5 -> 0x10
- */
-void init_sel_sensor_num(void)
-{
-	ipmb_error status;
-	ipmi_msg *msg = (ipmi_msg *)malloc(sizeof(ipmi_msg));
-	if (msg == NULL) {
-		LOG_ERR("Get device id req msg malloc fail");
-		return;
-	}
-	memset(msg, 0, sizeof(ipmi_msg));
-
-	msg->data_len = 0;
-	msg->InF_source = SELF;
-	msg->InF_target = CL_BIC_IPMB;
-
-	msg->netfn = NETFN_APP_REQ;
-	msg->cmd = CMD_APP_GET_DEVICE_ID;
-
-	status = ipmb_read(msg, CL_BIC_IPMB_IDX);
-
-	if (!status) {
-		uint32_t iana = (msg->data[8] << 16 | msg->data[7] << 8 | msg->data[6]);
-		plat_sel_sensor_num =
-			(iana == IANA_ID2) ? SENSOR_NUM_SYSTEM_STATUS : SENSOR_NUM_SYS_STA;
-	}
-
-	SAFE_FREE(msg);
-	plat_sel_sensor_num_ready_flag = true;
-}
-
 uint8_t get_sel_sensor_num(void)
 {
 	return plat_sel_sensor_num;

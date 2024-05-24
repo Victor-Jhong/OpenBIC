@@ -13,15 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include "pldm_monitor.h"
+#include "plat_sensor_table.h"
 
-#include <stdio.h>
-#include "cmsis_os2.h"
-#include <string.h>
-#include "plat_i2c.h"
-#include "plat_ipmb.h"
-#include "plat_ipmi.h"
+#ifndef PLAT_PLDM_MONITOR_H
+#define PLAT_PLDM_MONITOR_H
 
-IPMB_config pal_IPMB_config_table[] = {
-	// index, interface, channel, bus, channel_target_address, enable_status, self_address,
-	// rx_thread_name, tx_thread_name
+#define MAX_STATE_EFFECTER_IDX 187
+
+enum pldm_plat_effecter_id_high_byte {
+	PLAT_EFFECTER_ID_GPIO_HIGH_BYTE = (0xFF << 8),
 };
+
+extern struct pldm_state_effecter_info plat_state_effecter_table[];
+
+enum plat_pldm_bic_state_set_offset {
+	PLDM_STATE_SET_OFFSET_BIC_BOOT_RESTART_CAUSE = 0,
+};
+
+enum plat_pldm_device_state_set_offset {
+	PLDM_STATE_SET_OFFSET_DEVICE_PRESENCE = 0,
+	PLDM_STATE_SET_OFFSET_DEVICE_STATUS = 1,
+};
+
+#endif
