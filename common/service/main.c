@@ -62,6 +62,9 @@ void main(void)
 	printf("Hello, welcome to %s %s %x%x.%x.%x\n", PLATFORM_NAME, PROJECT_NAME, BIC_FW_YEAR_MSB,
 	       BIC_FW_YEAR_LSB, BIC_FW_WEEK, BIC_FW_VER);
 
+	while (1)
+		k_msleep(1000);
+
 	wdt_init();
 	util_init_timer();
 	util_init_I2C();
