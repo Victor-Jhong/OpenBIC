@@ -25,6 +25,15 @@ LOG_MODULE_REGISTER(hal_gpio);
 
 #define STACK_SIZE 2048
 
+#if defined(CONFIG_GPIO_ASPEED)
+#define SYS_READ(x) sys_read32(x)
+#define SYS_WRITE(x, y) sys_write32(x, y)
+#elif (CONFIG_GPIO_NPCM4XX)
+#define SYS_READ(x) sys_read8(x)
+#define SYS_WRITE(x, y) sys_write8(x, y)
+#else /* defined(CONFIG_GPIO_ASPEED) */
+#endif /* defined(CONFIG_GPIO_ASPEED) */
+
 static const struct device *dev_gpio[GPIO_GROUP_NUM];
 static struct gpio_callback callbacks[TOTAL_GPIO_NUM];
 static struct k_work_q gpio_work_queue;
@@ -35,9 +44,7 @@ struct k_work gpio_work[TOTAL_GPIO_NUM];
 uint8_t gpio_ind_to_num_table[TOTAL_GPIO_NUM];
 uint8_t gpio_ind_to_num_table_cnt;
 
-static const char *gpio_dev_str[] = {
-    FOREACH_GPIO(GEN_STR)
-};
+static const char *gpio_dev_str[] = { FOREACH_GPIO(GEN_STR) };
 
 __weak char *gpio_name[] = {};
 GPIO_CFG gpio_cfg[GPIO_CFG_SIZE] = {
@@ -53,15 +60,15 @@ uint32_t GPIO_GROUP_REG_ACCESS[GPIO_GROUP_NUM] = {
 	REG_GPIO_BASE + 0x78, /* GPIO_M/N/O/P Data Value Register */
 	REG_GPIO_BASE + 0x80, /* GPIO_Q/R/S/T Data Value Register */
 	REG_GPIO_BASE + 0x88, /* GPIO_U Data Value Register */
-#elif(CONFIG_GPIO_NPCM4XX)
-	REG_GPIO_BASE, 			 /* GPIO_0 Register */
-	REG_GPIO_BASE + 0x2000,  /* GPIO_1 Register */
-	REG_GPIO_BASE + 0x4000,  /* GPIO_2 Register */
-	REG_GPIO_BASE + 0x6000,  /* GPIO_3 Register */
-	REG_GPIO_BASE + 0x8000,  /* GPIO_4 Register */
-	REG_GPIO_BASE + 0xA000,  /* GPIO_5 Register */
-	REG_GPIO_BASE + 0xC000,  /* GPIO_6 Register */
-	REG_GPIO_BASE + 0xE000,  /* GPIO_7 Register */
+#elif (CONFIG_GPIO_NPCM4XX)
+	REG_GPIO_BASE, /* GPIO_0 Register */
+	REG_GPIO_BASE + 0x2000, /* GPIO_1 Register */
+	REG_GPIO_BASE + 0x4000, /* GPIO_2 Register */
+	REG_GPIO_BASE + 0x6000, /* GPIO_3 Register */
+	REG_GPIO_BASE + 0x8000, /* GPIO_4 Register */
+	REG_GPIO_BASE + 0xA000, /* GPIO_5 Register */
+	REG_GPIO_BASE + 0xC000, /* GPIO_6 Register */
+	REG_GPIO_BASE + 0xE000, /* GPIO_7 Register */
 	REG_GPIO_BASE + 0x10000, /* GPIO_8 Register */
 	REG_GPIO_BASE + 0x12000, /* GPIO_9 Register */
 	REG_GPIO_BASE + 0x14000, /* GPIO_A Register */
@@ -69,12 +76,13 @@ uint32_t GPIO_GROUP_REG_ACCESS[GPIO_GROUP_NUM] = {
 	REG_GPIO_BASE + 0x18000, /* GPIO_C Register */
 	REG_GPIO_BASE + 0x1A000, /* GPIO_D Register */
 	REG_GPIO_BASE + 0x1C000, /* GPIO_E Register */
-	REG_GPIO_BASE + 0x1E000  /* GPIO_F Register */
+	REG_GPIO_BASE + 0x1E000 /* GPIO_F Register */
 #else /* defined(CONFIG_GPIO_ASPEED) */
 #endif /* defined(CONFIG_GPIO_ASPEED) */
 };
 
 uint32_t GPIO_MULTI_FUNC_PIN_CTL_REG_ACCESS[] = {
+#if defined(CONFIG_GPIO_ASPEED)
 	REG_SCU + 0x410, /* Multi-function pin ctl #1 */
 	REG_SCU + 0x414, /* Multi-function pin ctl #2 */
 	REG_SCU + 0x418, /* Multi-function pin ctl #3 */
@@ -93,6 +101,41 @@ uint32_t GPIO_MULTI_FUNC_PIN_CTL_REG_ACCESS[] = {
 	REG_SCU + 0x4D8, /* Multi-function pin ctl #19 */
 	REG_SCU + 0x510, /* Hardware Strap2 Register */
 	REG_SCU + 0x51C, /* Hardware Strap2 Clear Register */
+#elif (CONFIG_GPIO_NPCM4XX)
+	/*               LOW                      HIGH */
+	REG_DEVALTX, /* DEVCNT STRPST RSTCTL DEV_CTL2 */
+	REG_DEVALTX + 0x4, /* DEV_CTL3 RESERVED DEV_CTL4 RESERVED */
+	REG_DEVALTX + 0x8, /* RESERVED RESERVED RESERVED DEVALT10 */
+	REG_DEVALTX + 0xC, /* DEVALT11 DEVALT12 RESERVED RESERVED */
+	REG_DEVALTX + 0x10, /* DEVALT0 DEVALT1 DEVALT2 DEVALT3 */
+	REG_DEVALTX + 0x14, /* DEVALT4 DEVALT5 DEVALT6 DEVALT7 */
+	REG_DEVALTX + 0x18, /* DEVALT8 DEVALT9 DEVALTA DEVALTB */
+	REG_DEVALTX + 0x1C, /* DEVALTC DEVALTD DEVALTE DEVALTF */
+	REG_DEVALTX + 0x20, /* RESERVED RESERVED DBGCTRL RESERVED */
+	REG_DEVALTX + 0x24, /* DEVALTCX RESERVED RESERVED RESERVED */
+	REG_DEVALTX + 0x28, /* DEVPU0 DEVPD1 LV_CTL0 LV_CTL1 */
+	REG_DEVALTX + 0x2C, /* RESERVED LV_CTL3 DEVALT2E RESERVED */
+	REG_DEVALTX + 0x30, /* DEVALT30 DEVALT31 DEVALT32 DEVALT33 */
+	REG_DEVALTX + 0x34, /* DEVALT34 M4DIS RESERVED RESERVED */
+	REG_DEVALTX + 0x38, /* RESERVED RESERVED RESERVED RESERVED */
+	REG_DEVALTX + 0x3C, /* RESERVED RESERVED RESERVED RESERVED */
+	REG_DEVALTX + 0x40, /* RESERVED RESERVED RESERVED RESERVED */
+	REG_DEVALTX + 0x44, /* RESERVED RESERVED RESERVED RESERVED */
+	REG_DEVALTX + 0x48, /* RESERVED RESERVED RESERVED RESERVED */
+	REG_DEVALTX + 0x4C, /* EMCPHY_CTL EMC_CTL RESERVED EMC_INTR_MON */
+	REG_DEVALTX + 0x50, /* DEVALT50 DEVALT51 DEVALT52 DEVALT53 */
+	REG_DEVALTX + 0x54, /* DEVALT54 DEVALT55 RESERVED RESERVED */
+	REG_DEVALTX + 0x58, /* RESERVED DEVALT59 DEVALT5A DEVALT5B */
+	REG_DEVALTX + 0x5C, /* DEVALT5C DEVALT5D DEVALT5E DEVALT5F */
+	REG_DEVALTX + 0x60, /* RESERVED RESERVED DEVALT62 RESERVED */
+	REG_DEVALTX + 0x64, /* RESERVED RESERVED DEVALT66 DEVALT67 */
+	REG_DEVALTX + 0x68, /* RESERVED RESERVED RESERVED RESERVED */
+	REG_DEVALTX + 0x6C, /* RESERVED DEVALT6D LV_CTL4 RESERVED */
+	REG_DEVALTX + 0x70, /* RESERVED RESERVED RESERVED DEVPD2 */
+	REG_DEVALTX + 0x74, /* RESERVED RESERVED DBGFRZEN1 DBGFRZEN2 */
+	REG_DEVALTX + 0x78, /* DBGFRZEN3 DBGFRZEN4 DBGFRZEN5 RESERVED */
+#else /* defined(CONFIG_GPIO_ASPEED) */
+#endif /* defined(CONFIG_GPIO_ASPEED) */
 };
 const int GPIO_MULTI_FUNC_CFG_SIZE = ARRAY_SIZE(GPIO_MULTI_FUNC_PIN_CTL_REG_ACCESS);
 
@@ -169,11 +212,11 @@ uint8_t gpio_get_reg_value(uint8_t gpio_num, uint8_t reg_offset)
 {
 	uint8_t gpio_group = gpio_num / GPIO_GROUP_SIZE;
 	uint8_t gpio_group_index = gpio_num % GPIO_GROUP_SIZE;
-	uint8_t res = (sys_read32(GPIO_GROUP_REG_ACCESS[gpio_group] + reg_offset) &
-		       BIT(gpio_group_index)) ?
-			      1 :
-			      0;
 
+	uint8_t res =
+		(SYS_READ(GPIO_GROUP_REG_ACCESS[gpio_group] + reg_offset) & BIT(gpio_group_index)) ?
+			1 :
+			0;
 	return res;
 }
 
@@ -206,7 +249,7 @@ int gpio_get_direction(uint8_t gpio_num)
 
 	uint8_t gpio_group = gpio_num / GPIO_GROUP_SIZE;
 	uint8_t gpio_group_index = gpio_num % GPIO_GROUP_SIZE;
-	uint32_t g_dir = sys_read32(GPIO_GROUP_REG_ACCESS[gpio_group] + REG_DIRECTION_OFFSET);
+	uint32_t g_dir = SYS_READ(GPIO_GROUP_REG_ACCESS[gpio_group] + REG_DIRECTION_OFFSET);
 	if (g_dir & BIT(gpio_group_index))
 		dir = 0x01;
 	else
@@ -274,9 +317,9 @@ void scu_init(SCU_CFG cfg[], size_t size)
 {
 	uint32_t value = 0;
 	for (int i = 0; i < size; ++i) {
-		value = sys_read32(cfg[i].reg);
+		value = SYS_READ(cfg[i].reg);
 		if (value != cfg[i].value) {
-			sys_write32(cfg[i].value, cfg[i].reg);
+			SYS_WRITE(cfg[i].value, cfg[i].reg);
 		}
 	}
 }
