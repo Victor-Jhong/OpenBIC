@@ -37,6 +37,9 @@ LOG_MODULE_REGISTER(mp2971);
 
 #define MFR_RESO_SET 0xC7
 
+#define MP2971_VOUT_SENSE_SET 0x29
+#define MP2971_VOUT_SCALE_MASK GENMASK(8, 0)
+
 /*Page0 */
 #define VR_MPS_REG_WRITE_PROTECT 0x10
 
@@ -573,9 +576,40 @@ bool mp2971_get_checksum(uint8_t bus, uint8_t addr, uint32_t *checksum)
 	return true;
 }
 
+bool get_vout_scale(sensor_cfg *cfg, float *vout_scale)
+{
+	CHECK_NULL_ARG_WITH_RETURN(vout_scale, false);
+	uint8_t i2c_max_retry = 5;
+	I2C_MSG msg;
+
+	//Read MP2971_VOUT_SENSE_SET (29h)
+	msg.bus = cfg->port;
+	msg.target_addr = cfg->target_addr;
+	msg.tx_len = 1;
+	msg.rx_len = 2;
+	msg.data[0] = MP2971_VOUT_SENSE_SET;
+
+	if (i2c_master_read(&msg, i2c_max_retry)) {
+		LOG_WRN("MP2971 VOUT sense set (0x29) read failed");
+		return false;
+	}
+
+	uint16_t vout_sense_set = (msg.data[1] << 8) | msg.data[0];
+
+	/*vout_scale = (2^5) / (VOUT_SENSE_SET & 0x1FF)*/
+	*vout_scale = ((float)(1 << 5)) / ((float)(vout_sense_set & MP2971_VOUT_SCALE_MASK));
+	return true;
+}
+
 float get_resolution(sensor_cfg *cfg)
 {
 	CHECK_NULL_ARG_WITH_RETURN(cfg, SENSOR_FAIL_TO_ACCESS);
+
+	bool vout_scale_enable = false;
+	if (cfg->init_args != NULL) {
+		mp2971_init_arg *init_arg = (mp2971_init_arg *)cfg->init_args;
+		vout_scale_enable = init_arg->vout_scale_enable;
+	}
 
 	uint8_t page = 0;
 	uint16_t mfr_reso_set = 0;
@@ -695,9 +729,17 @@ float get_resolution(sensor_cfg *cfg)
 	}
 
 	uint8_t offset = cfg->offset;
+	float vout_scale = 1.0;
 
 	switch (offset) {
 	case PMBUS_READ_VOUT:
+		if (vout_scale_enable == true) {
+			if (get_vout_scale(cfg, &vout_scale) == false) {
+				vout_scale = 0;
+				LOG_WRN("get vout scale failed");
+			}
+		}
+		vout_reso = vout_reso / vout_scale;
 		return vout_reso;
 		break;
 	case PMBUS_READ_IOUT:

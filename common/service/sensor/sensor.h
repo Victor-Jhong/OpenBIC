@@ -177,6 +177,12 @@ enum SENSOR_DEV {
 	sensor_dev_adc128d818 = 0x3B,
 	sensor_dev_ads1015 = 0x3C,
 	sensor_dev_plat_def_sensor = 0x3D,
+	sensor_dev_u50su4p180pmdafc = 0x3E,
+	sensor_dev_bmr313 = 0x3F,
+	sensor_dev_mp2891 = 0x40,
+	sensor_dev_raa228238 = 0x41,
+	sensor_dev_mpc12109 = 0x42,
+	sensor_dev_isl69260 = 0x43,
 	sensor_dev_max
 };
 
@@ -747,6 +753,14 @@ typedef struct _adc128d818_init_arg {
 	float vref;
 	float scalefactor[8];
 } adc128d818_init_arg;
+typedef struct mp2971_init_args {
+	bool vout_scale_enable;
+} mp2971_init_arg;
+
+typedef struct isl69260_init_args {
+	bool vout_scale_enable;
+	float vout_scale;
+} isl69260_init_arg;
 
 extern bool enable_sensor_poll_thread;
 extern sensor_cfg *sensor_config;
