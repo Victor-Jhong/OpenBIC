@@ -6893,7 +6893,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_UBC_1_TEMP_C",
+		.sensorName = u"UBC_1_TEMP_C",
 	},
 	{
 
@@ -6911,7 +6911,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_UBC_1_P50V_VIN_VOLT_V",
+		.sensorName = u"UBC_1_P50V_VIN_VOLT_V",
 	},
 	{
 
@@ -6929,7 +6929,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_UBC_1_P12V_VOUT_VOLT_V",
+		.sensorName = u"UBC_1_P12V_VOUT_VOLT_V",
 	},
 	{
 
@@ -6947,7 +6947,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_UBC_1_P12V_CURR_A",
+		.sensorName = u"UBC_1_P12V_CURR_A",
 	},
 	{
 
@@ -6965,7 +6965,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_UBC_1_P12V_PWR_W",
+		.sensorName = u"UBC_1_P12V_PWR_W",
 	},
 	{
 
@@ -6983,7 +6983,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_UBC_2_TEMP_C",
+		.sensorName = u"UBC_2_TEMP_C",
 	},
 	{
 
@@ -7001,7 +7001,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_UBC_2_P50V_VIN_VOLT_V",
+		.sensorName = u"UBC_2_P50V_VIN_VOLT_V",
 	},
 	{
 
@@ -7019,7 +7019,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_UBC_2_P12V_VOUT_VOLT_V",
+		.sensorName = u"UBC_2_P12V_VOUT_VOLT_V",
 	},
 	{
 
@@ -7037,7 +7037,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_UBC_2_P12V_CURR_A",
+		.sensorName = u"UBC_2_P12V_CURR_A",
 	},
 	{
 
@@ -7055,7 +7055,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_UBC_2_P12V_PWR_W",
+		.sensorName = u"UBC_2_P12V_PWR_W",
 	},
 	{
 
@@ -7073,7 +7073,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_TOP_INLET_TEMP_C",
+		.sensorName = u"TOP_INLET_TEMP_C",
 	},
 	{
 
@@ -7091,7 +7091,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_TOP_OUTLET_TEMP_C",
+		.sensorName = u"TOP_OUTLET_TEMP_C",
 	},
 	{
 
@@ -7109,7 +7109,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_BOT_INLET_TEMP_C",
+		.sensorName = u"BOT_INLET_TEMP_C",
 	},
 	{
 
@@ -7127,7 +7127,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_BOT_OUTLET_TEMP_C",
+		.sensorName = u"BOT_OUTLET_TEMP_C",
 	},
 	{
 
@@ -7145,7 +7145,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_ON_DIE_1_TEMP__C",
+		.sensorName = u"ON_DIE_1_TEMP__C",
 	},
 	{
 
@@ -7163,7 +7163,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_ON_DIE_2_TEMP_C",
+		.sensorName = u"ON_DIE_2_TEMP_C",
 	},
 	{
 
@@ -7181,7 +7181,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_OSFP_P3V3_TEMP_C",
+		.sensorName = u"OSFP_P3V3_TEMP_C",
 	},
 	{
 
@@ -7199,7 +7199,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_OSFP_P3V3_VOLT_V",
+		.sensorName = u"OSFP_P3V3_VOLT_V",
 	},
 	{
 
@@ -7217,7 +7217,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_OSFP_P3V3_CURR_A",
+		.sensorName = u"OSFP_P3V3_CURR_A",
 	},
 	{
 
@@ -7235,7 +7235,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_OSFP_P3V3_PWR_W",
+		.sensorName = u"OSFP_P3V3_PWR_W",
 	},
 	{
 
@@ -7253,7 +7253,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V85_PVDD_TEMP_C",
+		.sensorName = u"CPU_P0V85_PVDD_TEMP_C",
 	},
 	{
 
@@ -7271,7 +7271,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V85_PVDD_VOLT_V",
+		.sensorName = u"CPU_P0V85_PVDD_VOLT_V",
 	},
 	{
 
@@ -7289,7 +7289,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V85_PVDD_CURR_A",
+		.sensorName = u"CPU_P0V85_PVDD_CURR_A",
 	},
 	{
 
@@ -7307,7 +7307,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V85_PVDD_PWR_W",
+		.sensorName = u"CPU_P0V85_PVDD_PWR_W",
 	},
 	{
 
@@ -7325,7 +7325,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V75_PVDD_CH_N_TEMP_C",
+		.sensorName = u"CPU_P0V75_PVDD_CH_N_TEMP_C",
 	},
 	{
 
@@ -7343,7 +7343,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V75_PVDD_CH_N_VOLT_V",
+		.sensorName = u"CPU_P0V75_PVDD_CH_N_VOLT_V",
 	},
 	{
 
@@ -7361,7 +7361,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V75_PVDD_CH_N_CURR_A",
+		.sensorName = u"CPU_P0V75_PVDD_CH_N_CURR_A",
 	},
 	{
 
@@ -7379,7 +7379,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V75_PVDD_CH_N_PWR_W",
+		.sensorName = u"CPU_P0V75_PVDD_CH_N_PWR_W",
 	},
 	{
 
@@ -7397,7 +7397,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V75_MAX_PHY_N_TEMP_C",
+		.sensorName = u"CPU_P0V75_MAX_PHY_N_TEMP_C",
 	},
 	{
 
@@ -7415,7 +7415,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V75_MAX_PHY_N_VOLT_V",
+		.sensorName = u"CPU_P0V75_MAX_PHY_N_VOLT_V",
 	},
 	{
 
@@ -7433,7 +7433,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V75_MAX_PHY_N_CURR_A",
+		.sensorName = u"CPU_P0V75_MAX_PHY_N_CURR_A",
 	},
 	{
 
@@ -7451,7 +7451,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V75_MAX_PHY_N_PWR_W",
+		.sensorName = u"CPU_P0V75_MAX_PHY_N_PWR_W",
 	},
 	{
 
@@ -7469,7 +7469,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V75_PVDD_CH_S_TEMP_C",
+		.sensorName = u"CPU_P0V75_PVDD_CH_S_TEMP_C",
 	},
 	{
 
@@ -7487,7 +7487,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V75_PVDD_CH_S_VOLT_V",
+		.sensorName = u"CPU_P0V75_PVDD_CH_S_VOLT_V",
 	},
 	{
 
@@ -7505,7 +7505,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V75_PVDD_CH_S_CURR_A",
+		.sensorName = u"CPU_P0V75_PVDD_CH_S_CURR_A",
 	},
 	{
 
@@ -7523,7 +7523,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V75_PVDD_CH_S_PWR_W",
+		.sensorName = u"CPU_P0V75_PVDD_CH_S_PWR_W",
 	},
 	{
 
@@ -7541,7 +7541,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V75_MAX_PHY_S_TEMP_C",
+		.sensorName = u"CPU_P0V75_MAX_PHY_S_TEMP_C",
 	},
 	{
 
@@ -7559,7 +7559,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V75_MAX_PHY_S_VOLT_V",
+		.sensorName = u"CPU_P0V75_MAX_PHY_S_VOLT_V",
 	},
 	{
 
@@ -7577,7 +7577,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V75_MAX_PHY_S_CURR_A",
+		.sensorName = u"CPU_P0V75_MAX_PHY_S_CURR_A",
 	},
 	{
 
@@ -7595,7 +7595,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V75_MAX_PHY_S_PWR_W",
+		.sensorName = u"CPU_P0V75_MAX_PHY_S_PWR_W",
 	},
 	{
 
@@ -7613,7 +7613,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V75_TRVDD_ZONEA_TEMP_C",
+		.sensorName = u"CPU_P0V75_TRVDD_ZONEA_TEMP_C",
 	},
 	{
 
@@ -7631,7 +7631,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V75_TRVDD_ZONEA_VOLT_V",
+		.sensorName = u"CPU_P0V75_TRVDD_ZONEA_VOLT_V",
 	},
 	{
 
@@ -7649,7 +7649,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V75_TRVDD_ZONEA_CURR_A",
+		.sensorName = u"CPU_P0V75_TRVDD_ZONEA_CURR_A",
 	},
 	{
 
@@ -7667,7 +7667,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V75_TRVDD_ZONEA_PWR_W",
+		.sensorName = u"CPU_P0V75_TRVDD_ZONEA_PWR_W",
 	},
 	{
 
@@ -7685,7 +7685,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P1V8_VPP_HBM0_2_4_TEMP_C",
+		.sensorName = u"CPU_P1V8_VPP_HBM0_2_4_TEMP_C",
 	},
 	{
 
@@ -7703,7 +7703,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P1V8_VPP_HBM0_2_4_VOLT_V",
+		.sensorName = u"CPU_P1V8_VPP_HBM0_2_4_VOLT_V",
 	},
 	{
 
@@ -7721,7 +7721,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P1V8_VPP_HBM0_2_4_CURR_A",
+		.sensorName = u"CPU_P1V8_VPP_HBM0_2_4_CURR_A",
 	},
 	{
 
@@ -7739,7 +7739,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P1V8_VPP_HBM0_2_4_PWR_W",
+		.sensorName = u"CPU_P1V8_VPP_HBM0_2_4_PWR_W",
 	},
 	{
 
@@ -7757,7 +7757,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V75_TRVDD_ZONEB_TEMP_C",
+		.sensorName = u"CPU_P0V75_TRVDD_ZONEB_TEMP_C",
 	},
 	{
 
@@ -7775,7 +7775,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V75_TRVDD_ZONEB_VOLT_V",
+		.sensorName = u"CPU_P0V75_TRVDD_ZONEB_VOLT_V",
 	},
 	{
 
@@ -7793,7 +7793,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V75_TRVDD_ZONEB_CURR_A",
+		.sensorName = u"CPU_P0V75_TRVDD_ZONEB_CURR_A",
 	},
 	{
 
@@ -7811,7 +7811,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V75_TRVDD_ZONEB_PWR_W",
+		.sensorName = u"CPU_P0V75_TRVDD_ZONEB_PWR_W",
 	},
 	{
 
@@ -7829,7 +7829,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V4_VDDQL_HBM0_2_4_TEMP_C",
+		.sensorName = u"CPU_P0V4_VDDQL_HBM0_2_4_TEMP_C",
 	},
 	{
 
@@ -7847,7 +7847,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V4_VDDQL_HBM0_2_4_VOLT_V",
+		.sensorName = u"CPU_P0V4_VDDQL_HBM0_2_4_VOLT_V",
 	},
 	{
 
@@ -7865,7 +7865,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V4_VDDQL_HBM0_2_4_CURR_A",
+		.sensorName = u"CPU_P0V4_VDDQL_HBM0_2_4_CURR_A",
 	},
 	{
 
@@ -7883,7 +7883,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V4_VDDQL_HBM0_2_4_PWR_W",
+		.sensorName = u"CPU_P0V4_VDDQL_HBM0_2_4_PWR_W",
 	},
 	{
 
@@ -7901,7 +7901,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P1V1_VDDC_HBM0_2_4_TEMP_C",
+		.sensorName = u"CPU_P1V1_VDDC_HBM0_2_4_TEMP_C",
 	},
 	{
 
@@ -7919,7 +7919,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P1V1_VDDC_HBM0_2_4_VOLT_V",
+		.sensorName = u"CPU_P1V1_VDDC_HBM0_2_4_VOLT_V",
 	},
 	{
 
@@ -7937,7 +7937,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P1V1_VDDC_HBM0_2_4_CURR_A",
+		.sensorName = u"CPU_P1V1_VDDC_HBM0_2_4_CURR_A",
 	},
 	{
 
@@ -7955,7 +7955,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P1V1_VDDC_HBM0_2_4_PWR_W",
+		.sensorName = u"CPU_P1V1_VDDC_HBM0_2_4_PWR_W",
 	},
 	{
 
@@ -7973,7 +7973,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V75_VDDPHY_HBM0_2_4_TEMP_C",
+		.sensorName = u"CPU_P0V75_VDDPHY_HBM0_2_4_TEMP_C",
 	},
 	{
 
@@ -7991,7 +7991,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V75_VDDPHY_HBM0_2_4_VOLT_V",
+		.sensorName = u"CPU_P0V75_VDDPHY_HBM0_2_4_VOLT_V",
 	},
 	{
 
@@ -8009,7 +8009,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V75_VDDPHY_HBM0_2_4_CURR_A",
+		.sensorName = u"CPU_P0V75_VDDPHY_HBM0_2_4_CURR_A",
 	},
 	{
 
@@ -8027,7 +8027,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V75_VDDPHY_HBM0_2_4_PWR_W",
+		.sensorName = u"CPU_P0V75_VDDPHY_HBM0_2_4_PWR_W",
 	},
 	{
 
@@ -8045,7 +8045,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V9_TRVDD_ZONEA_TEMP_C",
+		.sensorName = u"CPU_P0V9_TRVDD_ZONEA_TEMP_C",
 	},
 	{
 
@@ -8063,7 +8063,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V9_TRVDD_ZONEA_VOLT_V",
+		.sensorName = u"CPU_P0V9_TRVDD_ZONEA_VOLT_V",
 	},
 	{
 
@@ -8081,7 +8081,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V9_TRVDD_ZONEA_CURR_A",
+		.sensorName = u"CPU_P0V9_TRVDD_ZONEA_CURR_A",
 	},
 	{
 
@@ -8099,7 +8099,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V9_TRVDD_ZONEA_PWR_W",
+		.sensorName = u"CPU_P0V9_TRVDD_ZONEA_PWR_W",
 	},
 	{
 
@@ -8117,7 +8117,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P1V8_VPP_HBM1_3_5_TEMP_C",
+		.sensorName = u"CPU_P1V8_VPP_HBM1_3_5_TEMP_C",
 	},
 	{
 
@@ -8135,7 +8135,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P1V8_VPP_HBM1_3_5_VOLT_V",
+		.sensorName = u"CPU_P1V8_VPP_HBM1_3_5_VOLT_V",
 	},
 	{
 
@@ -8153,7 +8153,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P1V8_VPP_HBM1_3_5_CURR_A",
+		.sensorName = u"CPU_P1V8_VPP_HBM1_3_5_CURR_A",
 	},
 	{
 
@@ -8171,7 +8171,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P1V8_VPP_HBM1_3_5_PWR_W",
+		.sensorName = u"CPU_P1V8_VPP_HBM1_3_5_PWR_W",
 	},
 	{
 
@@ -8189,7 +8189,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V9_TRVDD_ZONEB_TEMP_C",
+		.sensorName = u"CPU_P0V9_TRVDD_ZONEB_TEMP_C",
 	},
 	{
 
@@ -8207,7 +8207,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V9_TRVDD_ZONEB_VOLT_V",
+		.sensorName = u"CPU_P0V9_TRVDD_ZONEB_VOLT_V",
 	},
 	{
 
@@ -8225,7 +8225,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V9_TRVDD_ZONEB_CURR_A",
+		.sensorName = u"CPU_P0V9_TRVDD_ZONEB_CURR_A",
 	},
 	{
 
@@ -8243,7 +8243,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V9_TRVDD_ZONEB_PWR_W",
+		.sensorName = u"CPU_P0V9_TRVDD_ZONEB_PWR_W",
 	},
 	{
 
@@ -8261,7 +8261,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V4_VDDQL_HBM1_3_5_TEMP_C",
+		.sensorName = u"CPU_P0V4_VDDQL_HBM1_3_5_TEMP_C",
 	},
 	{
 
@@ -8279,7 +8279,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V4_VDDQL_HBM1_3_5_VOLT_V",
+		.sensorName = u"CPU_P0V4_VDDQL_HBM1_3_5_VOLT_V",
 	},
 	{
 
@@ -8297,7 +8297,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V4_VDDQL_HBM1_3_5_CURR_A",
+		.sensorName = u"CPU_P0V4_VDDQL_HBM1_3_5_CURR_A",
 	},
 	{
 
@@ -8315,7 +8315,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V4_VDDQL_HBM1_3_5_PWR_W",
+		.sensorName = u"CPU_P0V4_VDDQL_HBM1_3_5_PWR_W",
 	},
 	{
 
@@ -8333,7 +8333,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P1V1_VDDC_HBM1_3_5_TEMP_C",
+		.sensorName = u"CPU_P1V1_VDDC_HBM1_3_5_TEMP_C",
 	},
 	{
 
@@ -8351,7 +8351,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P1V1_VDDC_HBM1_3_5_VOLT_V",
+		.sensorName = u"CPU_P1V1_VDDC_HBM1_3_5_VOLT_V",
 	},
 	{
 
@@ -8369,7 +8369,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P1V1_VDDC_HBM1_3_5_CURR_A",
+		.sensorName = u"CPU_P1V1_VDDC_HBM1_3_5_CURR_A",
 	},
 	{
 
@@ -8387,7 +8387,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P1V1_VDDC_HBM1_3_5_PWR_W",
+		.sensorName = u"CPU_P1V1_VDDC_HBM1_3_5_PWR_W",
 	},
 	{
 
@@ -8405,7 +8405,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V75_VDDPHY_HBM1_3_5_TEMP_C",
+		.sensorName = u"CPU_P0V75_VDDPHY_HBM1_3_5_TEMP_C",
 	},
 	{
 
@@ -8423,7 +8423,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V75_VDDPHY_HBM1_3_5_VOLT_V",
+		.sensorName = u"CPU_P0V75_VDDPHY_HBM1_3_5_VOLT_V",
 	},
 	{
 
@@ -8441,7 +8441,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V75_VDDPHY_HBM1_3_5_CURR_A",
+		.sensorName = u"CPU_P0V75_VDDPHY_HBM1_3_5_CURR_A",
 	},
 	{
 
@@ -8459,7 +8459,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V75_VDDPHY_HBM1_3_5_PWR_W",
+		.sensorName = u"CPU_P0V75_VDDPHY_HBM1_3_5_PWR_W",
 	},
 	{
 
@@ -8477,7 +8477,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V8_VDDA_PCIE_TEMP_C",
+		.sensorName = u"CPU_P0V8_VDDA_PCIE_TEMP_C",
 	},
 	{
 
@@ -8495,7 +8495,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V8_VDDA_PCIE_VOLT_V",
+		.sensorName = u"CPU_P0V8_VDDA_PCIE_VOLT_V",
 	},
 	{
 
@@ -8513,7 +8513,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V8_VDDA_PCIE_CURR_A",
+		.sensorName = u"CPU_P0V8_VDDA_PCIE_CURR_A",
 	},
 	{
 
@@ -8531,7 +8531,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P0V8_VDDA_PCIE_PWR_W",
+		.sensorName = u"CPU_P0V8_VDDA_PCIE_PWR_W",
 	},
 	{
 
@@ -8549,7 +8549,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P1V2_VDDHTX_PCIE_TEMP_C",
+		.sensorName = u"CPU_P1V2_VDDHTX_PCIE_TEMP_C",
 	},
 	{
 
@@ -8567,7 +8567,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P1V2_VDDHTX_PCIE_VOLT_V",
+		.sensorName = u"CPU_P1V2_VDDHTX_PCIE_VOLT_V",
 	},
 	{
 
@@ -8585,7 +8585,7 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P1V2_VDDHTX_PCIE_CURR_A",
+		.sensorName = u"CPU_P1V2_VDDHTX_PCIE_CURR_A",
 	},
 	{
 
@@ -8603,9 +8603,25 @@ PDR_sensor_auxiliary_names plat_pdr_sensor_aux_names_table[] = {
 		.sensor_count = 0x1,
 		.nameStringCount = 0x1,
 		.nameLanguageTag = "en",
-		.sensorName = u"AEGIS_CPU_P1V2_VDDHTX_PCIE_PWR_W",
+		.sensorName = u"CPU_P1V2_VDDHTX_PCIE_PWR_W",
 	},
 };
+
+PDR_entity_auxiliary_names plat_pdr_entity_aux_names_table[] = { {
+	{
+		.record_handle = 0x00000000,
+		.PDR_header_version = 0x01,
+		.PDR_type = PLDM_ENTITY_AUXILIARY_NAMES_PDR,
+		.record_change_number = 0x0000,
+		.data_length = 0x0000,
+	},
+	.entity_type = 0x0000,
+	.entity_instance_number = 0x0001,
+	.container_id = 0x0000,
+	.shared_name_count = 0x0,
+	.nameStringCount = 0x1,
+	.nameLanguageTag = "en",
+} };
 
 uint32_t plat_get_pdr_size(uint8_t pdr_type)
 {
@@ -8619,6 +8635,9 @@ uint32_t plat_get_pdr_size(uint8_t pdr_type)
 		break;
 	case PLDM_SENSOR_AUXILIARY_NAMES_PDR:
 		total_size = ARRAY_SIZE(plat_pdr_sensor_aux_names_table);
+		break;
+	case PLDM_ENTITY_AUXILIARY_NAMES_PDR:
+		total_size = ARRAY_SIZE(plat_pdr_entity_aux_names_table);
 		break;
 	default:
 		break;
@@ -8718,6 +8737,79 @@ void plat_load_aux_sensor_names_pdr_table(PDR_sensor_auxiliary_names *aux_sensor
 {
 	memcpy(aux_sensor_name_table, &plat_pdr_sensor_aux_names_table,
 	       sizeof(plat_pdr_sensor_aux_names_table));
+}
+
+uint16_t plat_pdr_entity_aux_names_table_size = 0;
+
+// Custom function to calculate the length of a char16_t string
+size_t char16_strlen(const char16_t *str)
+{
+	const char16_t *s = str;
+	while (*s)
+		++s;
+	return s - str;
+}
+
+// Custom function to copy a char16_t string
+char16_t *char16_strcpy(char16_t *dest, const char16_t *src)
+{
+	char16_t *d = dest;
+	while ((*d++ = *src++))
+		;
+	return dest;
+}
+
+// Custom function to concatenate a char16_t character to a string
+char16_t *char16_strcat_char(char16_t *dest)
+{
+	size_t len = char16_strlen(dest);
+	dest[len] = u'\0';
+	return dest;
+}
+
+void plat_init_entity_aux_names_pdr_table()
+{
+	// Base name
+	const char16_t base_name[] = u"AEGIS";
+
+	// Calculate the length of the base name
+	size_t base_len = char16_strlen(base_name);
+
+	// Calculate the required length for the final string (base name + null terminator)
+	size_t total_len = base_len + 1; // +1 for the null terminator
+
+	// Ensure the final length does not exceed MAX_AUX_SENSOR_NAME_LEN
+	if (total_len > MAX_AUX_SENSOR_NAME_LEN) {
+		total_len = MAX_AUX_SENSOR_NAME_LEN;
+	}
+
+	// Create a buffer for the full name
+	char16_t full_name[MAX_AUX_SENSOR_NAME_LEN] = { 0 };
+
+	// Copy base name to full name, with length limit
+	char16_strcpy(full_name, base_name);
+
+	// Append slot ID as a character, ensuring it fits within the buffer
+	if (base_len + 1 < MAX_AUX_SENSOR_NAME_LEN) {
+		char16_strcat_char(full_name);
+	}
+
+	// Now copy the full name to the entityName field of your structure
+	char16_strcpy(plat_pdr_entity_aux_names_table[0].entityName, full_name);
+
+	plat_pdr_entity_aux_names_table_size =
+		sizeof(PDR_entity_auxiliary_names) + (total_len * sizeof(char16_t));
+}
+
+void plat_load_entity_aux_names_pdr_table(PDR_entity_auxiliary_names *entity_aux_name_table)
+{
+	memcpy(entity_aux_name_table, &plat_pdr_entity_aux_names_table,
+	       plat_pdr_entity_aux_names_table_size);
+}
+
+uint16_t plat_get_pdr_entity_aux_names_size()
+{
+	return plat_pdr_entity_aux_names_table_size;
 }
 
 void find_vr_addr_by_sensor_id(uint8_t sensor_id, uint8_t *vr_addr)
