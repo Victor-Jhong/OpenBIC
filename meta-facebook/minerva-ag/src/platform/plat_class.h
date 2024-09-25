@@ -63,5 +63,6 @@ typedef enum {
 void init_platform_config();
 uint8_t get_vr_type();
 uint8_t get_ubc_type();
+bool plat_read_cpld(uint8_t offset, uint8_t *data);
 
 #endif
