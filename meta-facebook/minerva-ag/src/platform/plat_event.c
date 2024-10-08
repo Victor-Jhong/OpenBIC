@@ -85,7 +85,7 @@ typedef struct aegis_cpld_info {
 	uint8_t dc_on_defaut;
 	bool is_fault_log;
 	bool is_bic_record;
-	bool is_fault;
+	bool is_fault; //flag for fault
 } aegis_cpld_info;
 
 aegis_cpld_info aegis_cpld_info_table[] = {
