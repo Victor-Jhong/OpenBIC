@@ -174,6 +174,18 @@ void cpld_event_func(plat_err_log *log)
 	LOG_HEXDUMP_INFO(log->data, 40, "CPLD data: ");
 }
 
+bool is_ubc_enabled() {
+	uint8_t data = 0;
+	if (!plat_read_cpld(VR_ENABLE_PIN_READING_4_REG, &data)) {
+		LOG_ERR("Failed to read CPLD register 0x%02X", VR_ENABLE_PIN_READING_4_REG);
+		continue;
+	}
+	
+	//Bit2: FM_PLD_UBC_EN
+	return data & 0x02;
+
+}
+
 void poll_cpld_registers() {
     uint8_t data = 0;
 
