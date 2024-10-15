@@ -78,70 +78,85 @@ LOG_MODULE_REGISTER(plat_event);
 #define RSVD_GPIO_STATUS_REG 0x32
 #define UART_IC_STATUS_REG 0x33
 #define UBC_MODULE_OC_WARNING_REG 0x34
+#define CPLD_EEPROM_STATUS_REG 0x35
+#define MTIA_N_OWL_TEST_PIN_STATUS_REG 0x36
+#define MTIA_S_OWL_TEST_PIN_STATUS_REG 0x37
+#define MTIA_ATH_TEST_PIN_STATUS_REG 0x38
+#define MTIA_VQPS_TO_EFUSE_PROGRAMMING_REG 0x39
+#define BUFFER_100M_CLK_LOSE_OF_INPUT_SIGNAL_REG 0x3A
+#define MTIA_QSPI_BOOT_DISABLE_REG 0x3B
+#define ATH_RSVD_GPIO_REG 0x3C
 
 typedef struct aegis_cpld_info {
 	uint8_t cpld_offset;
 	uint8_t dc_off_defaut;
 	uint8_t dc_on_defaut;
-	bool is_fault_log;
-	bool is_bic_record;
+	bool is_fault_log; // if true, check the value is defaut or not
 	bool is_fault; //flag for fault
 } aegis_cpld_info;
 
 aegis_cpld_info aegis_cpld_info_table[] = {
-	{ POWER_AND_RESET_BUTTON_REG, 0xFF, 0xFF, false, false, true },
-	{ VR_AND_CLK_ENABLE_PIN_READING_REG, 0x60, 0xBF, false, true, true },
-	{ VR_ENABLE_PIN_READING_1_REG, 0x00, 0xFF, false, true, true },
-	{ VR_ENABLE_PIN_READING_2_REG, 0x00, 0xFF, false, true, true },
-	{ VR_ENABLE_PIN_READING_3_REG, 0x00, 0xFF, false, true, true },
-	{ VR_ENABLE_PIN_READING_4_REG, 0x00, 0xFC, false, true, true },
-	{ MB_POWER_GOOD_AND_PERST_PIN_READING_REG, 0x00, 0xC0, false, true, true },
-	{ VR_POWER_GOOD_PIN_READING_1_REG, 0x00, 0xFE, false, true, true },
-	{ VR_POWER_GOOD_PIN_READING_2_REG, 0x00, 0xFF, false, true, true },
-	{ VR_POWER_GOOD_PIN_READING_3_REG, 0x00, 0xFF, false, true, true },
-	{ VR_POWER_GOOD_PIN_READING_4_REG, 0x00, 0xFF, false, true, true },
-	{ VR_POWER_GOOD_PIN_READING_5_REG, 0x00, 0xFE, false, true, true },
-	{ RSVD_1_REG, 0x00, NULL, false, false, true },
-	{ VR_POWER_FAULT_1_REG, 0x00, 0x00, true, true, true },
-	{ VR_POWER_FAULT_2_REG, 0x00, 0x00, true, true, true },
-	{ VR_POWER_FAULT_3_REG, 0x00, 0x00, true, true, true },
-	{ VR_POWER_FAULT_4_REG, 0x00, 0x00, true, true, true },
-	{ VR_POWER_FAULT_5_REG, 0x00, 0x00, true, true, true },
-	{ RSVD_2_REG, 0x00, NULL, false, false, true },
-	{ RSVD_3_REG, 0x00, NULL, false, false, true },
-	{ OSFP_PRSNT_PIN_READING_1_REG, 0xFF, 0xFF, false, true, true },
-	{ OSFP_PRSNT_PIN_READING_2_REG, 0xFF, 0xFF, false, true, true },
-	{ OSFP_POWER_ENABLE_PIN_READING_1_REG, 0x00, 0x00, false, false, true },
-	{ OSFP_POWER_ENABLE_PIN_READING_2_REG, 0x00, 0x00, false, false, true },
-	{ OSFP_POWER_ENABLE_PIN_READING_3_REG, 0x00, 0x00, false, false, true },
-	{ OSFP_POWER_ENABLE_PIN_READING_4_REG, 0x00, 0x00, false, false, true },
-	{ BOARD_TYPE_REG, 0x00, 0x00, false, true, true },
-	{ BOARD_REV_ID_REG, 0x00, 0x00, false, true, true },
-	{ VR_VENDOR_TYPE_REG, 0x00, 0x05, false, true, true },
-	{ OWL_JTAG_SEL_MUX_REG, 0x00, 0x00, false, false, true },
-	{ ATH_JTAG_SEL_MUX_REG, 0x00, 0x00, false, false, true },
-	{ OWL_UART_SEL_MUX_REG, 0x00, 0x00, false, false, true },
-	{ AEGIS_JTAG_SWITCH_REG, 0x00, 0x00, false, false, true },
-	{ ATH_BOOT_SOURCE_REG, 0x00, 0x00, false, false, true },
-	{ S_OWL_BOOT_SOURCE_REG, 0x00, 0x00, false, false, true },
-	{ N_OWL_BOOT_SOURCE_REG, 0x00, 0x00, false, false, true },
-	{ VR_SMBUS_ALERT_1_REG, 0xFF, 0xFF, true, true, true },
-	{ VR_SMBUS_ALERT_2_REG, 0xFF, 0xFF, true, true, true },
-	{ RSVD_4_REG, 0xFF, NULL, false, false, true },
-	{ ASIC_OC_WARN_REG, 0xFF, 0xFF, true, true, true },
-	{ SYSTEM_ALERT_FAULT_REG, 0xFF, 0xFF, true, true, true },
-	{ VR_HOT_FAULT_1_REG, 0xFF, 0xFF, true, true, true },
-	{ VR_HOT_FAULT_2_REG, 0xFF, 0xFF, true, true, true },
-	{ TEMPERATURE_IC_OVERT_FAULT_REG, 0xFF, 0xFF, true, true, true },
-	{ VR_POWER_INPUT_FAULT_1_REG, 0xFF, 0xFF, true, true, true },
-	{ VR_POWER_INPUT_FAULT_2_REG, 0xFF, 0xFF, true, true, true },
-	{ LEAK_DETCTION_REG, 0xDF, 0xDF, true, true, true },
-	{ RESET_PIN_TO_ICS_STATUS_REG, 0xFF, 0xFF, false, false, true },
-	{ CRD_STATUS_REG, 0xFB, 0x27, false, true, true },
-	{ CMN_STATUS_REG, 0x3F, 0xEF, false, true, true },
-	{ RSVD_GPIO_STATUS_REG, 0xC0, 0xC0, false, false, true },
-	{ UART_IC_STATUS_REG, 0xFF, 0x5F, false, false, true },
-	{ UBC_MODULE_OC_WARNING_REG, 0xFF, NULL, false, true, true },
+	{ POWER_AND_RESET_BUTTON_REG, 0xFF, 0xFF, false,  false },
+	{ VR_AND_CLK_ENABLE_PIN_READING_REG, 0x60, 0xBF, false, false },
+	{ VR_ENABLE_PIN_READING_1_REG, 0x00, 0xFF, false, false },
+	{ VR_ENABLE_PIN_READING_2_REG, 0x00, 0xFF, false, false },
+	{ VR_ENABLE_PIN_READING_3_REG, 0x00, 0xFF, false, false },
+	{ VR_ENABLE_PIN_READING_4_REG, 0x00, 0xFC, false, false },
+	{ MB_POWER_GOOD_AND_PERST_PIN_READING_REG, 0x00, 0xC0, false, false },
+	{ VR_POWER_GOOD_PIN_READING_1_REG, 0x00, 0xFE, false, false },
+	{ VR_POWER_GOOD_PIN_READING_2_REG, 0x00, 0xFF, false, false },
+	{ VR_POWER_GOOD_PIN_READING_3_REG, 0x00, 0xFF, false, false },
+	{ VR_POWER_GOOD_PIN_READING_4_REG, 0x00, 0xFF, false, false },
+	{ VR_POWER_GOOD_PIN_READING_5_REG, 0x00, 0xFE, false, false },
+	{ RSVD_1_REG, 0x00, NULL, false,  false },
+	{ VR_POWER_FAULT_1_REG, 0x00, 0x00, true, false },
+	{ VR_POWER_FAULT_2_REG, 0x00, 0x00, true, false },
+	{ VR_POWER_FAULT_3_REG, 0x00, 0x00, true, false },
+	{ VR_POWER_FAULT_4_REG, 0x00, 0x00, true, false },
+	{ VR_POWER_FAULT_5_REG, 0x00, 0x00, true, false },
+	{ RSVD_2_REG, 0x00, NULL, false,  false },
+	{ RSVD_3_REG, 0x00, NULL, false,  false },
+	{ OSFP_PRSNT_PIN_READING_1_REG, 0xFF, 0xFF, false, false },
+	{ OSFP_PRSNT_PIN_READING_2_REG, 0xFF, 0xFF, false, false },
+	{ OSFP_POWER_ENABLE_PIN_READING_1_REG, 0x00, 0x00, false,  false },
+	{ OSFP_POWER_ENABLE_PIN_READING_2_REG, 0x00, 0x00, false,  false },
+	{ OSFP_POWER_ENABLE_PIN_READING_3_REG, 0x00, 0x00, false,  false },
+	{ OSFP_POWER_ENABLE_PIN_READING_4_REG, 0x00, 0x00, false,  false },
+	{ BOARD_TYPE_REG, 0x00, 0x00, false, false },
+	{ BOARD_REV_ID_REG, 0x00, 0x00, false, false },
+	{ VR_VENDOR_TYPE_REG, 0x00, 0x05, false, false },
+	{ OWL_JTAG_SEL_MUX_REG, 0x00, 0x00, false,  false },
+	{ ATH_JTAG_SEL_MUX_REG, 0x00, 0x00, false,  false },
+	{ OWL_UART_SEL_MUX_REG, 0x00, 0x00, false,  false },
+	{ AEGIS_JTAG_SWITCH_REG, 0x00, 0x00, false,  false },
+	{ ATH_BOOT_SOURCE_REG, 0x00, 0x00, false,  false },
+	{ S_OWL_BOOT_SOURCE_REG, 0x00, 0x00, false,  false },
+	{ N_OWL_BOOT_SOURCE_REG, 0x00, 0x00, false,  false },
+	{ VR_SMBUS_ALERT_1_REG, 0xFF, 0xFF, true, false },
+	{ VR_SMBUS_ALERT_2_REG, 0xFF, 0xFF, true, false },
+	{ RSVD_4_REG, 0xFF, NULL, false,  false },
+	{ ASIC_OC_WARN_REG, 0xFF, 0xFF, true, false },
+	{ SYSTEM_ALERT_FAULT_REG, 0xFF, 0xFF, true, false },
+	{ VR_HOT_FAULT_1_REG, 0xFF, 0xFF, true, false },
+	{ VR_HOT_FAULT_2_REG, 0xFF, 0xFF, true, false },
+	{ TEMPERATURE_IC_OVERT_FAULT_REG, 0xFF, 0xFF, true, false },
+	{ VR_POWER_INPUT_FAULT_1_REG, 0xFF, 0xFF, true, false },
+	{ VR_POWER_INPUT_FAULT_2_REG, 0xFF, 0xFF, true, false },
+	{ LEAK_DETCTION_REG, 0xDF, 0xDF, true, false },
+	{ RESET_PIN_TO_ICS_STATUS_REG, 0xFF, 0xFF, false,  false },
+	{ CRD_STATUS_REG, 0xFB, 0x27, false, false },
+	{ CMN_STATUS_REG, 0x3F, 0xEF, false, false },
+	{ RSVD_GPIO_STATUS_REG, 0xC0, 0xC0, false,  false },
+	{ UART_IC_STATUS_REG, 0xFF, 0x5F, false,  false },
+	{ UBC_MODULE_OC_WARNING_REG, 0xFF, NULL, false, false },
+	{ CPLD_EEPROM_STATUS_REG, 0x40, 0x40, false, false }
+	{ MTIA_N_OWL_TEST_PIN_STATUS_REG, 0xFF, 0xFF, false, false }
+	{ MTIA_S_OWL_TEST_PIN_STATUS_REG, 0xFF, 0xFF, false, false }
+	{ MTIA_ATH_TEST_PIN_STATUS_REG, 0xFF, 0xFF, false, false }
+	{ MTIA_VQPS_TO_EFUSE_PROGRAMMING_REG, 0x00, 0x00, false, false }
+	{ BUFFER_100M_CLK_LOSE_OF_INPUT_SIGNAL_REG, 0xFF, 0xFF, false, false }
+	{ MTIA_QSPI_BOOT_DISABLE_REG, 0x00, 0x00, false, false }
+	{ ATH_RSVD_GPIO_REG, NULL, NULL, false, false }
 };
 
 
@@ -161,6 +176,9 @@ void cpld_event_func(plat_err_log *log)
 
 void poll_cpld_registers() {
     uint8_t data = 0;
+
+	bool is_dc_on_delayed_status = is_dc_on_delayed();
+
     bool is_dc_on = is_mb_dc_on();
     plat_err_log temp_log = {0};
     uint8_t temp_buffer[40] = {0};  // Buffer for recording is_bic_record registers
