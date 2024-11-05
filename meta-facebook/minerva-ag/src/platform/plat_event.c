@@ -22,6 +22,7 @@
 #include "libutil.h"
 #include "plat_i2c.h"
 #include "plat_class.h"
+#include "plat_pldm_sensor.h"
 
 LOG_MODULE_REGISTER(plat_event);
 
@@ -93,8 +94,19 @@ typedef struct aegis_cpld_info {
 	uint8_t dc_on_defaut;
 	bool is_fault_log; // if true, check the value is defaut or not
 	bool is_fault; //flag for fault
+
+	uint8_t vr_status_word_access_map;
+	uint8_t bit_0_mapping_vr_sensor_num;
+	uint8_t bit_1_mapping_vr_sensor_num;
+	uint8_t bit_2_mapping_vr_sensor_num;
+	uint8_t bit_3_mapping_vr_sensor_num;
+	uint8_t bit_4_mapping_vr_sensor_num;
+	uint8_t bit_5_mapping_vr_sensor_num;
+	uint8_t bit_6_mapping_vr_sensor_num;
+	uint8_t bit_7_mapping_vr_sensor_num;
 } aegis_cpld_info;
 
+// clang-format off
 aegis_cpld_info aegis_cpld_info_table[] = {
 	{ POWER_AND_RESET_BUTTON_REG, 0xFF, 0xFF, false,  false },
 	{ VR_AND_CLK_ENABLE_PIN_READING_REG, 0x60, 0xBF, false, false },
@@ -109,11 +121,11 @@ aegis_cpld_info aegis_cpld_info_table[] = {
 	{ VR_POWER_GOOD_PIN_READING_4_REG, 0x00, 0xFF, false, false },
 	{ VR_POWER_GOOD_PIN_READING_5_REG, 0x00, 0xFE, false, false },
 	{ RSVD_1_REG, 0x00, NULL, false,  false },
-	{ VR_POWER_FAULT_1_REG, 0x00, 0x00, true, false },
-	{ VR_POWER_FAULT_2_REG, 0x00, 0x00, true, false },
-	{ VR_POWER_FAULT_3_REG, 0x00, 0x00, true, false },
-	{ VR_POWER_FAULT_4_REG, 0x00, 0x00, true, false },
-	{ VR_POWER_FAULT_5_REG, 0x00, 0x00, true, false },
+	{ VR_POWER_FAULT_1_REG, 0x00, 0x00, true, false, 			.vr_status_word_access_map = 0x7E, .bit_0_mapping_vr_sensor_num = NULL 											, .bit_1_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V75_TRVDD_ZONEA_TEMP_C		, .bit_2_mapping_vr_sensor_num =SENSOR_NUM_CPU_P0V75_TRVDD_ZONEB_TEMP_C		, .bit_3_mapping_vr_sensor_num = SENSOR_NUM_UBC_2_TEMP_C 					, .bit_4_mapping_vr_sensor_num = SENSOR_NUM_UBC_1_TEMP_C 					, .bit_5_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V75_PVDD_CH_S_TEMP_C	, .bit_6_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V75_MAX_PHY_N_TEMP_C		, .bit_7_mapping_vr_sensor_num = NULL },
+	{ VR_POWER_FAULT_2_REG, 0x00, 0x00, true, false, 			.vr_status_word_access_map = 0xDF, .bit_0_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V75_VDDPHY_HBM1_3_5_TEMP_C	, .bit_1_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V75_VDDPHY_HBM0_2_4_TEMP_C	, .bit_2_mapping_vr_sensor_num = SENSOR_NUM_CPU_P1V8_VPP_HBM1_3_5_TEMP_C	, .bit_3_mapping_vr_sensor_num = SENSOR_NUM_CPU_P1V8_VPP_HBM0_2_4_TEMP_C	, .bit_4_mapping_vr_sensor_num = SENSOR_NUM_CPU_P1V2_VDDHTX_PCIE_TEMP_C		, .bit_5_mapping_vr_sensor_num = NULL									, .bit_6_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V9_TRVDD_ZONEA_TEMP_C		, .bit_7_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V9_TRVDD_ZONEB_TEMP_C },
+	{ VR_POWER_FAULT_3_REG, 0x00, 0x00, true, false, 			.vr_status_word_access_map = 0xD7, .bit_0_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V75_PVDD_CH_S_TEMP_C			, .bit_1_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V75_PVDD_CH_N_TEMP_C			, .bit_2_mapping_vr_sensor_num = SENSOR_NUM_CPU_P1V1_VDDC_HBM1_3_5_TEMP_C	, .bit_3_mapping_vr_sensor_num = NULL										, .bit_4_mapping_vr_sensor_num = SENSOR_NUM_CPU_P1V1_VDDC_HBM0_2_4_TEMP_C	, .bit_5_mapping_vr_sensor_num = NULL									, .bit_6_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V4_VDDQL_HBM1_3_5_TEMP_C	, .bit_7_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V4_VDDQL_HBM0_2_4_TEMP_C },
+	{ VR_POWER_FAULT_4_REG, 0x00, 0x00, true, false, 			.vr_status_word_access_map = 0x80, .bit_0_mapping_vr_sensor_num = NULL											, .bit_1_mapping_vr_sensor_num = NULL											, .bit_2_mapping_vr_sensor_num = NULL										, .bit_3_mapping_vr_sensor_num = NULL										, .bit_4_mapping_vr_sensor_num = NULL										, .bit_5_mapping_vr_sensor_num = NULL									, .bit_6_mapping_vr_sensor_num = NULL										, .bit_7_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V85_PVDD_TEMP_C },
+	{ VR_POWER_FAULT_5_REG, 0x00, 0x00, true, false, 			.vr_status_word_access_map = 0x48, .bit_0_mapping_vr_sensor_num = NULL											, .bit_1_mapping_vr_sensor_num = NULL											, .bit_2_mapping_vr_sensor_num = NULL										, .bit_3_mapping_vr_sensor_num = SENSOR_NUM_OSFP_P3V3_TEMP_C				, .bit_4_mapping_vr_sensor_num = NULL										, .bit_5_mapping_vr_sensor_num = NULL									, .bit_6_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V8_VDDA_PCIE_TEMP_C		, .bit_7_mapping_vr_sensor_num = NULL },
 	{ RSVD_2_REG, 0x00, NULL, false,  false },
 	{ RSVD_3_REG, 0x00, NULL, false,  false },
 	{ OSFP_PRSNT_PIN_READING_1_REG, 0xFF, 0xFF, false, false },
@@ -132,17 +144,17 @@ aegis_cpld_info aegis_cpld_info_table[] = {
 	{ ATH_BOOT_SOURCE_REG, 0x00, 0x00, false,  false },
 	{ S_OWL_BOOT_SOURCE_REG, 0x00, 0x00, false,  false },
 	{ N_OWL_BOOT_SOURCE_REG, 0x00, 0x00, false,  false },
-	{ VR_SMBUS_ALERT_1_REG, 0xFF, 0xFF, true, false },
-	{ VR_SMBUS_ALERT_2_REG, 0xFF, 0xFF, true, false },
+	{ VR_SMBUS_ALERT_1_REG, 0xFF, 0xFF, true, false,			.vr_status_word_access_map = 0xFF, .bit_0_mapping_vr_sensor_num = SENSOR_NUM_OSFP_P3V3_TEMP_C					, .bit_1_mapping_vr_sensor_num = SENSOR_NUM_CPU_P1V1_VDDC_HBM1_3_5_TEMP_C	, .bit_2_mapping_vr_sensor_num = SENSOR_NUM_CPU_P1V1_VDDC_HBM0_2_4_TEMP_C	, .bit_3_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V9_TRVDD_ZONEA_TEMP_C		, .bit_4_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V9_TRVDD_ZONEB_TEMP_C		, .bit_5_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V85_PVDD_TEMP_C			, .bit_6_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V75_PVDD_CH_S_TEMP_C	, .bit_7_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V75_PVDD_CH_N_TEMP_C },
+	{ VR_SMBUS_ALERT_2_REG, 0xFF, 0xFF, true, false, 			.vr_status_word_access_map = 0xF8, .bit_0_mapping_vr_sensor_num = NULL											, .bit_1_mapping_vr_sensor_num = NULL										, .bit_2_mapping_vr_sensor_num = NULL										, .bit_3_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V8_VDDA_PCIE_TEMP_C		, .bit_4_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V75_TRVDD_ZONEA_TEMP_C	, .bit_5_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V75_TRVDD_ZONEB_TEMP_C	, .bit_6_mapping_vr_sensor_num = SENSOR_NUM_UBC_1_TEMP_C				, .bit_7_mapping_vr_sensor_num = SENSOR_NUM_UBC_2_TEMP_C },
 	{ RSVD_4_REG, 0xFF, NULL, false,  false },
-	{ ASIC_OC_WARN_REG, 0xFF, 0xFF, true, false },
-	{ SYSTEM_ALERT_FAULT_REG, 0xFF, 0xFF, true, false },
-	{ VR_HOT_FAULT_1_REG, 0xFF, 0xFF, true, false },
-	{ VR_HOT_FAULT_2_REG, 0xFF, 0xFF, true, false },
-	{ TEMPERATURE_IC_OVERT_FAULT_REG, 0xFF, 0xFF, true, false },
-	{ VR_POWER_INPUT_FAULT_1_REG, 0xFF, 0xFF, true, false },
-	{ VR_POWER_INPUT_FAULT_2_REG, 0xFF, 0xFF, true, false },
-	{ LEAK_DETCTION_REG, 0xDF, 0xDF, true, false },
+	{ ASIC_OC_WARN_REG, 0xFF, 0xFF, true, false, 				.vr_status_word_access_map = 0x00, .bit_0_mapping_vr_sensor_num = NULL											, .bit_1_mapping_vr_sensor_num = NULL										, .bit_2_mapping_vr_sensor_num = NULL										, .bit_3_mapping_vr_sensor_num = NULL										, .bit_4_mapping_vr_sensor_num = NULL										, .bit_5_mapping_vr_sensor_num = NULL										, .bit_6_mapping_vr_sensor_num = NULL									, .bit_7_mapping_vr_sensor_num = NULL },
+	{ SYSTEM_ALERT_FAULT_REG, 0xFF, 0xFF, true, false, 			.vr_status_word_access_map = 0x00, .bit_0_mapping_vr_sensor_num = NULL											, .bit_1_mapping_vr_sensor_num = NULL										, .bit_2_mapping_vr_sensor_num = NULL										, .bit_3_mapping_vr_sensor_num = NULL										, .bit_4_mapping_vr_sensor_num = NULL										, .bit_5_mapping_vr_sensor_num = NULL										, .bit_6_mapping_vr_sensor_num = NULL									, .bit_7_mapping_vr_sensor_num = NULL },
+	{ VR_HOT_FAULT_1_REG, 0xFF, 0xFF, true, false, 				.vr_status_word_access_map = 0xFF, .bit_0_mapping_vr_sensor_num = SENSOR_NUM_CPU_P1V1_VDDC_HBM1_3_5_TEMP_C		, .bit_1_mapping_vr_sensor_num = SENSOR_NUM_CPU_P1V1_VDDC_HBM0_2_4_TEMP_C	, .bit_2_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V75_TRVDD_ZONEB_TEMP_C	, .bit_3_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V75_PVDD_CH_S_TEMP_C		, .bit_4_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V75_TRVDD_ZONEA_TEMP_C	, .bit_5_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V75_PVDD_CH_N_TEMP_C		, .bit_6_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V9_TRVDD_ZONEB_TEMP_C	, .bit_7_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V9_TRVDD_ZONEA_TEMP_C },
+	{ VR_HOT_FAULT_2_REG, 0xFF, 0xFF, true, false, 				.vr_status_word_access_map = 0xC0, .bit_0_mapping_vr_sensor_num = NULL											, .bit_1_mapping_vr_sensor_num = NULL										, .bit_2_mapping_vr_sensor_num = NULL										, .bit_3_mapping_vr_sensor_num = NULL										, .bit_4_mapping_vr_sensor_num = NULL										, .bit_5_mapping_vr_sensor_num = NULL										, .bit_6_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V8_VDDA_PCIE_TEMP_C	, .bit_7_mapping_vr_sensor_num = SENSOR_NUM_OSFP_P3V3_TEMP_C },
+	{ TEMPERATURE_IC_OVERT_FAULT_REG, 0xFF, 0xFF, true, false, 	.vr_status_word_access_map = 0x00, .bit_0_mapping_vr_sensor_num = NULL											, .bit_1_mapping_vr_sensor_num = NULL										, .bit_2_mapping_vr_sensor_num = NULL										, .bit_3_mapping_vr_sensor_num = NULL										, .bit_4_mapping_vr_sensor_num = NULL										, .bit_5_mapping_vr_sensor_num = NULL										, .bit_6_mapping_vr_sensor_num = NULL									, .bit_7_mapping_vr_sensor_num = NULL },
+	{ VR_POWER_INPUT_FAULT_1_REG, 0xFF, 0xFF, true, false, 		.vr_status_word_access_map = 0xFF, .bit_0_mapping_vr_sensor_num = SENSOR_NUM_CPU_P1V1_VDDC_HBM1_3_5_TEMP_C		, .bit_1_mapping_vr_sensor_num = SENSOR_NUM_CPU_P1V1_VDDC_HBM0_2_4_TEMP_C	, .bit_2_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V75_TRVDD_ZONEB_TEMP_C	, .bit_3_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V75_PVDD_CH_S_TEMP_C		, .bit_4_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V75_TRVDD_ZONEA_TEMP_C	, .bit_5_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V75_PVDD_CH_N_TEMP_C		, .bit_6_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V9_TRVDD_ZONEB_TEMP_C	, .bit_7_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V9_TRVDD_ZONEA_TEMP_C },
+	{ VR_POWER_INPUT_FAULT_2_REG, 0xFF, 0xFF, true, false, 		.vr_status_word_access_map = 0xC0, .bit_0_mapping_vr_sensor_num = NULL											, .bit_1_mapping_vr_sensor_num = NULL										, .bit_2_mapping_vr_sensor_num = NULL										, .bit_3_mapping_vr_sensor_num = NULL										, .bit_4_mapping_vr_sensor_num = NULL										, .bit_5_mapping_vr_sensor_num = NULL										, .bit_6_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V8_VDDA_PCIE_TEMP_C	, .bit_7_mapping_vr_sensor_num = SENSOR_NUM_OSFP_P3V3_TEMP_C },
+	{ LEAK_DETCTION_REG, 0xDF, 0xDF, true, false, 				.vr_status_word_access_map = 0x00, .bit_0_mapping_vr_sensor_num = NULL											, .bit_1_mapping_vr_sensor_num = NULL										, .bit_2_mapping_vr_sensor_num = NULL										, .bit_3_mapping_vr_sensor_num = NULL										, .bit_4_mapping_vr_sensor_num = NULL										, .bit_5_mapping_vr_sensor_num = NULL										, .bit_6_mapping_vr_sensor_num = NULL									, .bit_7_mapping_vr_sensor_num = NULL },
 	{ RESET_PIN_TO_ICS_STATUS_REG, 0xFF, 0xFF, false,  false },
 	{ CRD_STATUS_REG, 0xFB, 0x27, false, false },
 	{ CMN_STATUS_REG, 0x3F, 0xEF, false, false },
@@ -158,7 +170,7 @@ aegis_cpld_info aegis_cpld_info_table[] = {
 	{ MTIA_QSPI_BOOT_DISABLE_REG, 0x00, 0x00, false, false }
 	{ ATH_RSVD_GPIO_REG, NULL, NULL, false, false }
 };
-
+// clang-format on
 
 #define POLLING_INTERVAL_MS 1000  // 1 second polling interval
 
