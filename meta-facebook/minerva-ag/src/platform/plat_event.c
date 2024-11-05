@@ -121,7 +121,7 @@ aegis_cpld_info aegis_cpld_info_table[] = {
 	{ VR_POWER_GOOD_PIN_READING_4_REG, 0x00, 0xFF, false, false },
 	{ VR_POWER_GOOD_PIN_READING_5_REG, 0x00, 0xFE, false, false },
 	{ RSVD_1_REG, 0x00, NULL, false,  false },
-	{ VR_POWER_FAULT_1_REG, 0x00, 0x00, true, false, 			.vr_status_word_access_map = 0x7E, .bit_0_mapping_vr_sensor_num = NULL 											, .bit_1_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V75_TRVDD_ZONEA_TEMP_C		, .bit_2_mapping_vr_sensor_num =SENSOR_NUM_CPU_P0V75_TRVDD_ZONEB_TEMP_C		, .bit_3_mapping_vr_sensor_num = SENSOR_NUM_UBC_2_TEMP_C 					, .bit_4_mapping_vr_sensor_num = SENSOR_NUM_UBC_1_TEMP_C 					, .bit_5_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V75_PVDD_CH_S_TEMP_C	, .bit_6_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V75_MAX_PHY_N_TEMP_C		, .bit_7_mapping_vr_sensor_num = NULL },
+	{ VR_POWER_FAULT_1_REG, 0x00, 0x00, true, false, 			.vr_status_word_access_map = 0x7E, .bit_0_mapping_vr_sensor_num = NULL 											, .bit_1_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V75_TRVDD_ZONEA_TEMP_C		, .bit_2_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V75_TRVDD_ZONEB_TEMP_C	, .bit_3_mapping_vr_sensor_num = SENSOR_NUM_UBC_2_TEMP_C 					, .bit_4_mapping_vr_sensor_num = SENSOR_NUM_UBC_1_TEMP_C 					, .bit_5_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V75_PVDD_CH_S_TEMP_C	, .bit_6_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V75_MAX_PHY_N_TEMP_C		, .bit_7_mapping_vr_sensor_num = NULL },
 	{ VR_POWER_FAULT_2_REG, 0x00, 0x00, true, false, 			.vr_status_word_access_map = 0xDF, .bit_0_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V75_VDDPHY_HBM1_3_5_TEMP_C	, .bit_1_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V75_VDDPHY_HBM0_2_4_TEMP_C	, .bit_2_mapping_vr_sensor_num = SENSOR_NUM_CPU_P1V8_VPP_HBM1_3_5_TEMP_C	, .bit_3_mapping_vr_sensor_num = SENSOR_NUM_CPU_P1V8_VPP_HBM0_2_4_TEMP_C	, .bit_4_mapping_vr_sensor_num = SENSOR_NUM_CPU_P1V2_VDDHTX_PCIE_TEMP_C		, .bit_5_mapping_vr_sensor_num = NULL									, .bit_6_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V9_TRVDD_ZONEA_TEMP_C		, .bit_7_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V9_TRVDD_ZONEB_TEMP_C },
 	{ VR_POWER_FAULT_3_REG, 0x00, 0x00, true, false, 			.vr_status_word_access_map = 0xD7, .bit_0_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V75_PVDD_CH_S_TEMP_C			, .bit_1_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V75_PVDD_CH_N_TEMP_C			, .bit_2_mapping_vr_sensor_num = SENSOR_NUM_CPU_P1V1_VDDC_HBM1_3_5_TEMP_C	, .bit_3_mapping_vr_sensor_num = NULL										, .bit_4_mapping_vr_sensor_num = SENSOR_NUM_CPU_P1V1_VDDC_HBM0_2_4_TEMP_C	, .bit_5_mapping_vr_sensor_num = NULL									, .bit_6_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V4_VDDQL_HBM1_3_5_TEMP_C	, .bit_7_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V4_VDDQL_HBM0_2_4_TEMP_C },
 	{ VR_POWER_FAULT_4_REG, 0x00, 0x00, true, false, 			.vr_status_word_access_map = 0x80, .bit_0_mapping_vr_sensor_num = NULL											, .bit_1_mapping_vr_sensor_num = NULL											, .bit_2_mapping_vr_sensor_num = NULL										, .bit_3_mapping_vr_sensor_num = NULL										, .bit_4_mapping_vr_sensor_num = NULL										, .bit_5_mapping_vr_sensor_num = NULL									, .bit_6_mapping_vr_sensor_num = NULL										, .bit_7_mapping_vr_sensor_num = SENSOR_NUM_CPU_P0V85_PVDD_TEMP_C },
@@ -205,7 +205,7 @@ void poll_cpld_registers() {
 
     bool is_dc_on = is_mb_dc_on();
     plat_err_log temp_log = {0};
-    uint8_t temp_buffer[40] = {0};  // Buffer for recording is_bic_record registers
+    uint8_t temp_buffer[61] = {0};  // Buffer for recording is_bic_record registers
     size_t buffer_index = 0;
     bool status_changed = false;  // Track if any status changed in this cycle
 
@@ -221,12 +221,12 @@ void poll_cpld_registers() {
                 continue;
             }
 
-            // Store data in temp buffer if is_bic_record is true
-            if (aegis_cpld_info_table[i].is_bic_record) {
+            // // Store data in temp buffer if is_bic_record is true
+            // if (aegis_cpld_info_table[i].is_bic_record) {
                 if (buffer_index < sizeof(temp_buffer)) {
                     temp_buffer[buffer_index++] = data;
                 }
-            }
+            // }
 
             // Only check for mismatch if is_fault_log is true
             if (aegis_cpld_info_table[i].is_fault_log) {
