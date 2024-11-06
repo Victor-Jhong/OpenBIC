@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-#define IS_NORMAL_VAL true
-#define IS_ABNORMAL_VAL false
+#ifndef PLAT_LOG_H
+#define PLAT_LOG_H
+
+#include "plat_pldm_sensor.h"
 
 uint16_t error_log_count(void);
 void init_load_eeprom_log(void);
@@ -26,7 +28,7 @@ void plat_clear_log();
 
 typedef struct __attribute__((packed)) _plat_err_log_mapping {
 	uint16_t index;
-	uint16_t err_code;	
+	uint16_t err_code;
 	uint64_t sys_time;
 	uint8_t error_data[20];
 	uint8_t cpld_dump[96];
@@ -61,3 +63,28 @@ typedef struct _err_sensor_mapping {
 	uint16_t err_code;
 	uint8_t sen_num;
 } err_sensor_mapping;
+
+#define LOG_ASSERT 1
+#define LOG_DEASSERT 0
+
+enum err_number {
+	// VR fault error number mapping to sensor number
+
+	// other error number start form here
+	DC_STATUS_FAULT = 0xA0,
+	ASIC_FAULT,
+};
+
+enum err_type {
+	VR_FAULT_ASSERT,
+	VR_FAULT_DEASSERT,
+	DC_STATUS_FAULT_ASSERT,
+	DC_STATUS_FAULT_DEASSERT,
+	ASIC_FAULT_ASSERT,
+	ASIC_FAULT_DEASSERT,
+};
+
+extern const err_sensor_mapping minerva_ag_sensor_err_codes[];
+extern const err_sensor_mapping minerva_ag_sensor_normal_codes[];
+
+#endif

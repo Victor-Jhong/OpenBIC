@@ -31,7 +31,7 @@ LOG_MODULE_REGISTER(plat_log);
 #define AEGIS_FRU_LOG_START 0x0000 // log offset: 0KB
 #define AEGIS_CPLD_REGISTER_START_OFFSET 0x00
 #define AEGIS_CPLD_REGISTER_MAX_OFFSET 0x3C
-#define EEPROM_MAX_WRITE_TIME 5  // the BR24G512 eeprom max write time is 3.5 ms
+#define EEPROM_MAX_WRITE_TIME 5 // the BR24G512 eeprom max write time is 3.5 ms
 #define AEGIS_CPLD_ADDR (0x4C >> 1)
 #define I2C_BUS_CPLD I2C_BUS5
 #define AEGIS_CPLD_VR_VENDOR_TYPE_REG 0x1C
@@ -39,16 +39,52 @@ LOG_MODULE_REGISTER(plat_log);
 static plat_err_log_mapping err_log_data[LOG_MAX_NUM];
 static uint8_t err_sensor_caches[32];
 
-const err_sensor_mapping sensor_err_codes[] = {
-	{ LEAK_CHASSIS_0, 0x01 },
-	{ LEAK_CHASSIS_1, 0x02 },
-	{ LEAK_CHASSIS_2, 0x03 },
+const err_sensor_mapping minerva_ag_sensor_err_codes[] = {
+	{ VR_FAULT_ASSERT, SENSOR_NUM_OSFP_P3V3_TEMP_C },
+	{ VR_FAULT_ASSERT, SENSOR_NUM_CPU_P0V85_PVDD_TEMP_C },
+	{ VR_FAULT_ASSERT, SENSOR_NUM_CPU_P0V75_PVDD_CH_N_TEMP_C },
+	{ VR_FAULT_ASSERT, SENSOR_NUM_CPU_P0V75_MAX_PHY_N_TEMP_C },
+	{ VR_FAULT_ASSERT, SENSOR_NUM_CPU_P0V75_PVDD_CH_S_TEMP_C },
+	{ VR_FAULT_ASSERT, SENSOR_NUM_CPU_P0V75_MAX_PHY_S_TEMP_C },
+	{ VR_FAULT_ASSERT, SENSOR_NUM_CPU_P0V75_TRVDD_ZONEA_TEMP_C },
+	{ VR_FAULT_ASSERT, SENSOR_NUM_CPU_P1V8_VPP_HBM0_2_4_TEMP_C },
+	{ VR_FAULT_ASSERT, SENSOR_NUM_CPU_P0V75_TRVDD_ZONEB_TEMP_C },
+	{ VR_FAULT_ASSERT, SENSOR_NUM_CPU_P0V4_VDDQL_HBM0_2_4_TEMP_C },
+	{ VR_FAULT_ASSERT, SENSOR_NUM_CPU_P1V1_VDDC_HBM0_2_4_TEMP_C },
+	{ VR_FAULT_ASSERT, SENSOR_NUM_CPU_P0V75_VDDPHY_HBM0_2_4_TEMP_C },
+	{ VR_FAULT_ASSERT, SENSOR_NUM_CPU_P0V9_TRVDD_ZONEA_TEMP_C },
+	{ VR_FAULT_ASSERT, SENSOR_NUM_CPU_P1V8_VPP_HBM1_3_5_TEMP_C },
+	{ VR_FAULT_ASSERT, SENSOR_NUM_CPU_P0V9_TRVDD_ZONEB_TEMP_C },
+	{ VR_FAULT_ASSERT, SENSOR_NUM_CPU_P0V4_VDDQL_HBM1_3_5_TEMP_C },
+	{ VR_FAULT_ASSERT, SENSOR_NUM_CPU_P1V1_VDDC_HBM1_3_5_TEMP_C },
+	{ VR_FAULT_ASSERT, SENSOR_NUM_CPU_P0V75_VDDPHY_HBM1_3_5_TEMP_C },
+	{ VR_FAULT_ASSERT, SENSOR_NUM_CPU_P0V8_VDDA_PCIE_TEMP_C },
+	{ VR_FAULT_ASSERT, SENSOR_NUM_CPU_P1V2_VDDHTX_PCIE_TEMP_C },
+	{ DC_STATUS_FAULT_ASSERT, DC_STATUS_FAULT },
 };
 
-const err_sensor_mapping sensor_normal_codes[] = {
-	{ PUMP_1_SPEED_RECOVER, 0x04 },
-	{ PUMP_2_SPEED_RECOVER, 0x05 },
-	{ PUMP_3_SPEED_RECOVER, 0x06 },
+const err_sensor_mapping minerva_ag_minerva_ag_minerva_ag_sensor_normal_codes[] = {
+	{ VR_FAULT_DEASSERT, SENSOR_NUM_OSFP_P3V3_TEMP_C },
+	{ VR_FAULT_DEASSERT, SENSOR_NUM_CPU_P0V85_PVDD_TEMP_C },
+	{ VR_FAULT_DEASSERT, SENSOR_NUM_CPU_P0V75_PVDD_CH_N_TEMP_C },
+	{ VR_FAULT_DEASSERT, SENSOR_NUM_CPU_P0V75_MAX_PHY_N_TEMP_C },
+	{ VR_FAULT_DEASSERT, SENSOR_NUM_CPU_P0V75_PVDD_CH_S_TEMP_C },
+	{ VR_FAULT_DEASSERT, SENSOR_NUM_CPU_P0V75_MAX_PHY_S_TEMP_C },
+	{ VR_FAULT_DEASSERT, SENSOR_NUM_CPU_P0V75_TRVDD_ZONEA_TEMP_C },
+	{ VR_FAULT_DEASSERT, SENSOR_NUM_CPU_P1V8_VPP_HBM0_2_4_TEMP_C },
+	{ VR_FAULT_DEASSERT, SENSOR_NUM_CPU_P0V75_TRVDD_ZONEB_TEMP_C },
+	{ VR_FAULT_DEASSERT, SENSOR_NUM_CPU_P0V4_VDDQL_HBM0_2_4_TEMP_C },
+	{ VR_FAULT_DEASSERT, SENSOR_NUM_CPU_P1V1_VDDC_HBM0_2_4_TEMP_C },
+	{ VR_FAULT_DEASSERT, SENSOR_NUM_CPU_P0V75_VDDPHY_HBM0_2_4_TEMP_C },
+	{ VR_FAULT_DEASSERT, SENSOR_NUM_CPU_P0V9_TRVDD_ZONEA_TEMP_C },
+	{ VR_FAULT_DEASSERT, SENSOR_NUM_CPU_P1V8_VPP_HBM1_3_5_TEMP_C },
+	{ VR_FAULT_DEASSERT, SENSOR_NUM_CPU_P0V9_TRVDD_ZONEB_TEMP_C },
+	{ VR_FAULT_DEASSERT, SENSOR_NUM_CPU_P0V4_VDDQL_HBM1_3_5_TEMP_C },
+	{ VR_FAULT_DEASSERT, SENSOR_NUM_CPU_P1V1_VDDC_HBM1_3_5_TEMP_C },
+	{ VR_FAULT_DEASSERT, SENSOR_NUM_CPU_P0V75_VDDPHY_HBM1_3_5_TEMP_C },
+	{ VR_FAULT_DEASSERT, SENSOR_NUM_CPU_P0V8_VDDA_PCIE_TEMP_C },
+	{ VR_FAULT_DEASSERT, SENSOR_NUM_CPU_P1V2_VDDHTX_PCIE_TEMP_C },
+	{ DC_STATUS_FAULT_DEASSERT, DC_STATUS_FAULT },
 };
 
 // Return the number of error logs. It ensures valid index checking.
@@ -115,7 +151,7 @@ void plat_clear_log()
 	memset(err_sensor_caches, 0, sizeof(err_sensor_caches));
 
 	for (uint8_t i = 0; i < LOG_MAX_NUM; i++) {
-				if (!plat_eeprom_write(AEGIS_FRU_LOG_START + sizeof(plat_err_log_mapping) * i,
+		if (!plat_eeprom_write(AEGIS_FRU_LOG_START + sizeof(plat_err_log_mapping) * i,
 				       (uint8_t *)err_log_data, sizeof(plat_err_log_mapping))) {
 			LOG_ERR("Clear EEPROM Log failed at index %d", i);
 		}
@@ -145,21 +181,21 @@ bool plat_dump_cpld(uint8_t offset, uint8_t length, uint8_t *data)
 }
 
 // Handle error log events and record them if necessary
-void error_log_event(uint8_t sensor_num, bool val_normal)
+void error_log_event(uint8_t sensor_num, bool log_status)
 {
 	bool log_todo = false;
 	uint16_t err_code = 0;
 	// uint8_t vr_status_word = 0;
 	uint8_t dump_data[AEGIS_CPLD_REGISTER_MAX_OFFSET - AEGIS_CPLD_REGISTER_START_OFFSET + 1];
-	
-	if (val_normal) {
+
+	if (log_status == LOG_DEASSERT) {
 		for (uint8_t i = 0; i < ARRAY_SIZE(err_sensor_caches); i++) {
 			if (sensor_num == err_sensor_caches[i]) {
 				log_todo = true;
 				err_sensor_caches[i] = 0;
-				for (uint8_t j = 0; j < ARRAY_SIZE(sensor_normal_codes); j++) {
-					if (sensor_num == sensor_normal_codes[j].sen_num)
-						err_code = sensor_normal_codes[j].err_code;
+				for (uint8_t j = 0; j < ARRAY_SIZE(minerva_ag_minerva_ag_minerva_ag_sensor_normal_codes); j++) {
+					if (sensor_num == minerva_ag_minerva_ag_minerva_ag_sensor_normal_codes[j].sen_num)
+						err_code = minerva_ag_minerva_ag_minerva_ag_sensor_normal_codes[j].err_code;
 				}
 				break;
 			}
@@ -176,9 +212,9 @@ void error_log_event(uint8_t sensor_num, bool val_normal)
 			for (uint8_t i = 0; i < ARRAY_SIZE(err_sensor_caches); i++) {
 				if (err_sensor_caches[i] == 0) {
 					err_sensor_caches[i] = sensor_num;
-					for (uint8_t j = 0; j < ARRAY_SIZE(sensor_err_codes); j++) {
-						if (sensor_num == sensor_err_codes[j].sen_num)
-							err_code = sensor_err_codes[j].err_code;
+					for (uint8_t j = 0; j < ARRAY_SIZE(minerva_ag_sensor_err_codes); j++) {
+						if (sensor_num == minerva_ag_sensor_err_codes[j].sen_num)
+							err_code = minerva_ag_sensor_err_codes[j].err_code;
 					}
 					break;
 				}
@@ -199,7 +235,8 @@ void error_log_event(uint8_t sensor_num, bool val_normal)
 			 err_log_data[newest_count].index == 0xFFFF) ?
 				1 :
 				(err_log_data[newest_count].index + 1);
-		err_log_data[fru_count].err_code = sensor_num; // Use the sensor number as error code for now
+		err_log_data[fru_count].err_code =
+			sensor_num; // Use the sensor number as error code for now
 		err_log_data[fru_count].sys_time = k_uptime_get();
 
 		// // Fill error_data with VR status word if it's a VR error
@@ -213,9 +250,10 @@ void error_log_event(uint8_t sensor_num, bool val_normal)
 		// }
 
 		// Dump CPLD data and store it in cpld_dump
-		if (plat_dump_cpld(AEGIS_CPLD_REGISTER_START_OFFSET,
-				   (AEGIS_CPLD_REGISTER_MAX_OFFSET - AEGIS_CPLD_REGISTER_START_OFFSET + 1),
-				   dump_data)) {
+		if (plat_dump_cpld(
+			    AEGIS_CPLD_REGISTER_START_OFFSET,
+			    (AEGIS_CPLD_REGISTER_MAX_OFFSET - AEGIS_CPLD_REGISTER_START_OFFSET + 1),
+			    dump_data)) {
 			memcpy(err_log_data[fru_count].cpld_dump, dump_data, sizeof(dump_data));
 		} else {
 			LOG_ERR("Failed to dump CPLD data \n");
@@ -238,8 +276,8 @@ void init_load_eeprom_log(void)
 	memset(err_log_data, 0xFF, sizeof(err_log_data));
 	uint16_t log_len = sizeof(plat_err_log_mapping);
 	for (uint8_t i = 0; i < LOG_MAX_NUM; i++) {
-		if (!plat_eeprom_read(AEGIS_FRU_LOG_START + i * log_len, (uint8_t *)&err_log_data[i],
-				      log_len)) {
+		if (!plat_eeprom_read(AEGIS_FRU_LOG_START + i * log_len,
+				      (uint8_t *)&err_log_data[i], log_len)) {
 			LOG_ERR("READ Event %d failed from EEPROM", i + 1);
 		}
 	}
