@@ -27,55 +27,61 @@
 
 LOG_MODULE_REGISTER(plat_hook);
 
-#define VR_MUTEX_LOCK_TIMEOUT_MS 1000
-
 static struct k_mutex vr_mutex[VR_MAX_NUM];
+
+#define VR_PRE_READ_ARG(idx) \
+	{ .mutex = vr_mutex + idx, .vr_page = 0x0 }, \
+	{ .mutex = vr_mutex + idx, .vr_page = 0x1 }
 
 vr_pre_proc_arg vr_pre_read_args[] = {
 	// mutex, vr_page
+
+	FOR_EACH(VR_PRE_READ_ARG, (,), 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+#if 0
+	// OSFP_P3V3
+	{ vr_mutex + VR_INDEX_E_OSFP_P3V3, 0x0 },
+	{ vr_mutex + VR_INDEX_E_OSFP_P3V3, 0x1 },
+
 	// P0V85
-	[0] = { vr_mutex, 0x0 },
-	[1] = { vr_mutex, 0x1 },
+	{ vr_mutex + VR_INDEX_E_P0V85, 0x0 },
+	{ vr_mutex + VR_INDEX_E_P0V85, 0x1 },
 
 	// P0V75_CH_N
-	[2] = { vr_mutex + 1, 0x0 },
-	[3] = { vr_mutex + 1, 0x1 },
+	{ vr_mutex + 1, 0x0 },
+	{ vr_mutex + 1, 0x1 },
 
 	// P0V75_CH_S
-	[4] = { vr_mutex + 2, 0x0 },
-	[5] = { vr_mutex + 2, 0x1 },
+	{ vr_mutex + 2, 0x0 },
+	{ vr_mutex + 2, 0x1 },
 
 	// P0V75_TRVDD_ZONEA
-	[6] = { vr_mutex + 3, 0x0 },
-	[7] = { vr_mutex + 3, 0x1 },
+	{ vr_mutex + 3, 0x0 },
+	{ vr_mutex + 3, 0x1 },
 
 	// P0V75_TRVDD_ZONEB
-	[8] = { vr_mutex + 4, 0x0 },
-	[9] = { vr_mutex + 4, 0x1 },
+	{ vr_mutex + 4, 0x0 },
+	{ vr_mutex + 4, 0x1 },
 
 	// P1V1_VDDC_HBM0_HBM2_HBM4
-	[10] = { vr_mutex + 5, 0x0 },
-	[11] = { vr_mutex + 5, 0x1 },
+	{ vr_mutex + 5, 0x0 },
+	{ vr_mutex + 5, 0x1 },
 
 	// P0V9_TRVDD_ZONEA
-	[12] = { vr_mutex + 6, 0x0 },
-	[13] = { vr_mutex + 6, 0x1 },
+	{ vr_mutex + 6, 0x0 },
+	{ vr_mutex + 6, 0x1 },
 
 	// P0V9_TRVDD_ZONEB
-	[14] = { vr_mutex + 7, 0x0 },
-	[15] = { vr_mutex + 7, 0x1 },
+	{ vr_mutex + 7, 0x0 },
+	{ vr_mutex + 7, 0x1 },
 
 	// P1V1_VDDC_HBM1_HBM3_HBM5
-	[16] = { vr_mutex + 8, 0x0 },
-	[17] = { vr_mutex + 8, 0x1 },
+	{ vr_mutex + 8, 0x0 },
+	{ vr_mutex + 8, 0x1 },
 
 	// VDDA_PCIE
-	[18] = { vr_mutex + 9, 0x0 },
-	[19] = { vr_mutex + 9, 0x1 },
-
-	// OSFP_P3V3
-	[20] = { vr_mutex + 10, 0x0 },
-	[21] = { vr_mutex + 10, 0x1 }
+	{ vr_mutex + 9, 0x0 },
+	{ vr_mutex + 9, 0x1 },
+#endif
 };
 
 mp2971_init_arg mp2971_init_args[] = {
@@ -88,7 +94,7 @@ isl69259_init_arg isl69259_init_args[] = {
 
 void *vr_mutex_get(enum VR_INDEX_E vr_index)
 {
-	if (vr_index >= VR_MAX_NUM) {
+	if (vr_index >= VR_INDEX_MAX) {
 		LOG_ERR("vr_mutex_get, invalid vr_index %d", vr_index);
 		return NULL;
 	}
@@ -107,7 +113,7 @@ bool pre_vr_read(sensor_cfg *cfg, void *args)
 
 	/* mutex lock */
 	if (pre_proc_args->mutex) {
-		LOG_DBG("sen %x, mutex lock %p", cfg->num, pre_proc_args->mutex);
+		LOG_DBG("%x l %p", cfg->num, pre_proc_args->mutex);
 		if (k_mutex_lock(pre_proc_args->mutex, K_MSEC(VR_MUTEX_LOCK_TIMEOUT_MS))) {
 			LOG_ERR("pre_vr_read, mutex lock fail");
 			return false;
@@ -138,7 +144,7 @@ bool post_vr_read(sensor_cfg *cfg, void *args, int *reading)
 		
 	/* mutex unlock */
 	if (pre_proc_args->mutex) {
-		LOG_DBG("sen %x, mutex unlock %p", cfg->num, pre_proc_args->mutex);
+		LOG_DBG("%x u %p", cfg->num, pre_proc_args->mutex);
 		if (k_mutex_unlock(pre_proc_args->mutex)) {
 			LOG_ERR("post_vr_read, mutex unlock fail");
 			return false;
@@ -162,5 +168,10 @@ void vr_mutex_init(void)
 	for (uint8_t i = 0; i < ARRAY_SIZE(vr_mutex); i++) {
 		k_mutex_init(vr_mutex + i);
 		LOG_DBG("vr_mutex[%d] %p init", i, vr_mutex + i);
+	}
+
+	for (uint8_t i = 0; i < ARRAY_SIZE(vr_pre_read_args); i++) {
+		vr_pre_proc_arg *pre_proc_args = vr_pre_read_args + i;
+		LOG_DBG("vr_pre_read_args[%d] mutex %p, page %d", i, pre_proc_args->mutex, pre_proc_args->vr_page);
 	}
 }

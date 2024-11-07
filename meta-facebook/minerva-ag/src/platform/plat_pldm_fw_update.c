@@ -34,6 +34,7 @@
 #include "raa229621.h"
 #include "plat_class.h"
 #include "pldm_sensor.h"
+#include "plat_hook.h"
 
 LOG_MODULE_REGISTER(plat_fwupdate);
 
@@ -362,6 +363,52 @@ void load_pldmupdate_comp_config(void)
 	memcpy(comp_config, PLDMUPDATE_FW_CONFIG_TABLE, sizeof(PLDMUPDATE_FW_CONFIG_TABLE));
 }
 
+static struct k_mutex *get_vr_mutex_by_comp_id(uint8_t comp_id)
+{
+	uint8_t vr_mutex_id = VR_INDEX_MAX;
+
+	switch (comp_id) {
+	case AG_COMPNT_OSFP_P3V3:
+		vr_mutex_id = VR_INDEX_E_OSFP_P3V3;
+		break;
+	case AG_COMPNT_CPU_P0V85_PVDD:
+		vr_mutex_id = VR_INDEX_E_P0V85;
+		break;
+	case AG_COMPNT_CPU_P0V75_PVDD_CH_N:
+		vr_mutex_id = VR_INDEX_E_P0V75_CH_N;
+		break;
+	case AG_COMPNT_CPU_P0V75_PVDD_CH_S:
+		vr_mutex_id = VR_INDEX_E_P0V75_CH_S;
+		break;
+	case AG_COMPNT_CPU_P0V75_TRVDD_ZONEA:
+		vr_mutex_id = VR_INDEX_E_P0V75_TRVDD_ZONEA;
+		break;
+	case AG_COMPNT_CPU_P0V75_TRVDD_ZONEB:
+		vr_mutex_id = VR_INDEX_E_P0V75_TRVDD_ZONEB;
+		break;
+	case AG_COMPNT_CPU_P1V1_VDDC_HBM0_2_4:
+		vr_mutex_id = VR_INDEX_E_P1V1_VDDC_HBM0_HBM2_HBM4;
+		break;
+	case AG_COMPNT_CPU_P0V9_TRVDD_ZONEA:
+		vr_mutex_id = VR_INDEX_E_P0V9_TRVDD_ZONEA;
+		break;
+	case AG_COMPNT_CPU_P0V9_TRVDD_ZONEB:
+		vr_mutex_id = VR_INDEX_E_P0V9_TRVDD_ZONEB;
+		break;
+	case AG_COMPNT_CPU_P1V1_VDDC_HBM1_3_5:
+		vr_mutex_id = VR_INDEX_E_P1V1_VDDC_HBM1_HBM3_HBM5;
+		break;
+	case AG_COMPNT_CPU_P0V8_VDDA_PCIE:
+		vr_mutex_id = VR_INDEX_E_VDDA_PCIE;
+		break;
+	default:
+		LOG_ERR("Invalid component id(%d)", comp_id);
+		break;
+	}
+
+	return vr_mutex_get(vr_mutex_id);
+}
+
 static bool get_vr_fw_version(void *info_p, uint8_t *buf, uint8_t *len)
 {
 	CHECK_NULL_ARG_WITH_RETURN(info_p, false);
@@ -378,6 +425,18 @@ static bool get_vr_fw_version(void *info_p, uint8_t *buf, uint8_t *len)
 	char sensor_name[MAX_AUX_SENSOR_NAME_LEN] = { 0 };
 	find_sensor_id_and_name_by_firmware_comp_id(p->comp_identifier, &sensor_id, sensor_name);
 	find_vr_addr_and_bus_and_sensor_dev_by_sensor_id(sensor_id, &bus, &addr, &sensor_dev);
+	struct k_mutex *p_mutex = get_vr_mutex_by_comp_id(p->comp_identifier);
+
+	if (!p_mutex) {
+		LOG_ERR("vr comp id %d, mutex is NULL", p->comp_identifier);
+		return false;
+	}
+
+	if (k_mutex_lock(p_mutex, K_MSEC(VR_MUTEX_LOCK_TIMEOUT_MS))) {
+		LOG_ERR("vr comp id %d, mutex %p lock fail", p->comp_identifier, p_mutex);
+		return false;
+	}
+	LOG_DBG("vr comp id %d, mutex %p lock", p->comp_identifier, p_mutex);
 
 	uint8_t type = get_vr_type();
 	uint32_t version = 0;
@@ -387,20 +446,20 @@ static bool get_vr_fw_version(void *info_p, uint8_t *buf, uint8_t *len)
 		if (sensor_dev == sensor_dev_isl69259) {
 			if (!raa229621_get_crc(bus, addr, &version)) {
 				LOG_ERR("The VR ISL69260 version reading failed");
-				return ret;
+				goto err;
 			}
 			if (raa229621_get_remaining_wr(bus, addr, (uint8_t *)&remain) < 0) {
 				LOG_ERR("The VR ISL69260 remaining reading failed");
-				return ret;
+				goto err;
 			}
 		} else if (sensor_dev == sensor_dev_raa228238) {
 			if (!raa229621_get_crc(bus, addr, &version)) {
 				LOG_ERR("The VR RAA228238 version reading failed");
-				return ret;
+				goto err;
 			}
 			if (raa229621_get_remaining_wr(bus, addr, (uint8_t *)&remain) < 0) {
 				LOG_ERR("The VR RAA228238 remaining reading failed");
-				return ret;
+				goto err;
 			}
 		}
 		break;
@@ -409,19 +468,19 @@ static bool get_vr_fw_version(void *info_p, uint8_t *buf, uint8_t *len)
 		if (sensor_dev == sensor_dev_mp2971) {
 			if (!mp2971_get_checksum(bus, addr, &version)) {
 				LOG_ERR("The VR MPS2971 version reading failed");
-				return ret;
+				goto err;
 			}
 		} else if (sensor_dev == sensor_dev_mp2891) {
 			if (!mp2891_get_fw_version(bus, addr, &version)) {
 				LOG_ERR("The VR MPS2891 version reading failed");
-				return ret;
+				goto err;
 			}
 		}
 		break;
 	}
 	default:
 		LOG_ERR("Unsupport VR type(%d)", type);
-		return ret;
+		goto err;
 	}
 
 	if (sensor_dev == sensor_dev_mp2891)
@@ -441,7 +500,7 @@ static bool get_vr_fw_version(void *info_p, uint8_t *buf, uint8_t *len)
 
 	if (!vr_name_p) {
 		LOG_ERR("The pointer of VR string name is NULL");
-		return ret;
+		goto err;
 	}
 
 	memcpy(buf_p, vr_name_p, strlen(vr_name_p));
@@ -462,6 +521,12 @@ static bool get_vr_fw_version(void *info_p, uint8_t *buf, uint8_t *len)
 	}
 
 	ret = true;
+
+err:
+	LOG_DBG("vr comp id %d, mutex %p unlock", p->comp_identifier, p_mutex);
+	if (k_mutex_unlock(p_mutex))
+		LOG_ERR("vr comp id %d, mutex %p unlock fail", p->comp_identifier, p_mutex);
+
 	return ret;
 }
 
