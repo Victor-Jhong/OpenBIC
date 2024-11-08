@@ -14,18 +14,14 @@
  * limitations under the License.
  */
 
-#ifndef PLAT_FRU_H
-#define PLAT_FRU_H
+#ifndef PLAT_PLDM_FW_VERSION_SHELL_H
+#define PLAT_PLDM_FW_VERSION_SHELL_H
 
-#define FRU_CFG_NUM MAX_FRU_ID
-#define LOG_EEPROM_ADDR (0xA0 >> 1)
+#include <shell/shell.h>
 
-enum FRU_ID {
-	LOG_EEPROM_ID = 0x00,
-	MAX_FRU_ID,
-};
+void cmd_get_fw_version_vr(const struct shell *shell, size_t argc, char **argv);
 
-bool plat_eeprom_write(uint32_t offset, uint8_t *data, uint16_t data_len);
-bool plat_eeprom_read(uint32_t offset, uint8_t *data, uint16_t data_len);
-
+SHELL_STATIC_SUBCMD_SET_CREATE(sub_get_fw_version_cmd,
+			       SHELL_CMD(vr, NULL, "get fw version vr", cmd_get_fw_version_vr),
+			       SHELL_SUBCMD_SET_END);
 #endif
