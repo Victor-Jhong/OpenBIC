@@ -123,8 +123,10 @@ typedef struct _vr_error_callback_info_ {
 	uint8_t bit_7_mapping_vr_sensor_num;
 } vr_error_callback_info;
 
-bool vr_error_callback(uint8_t *cpld_offset, uint8_t *current_cpld_value, uint8_t *excepted_cpld_value, uint8_t *is_fault_bit_map);
+bool vr_error_callback(uint8_t *cpld_offset, uint8_t *current_cpld_value,
+		       uint8_t *excepted_cpld_value, uint8_t *is_fault_bit_map);
 
+// clang-format off
 aegis_cpld_info aegis_cpld_info_table[] = {
 	{ VR_POWER_FAULT_1_REG, 0x00, 0x00, true, false, 			false, false, 0x00,  .status_changed_cb = vr_error_callback },
 	{ VR_POWER_FAULT_2_REG, 0x00, 0x00, true, false, 			false, false, 0x00,  .status_changed_cb = vr_error_callback },
@@ -144,24 +146,23 @@ aegis_cpld_info aegis_cpld_info_table[] = {
 	{ VR_POWER_INPUT_FAULT_2_REG, 0xFF, 0xFF, true, false, 		false, false, 0x00,  .status_changed_cb = vr_error_callback },
 	{ LEAK_DETCTION_REG, 0xDF, 0xDF, true, false, 				false, false, 0x00,  .status_changed_cb = vr_error_callback },
 };
+// clang-format on
 
+#define CPLD_POLLING_INTERVAL_MS 1000 // 1 second polling interval
 
-#define CPLD_POLLING_INTERVAL_MS 1000  // 1 second polling interval
-
-bool is_ubc_enabled() {
+bool is_ubc_enabled()
+{
 	uint8_t data = 0;
 	if (!plat_read_cpld(VR_ENABLE_PIN_READING_4_REG, &data)) {
 		LOG_ERR("Failed to read CPLD register 0x%02X", VR_ENABLE_PIN_READING_4_REG);
 		return 0;
 	}
-	
+
 	/*Bit2: FM_PLD_UBC_EN*/
 	return data & 0x02;
-
 }
 
 //TODO: init ubc_enabled_delayed_status when AC on
-
 
 K_MUTEX_DEFINE(trigger_dc_on_status_changing_mutex);
 K_MUTEX_DEFINE(trigger_dc_off_status_changing_mutex);
@@ -169,7 +170,6 @@ K_MUTEX_DEFINE(trigger_dc_off_status_changing_mutex);
 bool ubc_enabled_delayed_status = false;
 bool is_dc_on_status_changing = false;
 bool is_dc_off_status_changing = false;
-
 
 /* RST_ATH_PWR_ON_PLD_R1_N is low active,
 * 1 -> power on
@@ -181,8 +181,8 @@ void set_ubc_enabled_delayed(struct k_timer *timer)
 	is_dc_on_status_changing = false;
 
 	if (gpio_get(RST_ATH_PWR_ON_PLD_R1_N) != 1)
-		error_log_event( DC_STATUS_FAULT , LOG_ASSERT);
-} 
+		error_log_event(DC_STATUS_FAULT, LOG_ASSERT);
+}
 
 void set_ubc_disabled_delayed(struct k_timer *timer)
 {
@@ -190,8 +190,8 @@ void set_ubc_disabled_delayed(struct k_timer *timer)
 	is_dc_off_status_changing = false;
 
 	if (gpio_get(RST_ATH_PWR_ON_PLD_R1_N) != 0)
-		error_log_event( DC_STATUS_FAULT , LOG_ASSERT);
-} 
+		error_log_event(DC_STATUS_FAULT, LOG_ASSERT);
+}
 
 K_TIMER_DEFINE(set_ubc_enabled_delayed_timer, set_ubc_enabled_delayed, NULL);
 K_TIMER_DEFINE(set_ubc_disabled_delayed_timer, set_ubc_disabled_delayed, NULL);
@@ -199,31 +199,33 @@ K_TIMER_DEFINE(set_ubc_disabled_delayed_timer, set_ubc_disabled_delayed, NULL);
 void check_ubc_status()
 {
 	static bool last_ubc_status = false;
-	
+
 	/* Clear all aegis_cpld_info_table is_fault_bit_map when DC or UBC status changed 
 	* RST_ATH_PWR_ON_PLD_R1_N could be ready before ubc_enabled_delayed_status(3S after UBC is enabled)
 	*/
-	if ((last_ubc_status != ubc_enabled_delayed_status) || (gpio_get(RST_ATH_PWR_ON_PLD_R1_N) != ubc_enabled_delayed_status)){
-		for (int i = 0; i < sizeof(aegis_cpld_info_table) / sizeof(aegis_cpld_info_table[0]); i++) {
+	if ((last_ubc_status != ubc_enabled_delayed_status) ||
+	    (gpio_get(RST_ATH_PWR_ON_PLD_R1_N) != ubc_enabled_delayed_status)) {
+		for (int i = 0;
+		     i < sizeof(aegis_cpld_info_table) / sizeof(aegis_cpld_info_table[0]); i++) {
 			aegis_cpld_info_table[i].is_fault_bit_map = 0;
 		}
 	};
 
 	last_ubc_status = ubc_enabled_delayed_status;
-	
-	/* DC on process should be done in 3s after UBC is enabled */	
-	if (is_ubc_enabled() && ubc_enabled_delayed_status != true){
+
+	/* DC on process should be done in 3s after UBC is enabled */
+	if (is_ubc_enabled() && ubc_enabled_delayed_status != true) {
 		if (k_mutex_lock(&trigger_dc_on_status_changing_mutex, K_NO_WAIT)) {
 			k_timer_start(&set_ubc_enabled_delayed_timer, K_NO_WAIT, K_MSEC(3000));
 			is_dc_on_status_changing = true;
 		}
-	
-	/* DC off process should be done in 3s after UBC is enabled */
-	} else if (!is_ubc_enabled() && ubc_enabled_delayed_status != false){
+
+		/* DC off process should be done in 3s after UBC is enabled */
+	} else if (!is_ubc_enabled() && ubc_enabled_delayed_status != false) {
 		if (k_mutex_lock(&trigger_dc_off_status_changing_mutex, K_NO_WAIT)) {
 			k_timer_start(&set_ubc_disabled_delayed_timer, K_NO_WAIT, K_MSEC(3000));
 			is_dc_off_status_changing = true;
-		}		
+		}
 	}
 }
 
@@ -244,65 +246,61 @@ vr_error_callback_info vr_error_callback_info_table	[] = {
 	{ VR_POWER_INPUT_FAULT_1_REG, 		0xFF, 	SENSOR_NUM_CPU_P1V1_VDDC_HBM1_3_5_TEMP_C,		SENSOR_NUM_CPU_P1V1_VDDC_HBM0_2_4_TEMP_C,		SENSOR_NUM_CPU_P0V75_TRVDD_ZONEB_TEMP_C,	SENSOR_NUM_CPU_P0V75_PVDD_CH_S_TEMP_C,		SENSOR_NUM_CPU_P0V75_TRVDD_ZONEA_TEMP_C	,	SENSOR_NUM_CPU_P0V75_PVDD_CH_N_TEMP_C,		SENSOR_NUM_CPU_P0V9_TRVDD_ZONEB_TEMP_C,		SENSOR_NUM_CPU_P0V9_TRVDD_ZONEA_TEMP_C },
 	{ VR_POWER_INPUT_FAULT_2_REG, 		0xC0, 	0x00,											0x00,											0x00,										0x00,										0x00,										0x00,										SENSOR_NUM_CPU_P0V8_VDDA_PCIE_TEMP_C,		SENSOR_NUM_OSFP_P3V3_TEMP_C },
 	{ LEAK_DETCTION_REG, 				0x00, 	0x00,											0x00,											0x00,										0x00,										0x00,										0x00,										0x00,										0x00 },
-};	
+};
 // clang-format on
 
-bool vr_error_callback(uint8_t *cpld_offset, uint8_t *current_cpld_value, uint8_t *excepted_cpld_value, uint8_t *is_fault_bit_map)
+bool vr_error_callback(uint8_t *cpld_offset, uint8_t *current_cpld_value,
+		       uint8_t *excepted_cpld_value, uint8_t *is_fault_bit_map)
 {
-
-	
-
-
-
-
-    return true; 
+	return true;
 }
 
-void poll_cpld_registers() 
+void poll_cpld_registers()
 {
-    uint8_t data = 0;
+	uint8_t data = 0;
 
-    while (1) {
+	while (1) {
 		/* Sleep for the polling interval */
-        k_msleep(CPLD_POLLING_INTERVAL_MS);		
-		
+		k_msleep(CPLD_POLLING_INTERVAL_MS);
+
 		check_ubc_status();
 
 		/* Check if any status is changing */
 		if (is_dc_on_status_changing || is_dc_off_status_changing)
 			continue;
-		
-        for (size_t i = 0; i < ARRAY_SIZE(aegis_cpld_info_table); i++) {
-            uint8_t expected_val = ubc_enabled_delayed_status ? aegis_cpld_info_table[i].dc_on_defaut : aegis_cpld_info_table[i].dc_off_defaut;
 
-            // Read from CPLD
-            if (!plat_read_cpld(aegis_cpld_info_table[i].cpld_offset, &data)) {
-                LOG_ERR("Failed to read CPLD register 0x%02X", aegis_cpld_info_table[i].cpld_offset);
-                continue;
-            }
+		for (size_t i = 0; i < ARRAY_SIZE(aegis_cpld_info_table); i++) {
+			uint8_t expected_val = ubc_enabled_delayed_status ?
+						       aegis_cpld_info_table[i].dc_on_defaut :
+						       aegis_cpld_info_table[i].dc_off_defaut;
 
-            if (aegis_cpld_info_table[i].is_fault_log) {
-                uint8_t new_fault_map = (data ^ expected_val);
-                
-                // get unrecorded fault bit map
-                uint8_t unrecorded_fault_map = new_fault_map & ~aegis_cpld_info_table[i].is_fault_bit_map;
+			// Read from CPLD
+			if (!plat_read_cpld(aegis_cpld_info_table[i].cpld_offset, &data)) {
+				LOG_ERR("Failed to read CPLD register 0x%02X",
+					aegis_cpld_info_table[i].cpld_offset);
+				continue;
+			}
 
-                if (unrecorded_fault_map) {
-                   if (aegis_cpld_info_table[i].status_changed_cb) {
+			if (aegis_cpld_info_table[i].is_fault_log) {
+				uint8_t new_fault_map = (data ^ expected_val);
+
+				// get unrecorded fault bit map
+				uint8_t unrecorded_fault_map =
+					new_fault_map & ~aegis_cpld_info_table[i].is_fault_bit_map;
+
+				if (unrecorded_fault_map) {
+					if (aegis_cpld_info_table[i].status_changed_cb) {
 						aegis_cpld_info_table[i].status_changed_cb(
-							&aegis_cpld_info_table[i].cpld_offset,    
-							&data,                                    
-							&expected_val,                            
-							&aegis_cpld_info_table[i].is_fault_bit_map 
-						);
+							&aegis_cpld_info_table[i].cpld_offset,
+							&data, &expected_val,
+							&aegis_cpld_info_table[i].is_fault_bit_map);
 					}
-                    // update map
-                    aegis_cpld_info_table[i].is_fault_bit_map = new_fault_map;
+					// update map
+					aegis_cpld_info_table[i].is_fault_bit_map = new_fault_map;
 
-                    aegis_cpld_info_table[i].last_polling_value = data;
-                }
-            }
-        }
-    }
+					aegis_cpld_info_table[i].last_polling_value = data;
+				}
+			}
+		}
+	}
 }
-

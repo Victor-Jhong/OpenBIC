@@ -193,9 +193,18 @@ void error_log_event(uint8_t sensor_num, bool log_status)
 			if (sensor_num == err_sensor_caches[i]) {
 				log_todo = true;
 				err_sensor_caches[i] = 0;
-				for (uint8_t j = 0; j < ARRAY_SIZE(minerva_ag_minerva_ag_minerva_ag_sensor_normal_codes); j++) {
-					if (sensor_num == minerva_ag_minerva_ag_minerva_ag_sensor_normal_codes[j].sen_num)
-						err_code = minerva_ag_minerva_ag_minerva_ag_sensor_normal_codes[j].err_code;
+				for (uint8_t j = 0;
+				     j <
+				     ARRAY_SIZE(
+					     minerva_ag_minerva_ag_minerva_ag_sensor_normal_codes);
+				     j++) {
+					if (sensor_num ==
+					    minerva_ag_minerva_ag_minerva_ag_sensor_normal_codes[j]
+						    .sen_num)
+						err_code =
+							minerva_ag_minerva_ag_minerva_ag_sensor_normal_codes
+								[j]
+									.err_code;
 				}
 				break;
 			}
@@ -212,9 +221,12 @@ void error_log_event(uint8_t sensor_num, bool log_status)
 			for (uint8_t i = 0; i < ARRAY_SIZE(err_sensor_caches); i++) {
 				if (err_sensor_caches[i] == 0) {
 					err_sensor_caches[i] = sensor_num;
-					for (uint8_t j = 0; j < ARRAY_SIZE(minerva_ag_sensor_err_codes); j++) {
-						if (sensor_num == minerva_ag_sensor_err_codes[j].sen_num)
-							err_code = minerva_ag_sensor_err_codes[j].err_code;
+					for (uint8_t j = 0;
+					     j < ARRAY_SIZE(minerva_ag_sensor_err_codes); j++) {
+						if (sensor_num ==
+						    minerva_ag_sensor_err_codes[j].sen_num)
+							err_code = minerva_ag_sensor_err_codes[j]
+									   .err_code;
 					}
 					break;
 				}
