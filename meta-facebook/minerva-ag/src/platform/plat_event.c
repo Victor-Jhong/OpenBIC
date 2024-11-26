@@ -123,8 +123,7 @@ typedef struct _vr_error_callback_info_ {
 	uint8_t bit_7_mapping_vr_sensor_num;
 } vr_error_callback_info;
 
-bool vr_error_callback(uint8_t *cpld_offset, uint8_t *current_cpld_value,
-		       uint8_t *excepted_cpld_value, uint8_t *is_fault_bit_map);
+bool vr_error_callback(aegis_cpld_info *cpld_info, uint8_t *current_cpld_value);
 
 // clang-format off
 aegis_cpld_info aegis_cpld_info_table[] = {
@@ -133,10 +132,8 @@ aegis_cpld_info aegis_cpld_info_table[] = {
 	{ VR_POWER_FAULT_3_REG, 0x00, 0x00, true, false, 			false, false, 0x00,  .status_changed_cb = vr_error_callback },
 	{ VR_POWER_FAULT_4_REG, 0x00, 0x00, true, false, 			false, false, 0x00,  .status_changed_cb = vr_error_callback },
 	{ VR_POWER_FAULT_5_REG, 0x00, 0x00, true, false, 			false, false, 0x00,  .status_changed_cb = vr_error_callback },
-
 	{ VR_SMBUS_ALERT_1_REG, 0xFF, 0xFF, true, false,			false, false, 0x00,  .status_changed_cb = vr_error_callback },
 	{ VR_SMBUS_ALERT_2_REG, 0xFF, 0xFF, true, false, 			false, false, 0x00,  .status_changed_cb = vr_error_callback },
-
 	{ ASIC_OC_WARN_REG, 0xFF, 0xFF, true, false, 				false, false, 0x00,  .status_changed_cb = vr_error_callback },
 	{ SYSTEM_ALERT_FAULT_REG, 0xFF, 0xFF, true, false, 			false, false, 0x00,  .status_changed_cb = vr_error_callback },
 	{ VR_HOT_FAULT_1_REG, 0xFF, 0xFF, true, false, 				false, false, 0x00,  .status_changed_cb = vr_error_callback },
@@ -147,6 +144,30 @@ aegis_cpld_info aegis_cpld_info_table[] = {
 	{ LEAK_DETCTION_REG, 0xDF, 0xDF, true, false, 				false, false, 0x00,  .status_changed_cb = vr_error_callback },
 };
 // clang-format on
+
+enum VR_UBC_INDEX_E {
+	UBC_1 = 0,
+	UBC_2,
+	VR_1,
+	VR_2,
+	VR_3,
+	VR_4,
+	VR_5,
+	VR_6,
+	VR_7,
+	VR_8,
+	VR_9,
+	VR_10,
+	VR_11,
+	VR_MAX,
+};
+
+typedef struct _vr_ubc_device_table_ {
+	uint8_t index;
+	uint8_t device_index;
+	uint8_t sensor_num_1;
+	uint8_t sensor_num_2;
+} vr_ubc_device_table;
 
 #define CPLD_POLLING_INTERVAL_MS 1000 // 1 second polling interval
 
@@ -229,29 +250,87 @@ void check_ubc_status()
 	}
 }
 
-// clang-format off
-vr_error_callback_info vr_error_callback_info_table	[] = {
-	{ VR_POWER_FAULT_1_REG, 			0x7E, 	0x00, 											SENSOR_NUM_CPU_P0V75_TRVDD_ZONEA_TEMP_C,		SENSOR_NUM_CPU_P0V75_TRVDD_ZONEB_TEMP_C,	SENSOR_NUM_UBC_2_TEMP_C, 					SENSOR_NUM_UBC_1_TEMP_C, 					SENSOR_NUM_CPU_P0V75_PVDD_CH_S_TEMP_C,		SENSOR_NUM_CPU_P0V75_MAX_PHY_N_TEMP_C,		0x00 },
-	{ VR_POWER_FAULT_2_REG, 			0xDF, 	SENSOR_NUM_CPU_P0V75_VDDPHY_HBM1_3_5_TEMP_C,	SENSOR_NUM_CPU_P0V75_VDDPHY_HBM0_2_4_TEMP_C,	SENSOR_NUM_CPU_P1V8_VPP_HBM1_3_5_TEMP_C,	SENSOR_NUM_CPU_P1V8_VPP_HBM0_2_4_TEMP_C,	SENSOR_NUM_CPU_P1V2_VDDHTX_PCIE_TEMP_C,		0x00,										SENSOR_NUM_CPU_P0V9_TRVDD_ZONEA_TEMP_C,		SENSOR_NUM_CPU_P0V9_TRVDD_ZONEB_TEMP_C },
-	{ VR_POWER_FAULT_3_REG, 			0xD7, 	SENSOR_NUM_CPU_P0V75_PVDD_CH_S_TEMP_C,			SENSOR_NUM_CPU_P0V75_PVDD_CH_N_TEMP_C,			SENSOR_NUM_CPU_P1V1_VDDC_HBM1_3_5_TEMP_C,	0x00,										SENSOR_NUM_CPU_P1V1_VDDC_HBM0_2_4_TEMP_C,	0x00,										SENSOR_NUM_CPU_P0V4_VDDQL_HBM1_3_5_TEMP_C,	SENSOR_NUM_CPU_P0V4_VDDQL_HBM0_2_4_TEMP_C },
-	{ VR_POWER_FAULT_4_REG, 			0x80, 	0x00,											0x00,											0x00,										0x00,										0x00,										0x00,										0x00,										SENSOR_NUM_CPU_P0V85_PVDD_TEMP_C },
-	{ VR_POWER_FAULT_5_REG, 			0x48, 	0x00,											0x00,											0x00,										SENSOR_NUM_OSFP_P3V3_TEMP_C,				0x00,										0x00,										SENSOR_NUM_CPU_P0V8_VDDA_PCIE_TEMP_C,		0x00 },
-	{ VR_SMBUS_ALERT_1_REG, 			0xFF, 	SENSOR_NUM_OSFP_P3V3_TEMP_C,					SENSOR_NUM_CPU_P1V1_VDDC_HBM1_3_5_TEMP_C,		SENSOR_NUM_CPU_P1V1_VDDC_HBM0_2_4_TEMP_C,	SENSOR_NUM_CPU_P0V9_TRVDD_ZONEA_TEMP_C,		SENSOR_NUM_CPU_P0V9_TRVDD_ZONEB_TEMP_C,		SENSOR_NUM_CPU_P0V85_PVDD_TEMP_C,			SENSOR_NUM_CPU_P0V75_PVDD_CH_S_TEMP_C,		SENSOR_NUM_CPU_P0V75_PVDD_CH_N_TEMP_C },
-	{ VR_SMBUS_ALERT_2_REG, 			0xF8, 	0x00,											0x00,											0x00,										SENSOR_NUM_CPU_P0V8_VDDA_PCIE_TEMP_C,		SENSOR_NUM_CPU_P0V75_TRVDD_ZONEA_TEMP_C,	SENSOR_NUM_CPU_P0V75_TRVDD_ZONEB_TEMP_C,	SENSOR_NUM_UBC_1_TEMP_C,						SENSOR_NUM_UBC_2_TEMP_C },
-	{ ASIC_OC_WARN_REG, 				0x00, 	0x00,											0x00,											0x00,										0x00,										0x00,										0x00,										0x00,										0x00 },
-	{ SYSTEM_ALERT_FAULT_REG, 			0x00, 	0x00,											0x00,											0x00,										0x00,										0x00,										0x00,										0x00,										0x00 },
-	{ VR_HOT_FAULT_1_REG, 				0xFF, 	SENSOR_NUM_CPU_P1V1_VDDC_HBM1_3_5_TEMP_C,		SENSOR_NUM_CPU_P1V1_VDDC_HBM0_2_4_TEMP_C,		SENSOR_NUM_CPU_P0V75_TRVDD_ZONEB_TEMP_C,	SENSOR_NUM_CPU_P0V75_PVDD_CH_S_TEMP_C,		SENSOR_NUM_CPU_P0V75_TRVDD_ZONEA_TEMP_C,	SENSOR_NUM_CPU_P0V75_PVDD_CH_N_TEMP_C,		SENSOR_NUM_CPU_P0V9_TRVDD_ZONEB_TEMP_C,		SENSOR_NUM_CPU_P0V9_TRVDD_ZONEA_TEMP_C },
-	{ VR_HOT_FAULT_2_REG, 				0xC0, 	0x00,											0x00,											0x00,										0x00,										0x00,										0x00,										SENSOR_NUM_CPU_P0V8_VDDA_PCIE_TEMP_C,		SENSOR_NUM_OSFP_P3V3_TEMP_C },
-	{ TEMPERATURE_IC_OVERT_FAULT_REG, 	0x00, 	0x00,											0x00,											0x00,										0x00,										0x00,										0x00,										0x00,										0x00 },
-	{ VR_POWER_INPUT_FAULT_1_REG, 		0xFF, 	SENSOR_NUM_CPU_P1V1_VDDC_HBM1_3_5_TEMP_C,		SENSOR_NUM_CPU_P1V1_VDDC_HBM0_2_4_TEMP_C,		SENSOR_NUM_CPU_P0V75_TRVDD_ZONEB_TEMP_C,	SENSOR_NUM_CPU_P0V75_PVDD_CH_S_TEMP_C,		SENSOR_NUM_CPU_P0V75_TRVDD_ZONEA_TEMP_C	,	SENSOR_NUM_CPU_P0V75_PVDD_CH_N_TEMP_C,		SENSOR_NUM_CPU_P0V9_TRVDD_ZONEB_TEMP_C,		SENSOR_NUM_CPU_P0V9_TRVDD_ZONEA_TEMP_C },
-	{ VR_POWER_INPUT_FAULT_2_REG, 		0xC0, 	0x00,											0x00,											0x00,										0x00,										0x00,										0x00,										SENSOR_NUM_CPU_P0V8_VDDA_PCIE_TEMP_C,		SENSOR_NUM_OSFP_P3V3_TEMP_C },
-	{ LEAK_DETCTION_REG, 				0x00, 	0x00,											0x00,											0x00,										0x00,										0x00,										0x00,										0x00,										0x00 },
+vr_ubc_device_table vr_device_table[] = {
+	{ UBC_1, SENSOR_NUM_UBC_1_TEMP_C },
+	{ UBC_2, SENSOR_NUM_UBC_2_TEMP_C },
+	{ VR_1, SENSOR_NUM_OSFP_P3V3_TEMP_C },
+	{ VR_2, SENSOR_NUM_CPU_P0V85_PVDD_TEMP_C },
+	{ VR_3, SENSOR_NUM_CPU_P0V75_PVDD_CH_N_TEMP_C, SENSOR_NUM_CPU_P0V75_MAX_PHY_N_TEMP_C },
+	{ VR_4, SENSOR_NUM_CPU_P0V75_PVDD_CH_S_TEMP_C, SENSOR_NUM_CPU_P0V75_MAX_PHY_S_TEMP_C },
+	{ VR_5, SENSOR_NUM_CPU_P0V75_TRVDD_ZONEA_TEMP_C, SENSOR_NUM_CPU_P1V8_VPP_HBM0_2_4_TEMP_C },
+	{ VR_6, SENSOR_NUM_CPU_P0V75_TRVDD_ZONEB_TEMP_C,
+	  SENSOR_NUM_CPU_P0V4_VDDQL_HBM0_2_4_TEMP_C },
+	{ VR_7, SENSOR_NUM_CPU_P1V1_VDDC_HBM0_2_4_TEMP_C,
+	  SENSOR_NUM_CPU_P0V75_VDDPHY_HBM0_2_4_TEMP_C },
+	{ VR_8, SENSOR_NUM_CPU_P0V9_TRVDD_ZONEA_TEMP_C, SENSOR_NUM_CPU_P1V8_VPP_HBM1_3_5_TEMP_C },
+	{ VR_9, SENSOR_NUM_CPU_P0V9_TRVDD_ZONEB_TEMP_C, SENSOR_NUM_CPU_P0V4_VDDQL_HBM1_3_5_TEMP_C },
+	{ VR_10, SENSOR_NUM_CPU_P1V1_VDDC_HBM1_3_5_TEMP_C,
+	  SENSOR_NUM_CPU_P0V75_VDDPHY_HBM1_3_5_TEMP_C },
+	{ VR_11, SENSOR_NUM_CPU_P0V8_VDDA_PCIE_TEMP_C, SENSOR_NUM_CPU_P1V2_VDDHTX_PCIE_TEMP_C },
 };
-// clang-format on
 
-bool vr_error_callback(uint8_t *cpld_offset, uint8_t *current_cpld_value,
-		       uint8_t *excepted_cpld_value, uint8_t *is_fault_bit_map)
+vr_error_callback_info vr_error_callback_info_table[] = {
+	{ VR_POWER_FAULT_1_REG, 0x7E, 0x00, VR_5, VR_6, UBC_2, UBC_1, VR_4, VR_3, 0x00 },
+	{ VR_POWER_FAULT_2_REG, 0xDF, VR_10, VR_7, VR_8, VR_5, VR_11, 0x00, VR_8, VR_9 },
+	{ VR_POWER_FAULT_3_REG, 0xD7, VR_4, VR_3, VR_10, 0x00, VR_7, 0x00, VR_9, VR_6 },
+	{ VR_POWER_FAULT_4_REG, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, VR_2 },
+	{ VR_POWER_FAULT_5_REG, 0x48, 0x00, 0x00, 0x00, VR_1, 0x00, 0x00, VR_11, 0x00 },
+	{ VR_SMBUS_ALERT_1_REG, 0xFF, VR_1, VR_10, VR_7, VR_8, VR_9, VR_2, VR_4, VR_3 },
+	{ VR_SMBUS_ALERT_2_REG, 0xF8, 0x00, 0x00, 0x00, VR_11, VR_5, VR_6, UBC_1, UBC_2 },
+	{ ASIC_OC_WARN_REG, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
+	{ SYSTEM_ALERT_FAULT_REG, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
+	{ VR_HOT_FAULT_1_REG, 0xFF, VR_10, VR_7, VR_6, VR_4, VR_5, VR_3, VR_9, VR_8 },
+	{ VR_HOT_FAULT_2_REG, 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, VR_11, VR_1 },
+	{ TEMPERATURE_IC_OVERT_FAULT_REG, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
+	{ VR_POWER_INPUT_FAULT_1_REG, 0xFF, VR_10, VR_7, VR_6, VR_4, VR_5, VR_3, VR_9, VR_8 },
+	{ VR_POWER_INPUT_FAULT_2_REG, 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, VR_11, VR_1 },
+	{ LEAK_DETCTION_REG, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
+};
+
+bool vr_error_callback(aegis_cpld_info *cpld_info, uint8_t *current_cpld_value)
 {
+	CHECK_NULL_ARG_WITH_RETURN(cpld_info, false);
+	CHECK_NULL_ARG_WITH_RETURN(current_cpld_value, false);
+
+	// Get the expected value based on the current UBC status
+	uint8_t expected_val =
+		ubc_enabled_delayed_status ? cpld_info->dc_on_defaut : cpld_info->dc_off_defaut;
+
+	// Calculate current faults and new faults
+	uint8_t current_fault = *current_cpld_value ^ expected_val;
+	uint8_t new_fault = current_fault ^ cpld_info->is_fault_bit_map;
+
+	// Update the fault bitmap
+	cpld_info->is_fault_bit_map = current_fault;
+
+	if (!new_fault) {
+		return true; // No new faults, return early
+	}
+
+	LOG_ERR("CPLD register 0x%02X has fault 0x%02X", cpld_info->cpld_offset, new_fault);
+
+	// Iterate through each bit in new_fault to handle the corresponding VR
+	for (uint8_t bit = 0; bit < 8; bit++) {
+		if (!(new_fault & (1 << bit))) {
+			continue; // Skip if the current bit has no new fault
+		}
+
+		// Get the corresponding VR sensor number based on the bit position
+		uint8_t vr_sensor_num = *((&cpld_info->bit_0_mapping_vr_sensor_num) + bit);
+
+		if (vr_sensor_num == 0x00) {
+			continue; // Skip if the VR sensor number is invalid
+		}
+
+		LOG_ERR("Alert VR sensor: %d (bit %d)", vr_sensor_num, bit);
+
+		// Perform additional access if required for the VR sensor
+		if (cpld_info->vr_status_word_access_map & (1 << bit)) {
+			LOG_ERR("Performing additional access for VR sensor: %d", vr_sensor_num);
+			error_log_event(vr_sensor_num, LOG_ASSERT);
+		}
+	}
+
 	return true;
 }
 
@@ -281,25 +360,24 @@ void poll_cpld_registers()
 				continue;
 			}
 
-			if (aegis_cpld_info_table[i].is_fault_log) {
-				uint8_t new_fault_map = (data ^ expected_val);
+			if (!aegis_cpld_info_table[i].is_fault_log)
+				continue;
 
-				// get unrecorded fault bit map
-				uint8_t unrecorded_fault_map =
-					new_fault_map & ~aegis_cpld_info_table[i].is_fault_bit_map;
+			uint8_t new_fault_map = (data ^ expected_val);
 
-				if (unrecorded_fault_map) {
-					if (aegis_cpld_info_table[i].status_changed_cb) {
-						aegis_cpld_info_table[i].status_changed_cb(
-							&aegis_cpld_info_table[i].cpld_offset,
-							&data, &expected_val,
-							&aegis_cpld_info_table[i].is_fault_bit_map);
-					}
-					// update map
-					aegis_cpld_info_table[i].is_fault_bit_map = new_fault_map;
+			// get unrecorded fault bit map
+			uint8_t unrecorded_fault_map =
+				new_fault_map & ~aegis_cpld_info_table[i].is_fault_bit_map;
 
-					aegis_cpld_info_table[i].last_polling_value = data;
+			if (unrecorded_fault_map) {
+				if (aegis_cpld_info_table[i].status_changed_cb) {
+					aegis_cpld_info_table[i].status_changed_cb(
+						&aegis_cpld_info_table[i], &data);
 				}
+				// update map
+				aegis_cpld_info_table[i].is_fault_bit_map = new_fault_map;
+
+				aegis_cpld_info_table[i].last_polling_value = data;
 			}
 		}
 	}

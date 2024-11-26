@@ -61,7 +61,7 @@ enum LOG_ERROR_CODE {
 
 typedef struct _err_sensor_mapping {
 	uint16_t err_code;
-	uint8_t sen_num;
+	uint8_t err_num;
 } err_sensor_mapping;
 
 #define LOG_ASSERT 1
@@ -82,6 +82,7 @@ enum err_type {
 	DC_STATUS_FAULT_DEASSERT,
 	ASIC_FAULT_ASSERT,
 	ASIC_FAULT_DEASSERT,
+	ERROR_TYPE_MAX,
 };
 
 extern const err_sensor_mapping minerva_ag_sensor_err_codes[];

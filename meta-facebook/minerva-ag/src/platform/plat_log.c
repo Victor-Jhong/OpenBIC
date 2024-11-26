@@ -63,7 +63,7 @@ const err_sensor_mapping minerva_ag_sensor_err_codes[] = {
 	{ DC_STATUS_FAULT_ASSERT, DC_STATUS_FAULT },
 };
 
-const err_sensor_mapping minerva_ag_minerva_ag_minerva_ag_sensor_normal_codes[] = {
+const err_sensor_mapping minerva_ag_sensor_normal_codes[] = {
 	{ VR_FAULT_DEASSERT, SENSOR_NUM_OSFP_P3V3_TEMP_C },
 	{ VR_FAULT_DEASSERT, SENSOR_NUM_CPU_P0V85_PVDD_TEMP_C },
 	{ VR_FAULT_DEASSERT, SENSOR_NUM_CPU_P0V75_PVDD_CH_N_TEMP_C },
@@ -180,6 +180,82 @@ bool plat_dump_cpld(uint8_t offset, uint8_t length, uint8_t *data)
 	return true;
 }
 
+bool get_vr_status_word(uint8_t bus, uint8_t addr, uint8_t *vr_status_word)
+{
+	CHECK_NULL_ARG_WITH_RETURN(vr_status_word, false);
+
+	I2C_MSG i2c_msg = { 0 };
+	uint8_t retry = 5;
+	i2c_msg.bus = bus;
+	i2c_msg.target_addr = addr;
+	i2c_msg.tx_len = 1;
+	i2c_msg.rx_len = 2;
+	i2c_msg.data[0] = 0x79;
+
+	if (i2c_master_read(&i2c_msg, retry)) {
+		LOG_ERR("Failed to read VR status word");
+		return false;
+	}
+
+	memcpy(vr_status_word, i2c_msg.data, 2);
+	return true;
+}
+
+bool vr_fault_get_error_data(uint8_t error_num, uint8_t *data)
+{
+	CHECK_NULL_ARG_WITH_RETURN(data, false);
+
+	uint8_t bus;
+	uint8_t addr;
+	uint8_t sensor_dev;
+	uint8_t vr_status_word[2] = { 0 };
+
+	find_vr_addr_and_bus_and_sensor_dev_by_sensor_id(error_num, bus, addr, sensor_dev);
+
+	if (!get_vr_status_word(bus, addr, &vr_status_word)) {
+		LOG_ERR("Failed to get VR status word, error_num: 0x%x , bus: 0x%x, addr: 0x%x",
+			error_num, bus, addr);
+		return false;
+	}
+
+	memcpy(data, vr_status_word, sizeof(vr_status_word));
+	return true;
+}
+
+bool get_error_data(uint8_t error_num, uint8_t *data)
+{
+	CHECK_NULL_ARG_WITH_RETURN(data, false);
+
+	uint8_t error_code = ERROR_TYPE_MAX;
+
+	//find err_code in err_sensor_mapping
+	for (uint8_t i = 0; i < ARRAY_SIZE(err_sensor_mapping); i++) {
+		if (error_num == err_sensor_mapping[i].err_num) {
+			error_code = err_sensor_mapping[i].err_code;
+			break;
+		}
+	}
+
+	if (error_code == ERROR_TYPE_MAX) { // 檢查是否找到匹配的 error_code
+		return false;
+	}
+
+	switch (error_code) {
+	case VR_FAULT_ASSERT:
+		if (!vr_fault_get_error_data(error_num, data))
+			return false;
+		return true;
+	case VR_FAULT_DEASSERT:
+	case DC_STATUS_FAULT_ASSERT:
+	case DC_STATUS_FAULT_DEASSERT:
+	case ASIC_FAULT_ASSERT:
+	case ASIC_FAULT_DEASSERT:
+		return true;
+	default:
+		return false;
+	}
+}
+
 // Handle error log events and record them if necessary
 void error_log_event(uint8_t sensor_num, bool log_status)
 {
@@ -193,18 +269,11 @@ void error_log_event(uint8_t sensor_num, bool log_status)
 			if (sensor_num == err_sensor_caches[i]) {
 				log_todo = true;
 				err_sensor_caches[i] = 0;
-				for (uint8_t j = 0;
-				     j <
-				     ARRAY_SIZE(
-					     minerva_ag_minerva_ag_minerva_ag_sensor_normal_codes);
+				for (uint8_t j = 0; j < ARRAY_SIZE(minerva_ag_sensor_normal_codes);
 				     j++) {
-					if (sensor_num ==
-					    minerva_ag_minerva_ag_minerva_ag_sensor_normal_codes[j]
-						    .sen_num)
+					if (sensor_num == minerva_ag_sensor_normal_codes[j].err_num)
 						err_code =
-							minerva_ag_minerva_ag_minerva_ag_sensor_normal_codes
-								[j]
-									.err_code;
+							minerva_ag_sensor_normal_codes[j].err_code;
 				}
 				break;
 			}
@@ -224,7 +293,7 @@ void error_log_event(uint8_t sensor_num, bool log_status)
 					for (uint8_t j = 0;
 					     j < ARRAY_SIZE(minerva_ag_sensor_err_codes); j++) {
 						if (sensor_num ==
-						    minerva_ag_sensor_err_codes[j].sen_num)
+						    minerva_ag_sensor_err_codes[j].err_num)
 							err_code = minerva_ag_sensor_err_codes[j]
 									   .err_code;
 					}
@@ -251,15 +320,7 @@ void error_log_event(uint8_t sensor_num, bool log_status)
 			sensor_num; // Use the sensor number as error code for now
 		err_log_data[fru_count].sys_time = k_uptime_get();
 
-		// // Fill error_data with VR status word if it's a VR error
-		// if (sensor_num >= VR_ERROR_CODE_START && sensor_num <= VR_ERROR_CODE_END) {
-		// 	if (get_vr_status_word(&vr_status_word)) {
-		// 		memset(err_log_data[fru_count].error_data, 0, sizeof(err_log_data[fru_count].error_data));
-		// 		err_log_data[fru_count].error_data[0] = vr_status_word;
-		// 	} else {
-		// 		LOG_ERR("Failed to get VR status word for sensor 0x%02X", sensor_num);
-		// 	}
-		// }
+		get_error_data(sensor_num, err_log_data[fru_count].error_data);
 
 		// Dump CPLD data and store it in cpld_dump
 		if (plat_dump_cpld(
