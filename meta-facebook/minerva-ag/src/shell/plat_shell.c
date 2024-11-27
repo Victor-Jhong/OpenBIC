@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include "cpld_shell.h"
 #include "plat_pldm_fw_version_shell.h"
+#include "plat_fru.h"
 
 void cmd_set_event(const struct shell *shell, size_t argc, char **argv)
 {
@@ -38,19 +39,45 @@ void cmd_set_event(const struct shell *shell, size_t argc, char **argv)
 
 void cmd_log_dump(const struct shell *shell, size_t argc, char **argv)
 {
-	if (argc != 3) {
-		shell_warn(shell, "Help: test log log_dump <num> <status>");
+	if (argc != 2) {
+		shell_warn(shell, "Help: test log log_dump <order>, order start from 1");
 		return;
 	}
 
-	int cmd_size = strtol(argv[1], NULL, 16);
-	int order = strtol(argv[2], NULL, 16);
+	// int cmd_size = strtol(argv[1], NULL, 16);
+	int order = strtol(argv[1], NULL, 16);
 
+	if (order < 1) {
+		shell_warn(shell, "Help: test log log_dump <order>, order start from 1");
+		return;
+	}
 
-	uint8_t log_data[128] = {0};
-	plat_log_read(log_data, cmd_size, order);
+	uint8_t log_data[128] = { 0 };
+	plat_log_read(log_data, AEGIS_FRU_LOG_SIZE, order);
+	printf("AEGIS_FRU_LOG_SIZE = %d\n", AEGIS_FRU_LOG_SIZE);
 
-	shell_hexdump(shell, log_data, sizeof(uint8_t) * cmd_size);
+	shell_hexdump(shell, log_data, sizeof(uint8_t) * AEGIS_FRU_LOG_SIZE);
+
+	return;
+}
+
+void cmd_test_read(const struct shell *shell, size_t argc, char **argv)
+{
+	if (argc != 4) {
+		shell_warn(shell, "Help: test log test_read <offset_1> <offset_2> <length>");
+		return;
+	}
+
+	uint16_t offset = ((strtol(argv[1], NULL, 16)) << 8) | (strtol(argv[2], NULL, 16));
+	printf("offset = 0x%04X\n", offset);
+
+	int length = strtol(argv[3], NULL, 16);
+
+	uint8_t log_data[128] = { 0 };
+	plat_eeprom_read(offset, log_data, length);
+	printf("AEGIS_FRU_LOG_SIZE = %d\n", AEGIS_FRU_LOG_SIZE);
+
+	shell_hexdump(shell, log_data, sizeof(uint8_t) * AEGIS_FRU_LOG_SIZE);
 
 	return;
 }
@@ -67,18 +94,15 @@ void cmd_log_clear(const struct shell *shell, size_t argc, char **argv)
 	plat_clear_log();
 	shell_print(shell, "plat_clear_log finished!");
 
-
 	return;
 }
 
-
-SHELL_STATIC_SUBCMD_SET_CREATE(
-	sub_plat_log_cmd,
-	SHELL_CMD(set_event, NULL, "set_event", cmd_set_event),
-	SHELL_CMD(dump, NULL, "log_dump", cmd_log_dump),
-	SHELL_CMD(clear, NULL, "log_clear", cmd_log_clear),
-	SHELL_SUBCMD_SET_END);
-
+SHELL_STATIC_SUBCMD_SET_CREATE(sub_plat_log_cmd,
+			       SHELL_CMD(set_event, NULL, "set_event", cmd_set_event),
+			       SHELL_CMD(dump, NULL, "log_dump", cmd_log_dump),
+			       SHELL_CMD(clear, NULL, "log_clear", cmd_log_clear),
+			       SHELL_CMD(test_read, NULL, "test_read", cmd_test_read),
+			       SHELL_SUBCMD_SET_END);
 
 /* Sub-command Level 1 of command test */
 SHELL_STATIC_SUBCMD_SET_CREATE(sub_test_cmds,
@@ -87,8 +111,7 @@ SHELL_STATIC_SUBCMD_SET_CREATE(sub_test_cmds,
 			       SHELL_CMD(cpld, &sub_cpld_cmd, "cpld command", NULL),
 			       SHELL_CMD(get_fw_version, &sub_get_fw_version_cmd,
 					 "get fw version command", NULL),
- 			       SHELL_CMD(log, &sub_plat_log_cmd,
-					 "platform log command", NULL),
+			       SHELL_CMD(log, &sub_plat_log_cmd, "platform log command", NULL),
 			       SHELL_SUBCMD_SET_END);
 
 /* Root of command test */

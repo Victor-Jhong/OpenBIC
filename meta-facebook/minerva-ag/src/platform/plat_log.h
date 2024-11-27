@@ -19,6 +19,8 @@
 
 #include "plat_pldm_sensor.h"
 
+#define AEGIS_FRU_LOG_SIZE sizeof(plat_err_log_mapping)
+
 uint16_t error_log_count(void);
 void init_load_eeprom_log(void);
 
@@ -71,15 +73,18 @@ enum err_number {
 	// VR fault error number mapping to sensor number
 
 	// other error number start form here
-	DC_STATUS_FAULT = 0xA0,
+	DC_ON_STATUS_FAULT = 0xA0,
+	DC_OFF_STATUS_FAULT,
 	ASIC_FAULT,
 };
 
 enum err_type {
 	VR_FAULT_ASSERT,
 	VR_FAULT_DEASSERT,
-	DC_STATUS_FAULT_ASSERT,
-	DC_STATUS_FAULT_DEASSERT,
+	DC_ON_STATUS_FAULT_ASSERT,
+	DC_ON_STATUS_FAULT_DEASSERT,
+	DC_OFF_STATUS_FAULT_ASSERT,
+	DC_OFF_STATUS_FAULT_DEASSERT,
 	ASIC_FAULT_ASSERT,
 	ASIC_FAULT_DEASSERT,
 	ERROR_TYPE_MAX,

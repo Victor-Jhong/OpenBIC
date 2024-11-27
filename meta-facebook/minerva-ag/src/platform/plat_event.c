@@ -25,6 +25,8 @@
 #include "plat_pldm_sensor.h"
 #include "plat_gpio.h"
 #include "plat_log.h"
+#include "plat_event.h"
+#include "plat_hook.h"
 
 LOG_MODULE_REGISTER(plat_event);
 
@@ -90,58 +92,39 @@ LOG_MODULE_REGISTER(plat_event);
 #define MTIA_QSPI_BOOT_DISABLE_REG 0x3B
 #define ATH_RSVD_GPIO_REG 0x3C
 
-typedef struct _aegis_cpld_info_ {
-	uint8_t cpld_offset;
-	uint8_t dc_off_defaut;
-	uint8_t dc_on_defaut;
-	bool is_fault_log; // if true, check the value is defaut or not
-	uint8_t is_fault_bit_map; //flag for fault
+#define CPLD_POLLING_INTERVAL_MS 1000 // 1 second polling interval
 
-	//flag for 1st polling
-	bool is_first_polling;
-
-	//flag for 1st polling after changing DC status
-	bool is_first_polling_after_dc_change;
-
-	//temp data for last polling
-	uint8_t last_polling_value;
-
-	bool (*status_changed_cb)(uint8_t *, uint8_t *, uint8_t *, uint8_t *);
-
-} aegis_cpld_info;
+K_THREAD_STACK_DEFINE(cpld_polling_stack, POLLING_CPLD_STACK_SIZE);
+struct k_thread cpld_polling_thread;
+k_tid_t cpld_polling_tid;
 
 typedef struct _vr_error_callback_info_ {
 	uint8_t cpld_offset;
 	uint8_t vr_status_word_access_map;
-	uint8_t bit_0_mapping_vr_sensor_num;
-	uint8_t bit_1_mapping_vr_sensor_num;
-	uint8_t bit_2_mapping_vr_sensor_num;
-	uint8_t bit_3_mapping_vr_sensor_num;
-	uint8_t bit_4_mapping_vr_sensor_num;
-	uint8_t bit_5_mapping_vr_sensor_num;
-	uint8_t bit_6_mapping_vr_sensor_num;
-	uint8_t bit_7_mapping_vr_sensor_num;
+	uint8_t bit_mapping_vr_sensor_num[8]; // 用陣列替代多個獨立成員
 } vr_error_callback_info;
 
 bool vr_error_callback(aegis_cpld_info *cpld_info, uint8_t *current_cpld_value);
 
 // clang-format off
 aegis_cpld_info aegis_cpld_info_table[] = {
-	{ VR_POWER_FAULT_1_REG, 0x00, 0x00, true, false, 			false, false, 0x00,  .status_changed_cb = vr_error_callback },
-	{ VR_POWER_FAULT_2_REG, 0x00, 0x00, true, false, 			false, false, 0x00,  .status_changed_cb = vr_error_callback },
-	{ VR_POWER_FAULT_3_REG, 0x00, 0x00, true, false, 			false, false, 0x00,  .status_changed_cb = vr_error_callback },
-	{ VR_POWER_FAULT_4_REG, 0x00, 0x00, true, false, 			false, false, 0x00,  .status_changed_cb = vr_error_callback },
-	{ VR_POWER_FAULT_5_REG, 0x00, 0x00, true, false, 			false, false, 0x00,  .status_changed_cb = vr_error_callback },
-	{ VR_SMBUS_ALERT_1_REG, 0xFF, 0xFF, true, false,			false, false, 0x00,  .status_changed_cb = vr_error_callback },
-	{ VR_SMBUS_ALERT_2_REG, 0xFF, 0xFF, true, false, 			false, false, 0x00,  .status_changed_cb = vr_error_callback },
-	{ ASIC_OC_WARN_REG, 0xFF, 0xFF, true, false, 				false, false, 0x00,  .status_changed_cb = vr_error_callback },
-	{ SYSTEM_ALERT_FAULT_REG, 0xFF, 0xFF, true, false, 			false, false, 0x00,  .status_changed_cb = vr_error_callback },
-	{ VR_HOT_FAULT_1_REG, 0xFF, 0xFF, true, false, 				false, false, 0x00,  .status_changed_cb = vr_error_callback },
-	{ VR_HOT_FAULT_2_REG, 0xFF, 0xFF, true, false, 				false, false, 0x00,  .status_changed_cb = vr_error_callback },
-	{ TEMPERATURE_IC_OVERT_FAULT_REG, 0xFF, 0xFF, true, false, 	false, false, 0x00,  .status_changed_cb = vr_error_callback },
-	{ VR_POWER_INPUT_FAULT_1_REG, 0xFF, 0xFF, true, false, 		false, false, 0x00,  .status_changed_cb = vr_error_callback },
-	{ VR_POWER_INPUT_FAULT_2_REG, 0xFF, 0xFF, true, false, 		false, false, 0x00,  .status_changed_cb = vr_error_callback },
-	{ LEAK_DETCTION_REG, 0xDF, 0xDF, true, false, 				false, false, 0x00,  .status_changed_cb = vr_error_callback },
+	{ VR_POWER_FAULT_1_REG, 			0x00, 0x08, true, 0x00, false, false, 0x00,  .status_changed_cb = vr_error_callback },
+	// { VR_POWER_FAULT_1_REG, 			0x00, 0x00, true, 0x00, false, false, 0x00,  .status_changed_cb = vr_error_callback },
+	{ VR_POWER_FAULT_2_REG, 			0x00, 0x10, true, 0x00, false, false, 0x00,  .status_changed_cb = vr_error_callback },
+	// { VR_POWER_FAULT_2_REG, 			0x00, 0x00, true, 0x00, false, false, 0x00,  .status_changed_cb = vr_error_callback },
+	{ VR_POWER_FAULT_3_REG, 			0x00, 0x00, true, 0x00, false, false, 0x00,  .status_changed_cb = vr_error_callback },
+	{ VR_POWER_FAULT_4_REG, 			0x00, 0x00, true, 0x00, false, false, 0x00,  .status_changed_cb = vr_error_callback },
+	{ VR_POWER_FAULT_5_REG, 			0x00, 0x00, true, 0x00, false, false, 0x00,  .status_changed_cb = vr_error_callback },
+	{ VR_SMBUS_ALERT_1_REG, 			0xFF, 0xFF, true, 0x00, false, false, 0x00,  .status_changed_cb = vr_error_callback },
+	{ VR_SMBUS_ALERT_2_REG, 			0xFF, 0xFF, true, 0x00, false, false, 0x00,  .status_changed_cb = vr_error_callback },
+	{ ASIC_OC_WARN_REG, 				0xFF, 0xFF, true, 0x00, false, false, 0x00,  .status_changed_cb = vr_error_callback },
+	{ SYSTEM_ALERT_FAULT_REG, 			0xFF, 0xFF, true, 0x00, false, false, 0x00,  .status_changed_cb = vr_error_callback },
+	{ VR_HOT_FAULT_1_REG, 				0xFF, 0xFF, true, 0x00, false, false, 0x00,  .status_changed_cb = vr_error_callback },
+	{ VR_HOT_FAULT_2_REG, 				0xFF, 0xFF, true, 0x00, false, false, 0x00,  .status_changed_cb = vr_error_callback },
+	{ TEMPERATURE_IC_OVERT_FAULT_REG, 	0xFF, 0xFF, true, 0x00, false, false, 0x00,  .status_changed_cb = vr_error_callback },
+	{ VR_POWER_INPUT_FAULT_1_REG, 		0xFF, 0xFF, true, 0x00, false, false, 0x00,  .status_changed_cb = vr_error_callback },
+	{ VR_POWER_INPUT_FAULT_2_REG, 		0xFF, 0xFF, true, 0x00, false, false, 0x00,  .status_changed_cb = vr_error_callback },
+	{ LEAK_DETCTION_REG, 				0xDF, 0xDF, true, 0x00, false, false, 0x00,  .status_changed_cb = vr_error_callback },
 };
 // clang-format on
 
@@ -164,91 +147,9 @@ enum VR_UBC_INDEX_E {
 
 typedef struct _vr_ubc_device_table_ {
 	uint8_t index;
-	uint8_t device_index;
 	uint8_t sensor_num_1;
 	uint8_t sensor_num_2;
 } vr_ubc_device_table;
-
-#define CPLD_POLLING_INTERVAL_MS 1000 // 1 second polling interval
-
-bool is_ubc_enabled()
-{
-	uint8_t data = 0;
-	if (!plat_read_cpld(VR_ENABLE_PIN_READING_4_REG, &data)) {
-		LOG_ERR("Failed to read CPLD register 0x%02X", VR_ENABLE_PIN_READING_4_REG);
-		return 0;
-	}
-
-	/*Bit2: FM_PLD_UBC_EN*/
-	return data & 0x02;
-}
-
-//TODO: init ubc_enabled_delayed_status when AC on
-
-K_MUTEX_DEFINE(trigger_dc_on_status_changing_mutex);
-K_MUTEX_DEFINE(trigger_dc_off_status_changing_mutex);
-
-bool ubc_enabled_delayed_status = false;
-bool is_dc_on_status_changing = false;
-bool is_dc_off_status_changing = false;
-
-/* RST_ATH_PWR_ON_PLD_R1_N is low active,
-* 1 -> power on
-* 0 -> power off
-*/
-void set_ubc_enabled_delayed(struct k_timer *timer)
-{
-	ubc_enabled_delayed_status = true;
-	is_dc_on_status_changing = false;
-
-	if (gpio_get(RST_ATH_PWR_ON_PLD_R1_N) != 1)
-		error_log_event(DC_STATUS_FAULT, LOG_ASSERT);
-}
-
-void set_ubc_disabled_delayed(struct k_timer *timer)
-{
-	ubc_enabled_delayed_status = false;
-	is_dc_off_status_changing = false;
-
-	if (gpio_get(RST_ATH_PWR_ON_PLD_R1_N) != 0)
-		error_log_event(DC_STATUS_FAULT, LOG_ASSERT);
-}
-
-K_TIMER_DEFINE(set_ubc_enabled_delayed_timer, set_ubc_enabled_delayed, NULL);
-K_TIMER_DEFINE(set_ubc_disabled_delayed_timer, set_ubc_disabled_delayed, NULL);
-
-void check_ubc_status()
-{
-	static bool last_ubc_status = false;
-
-	/* Clear all aegis_cpld_info_table is_fault_bit_map when DC or UBC status changed 
-	* RST_ATH_PWR_ON_PLD_R1_N could be ready before ubc_enabled_delayed_status(3S after UBC is enabled)
-	*/
-	if ((last_ubc_status != ubc_enabled_delayed_status) ||
-	    (gpio_get(RST_ATH_PWR_ON_PLD_R1_N) != ubc_enabled_delayed_status)) {
-		for (int i = 0;
-		     i < sizeof(aegis_cpld_info_table) / sizeof(aegis_cpld_info_table[0]); i++) {
-			aegis_cpld_info_table[i].is_fault_bit_map = 0;
-		}
-	};
-
-	last_ubc_status = ubc_enabled_delayed_status;
-
-	/* DC on process should be done in 3s after UBC is enabled */
-	if (is_ubc_enabled() && ubc_enabled_delayed_status != true) {
-		if (k_mutex_lock(&trigger_dc_on_status_changing_mutex, K_NO_WAIT)) {
-			k_timer_start(&set_ubc_enabled_delayed_timer, K_NO_WAIT, K_MSEC(3000));
-			is_dc_on_status_changing = true;
-		}
-
-		/* DC off process should be done in 3s after UBC is enabled */
-	} else if (!is_ubc_enabled() && ubc_enabled_delayed_status != false) {
-		if (k_mutex_lock(&trigger_dc_off_status_changing_mutex, K_NO_WAIT)) {
-			k_timer_start(&set_ubc_disabled_delayed_timer, K_NO_WAIT, K_MSEC(3000));
-			is_dc_off_status_changing = true;
-		}
-	}
-}
 
 vr_ubc_device_table vr_device_table[] = {
 	{ UBC_1, SENSOR_NUM_UBC_1_TEMP_C },
@@ -270,27 +171,69 @@ vr_ubc_device_table vr_device_table[] = {
 };
 
 vr_error_callback_info vr_error_callback_info_table[] = {
-	{ VR_POWER_FAULT_1_REG, 0x7E, 0x00, VR_5, VR_6, UBC_2, UBC_1, VR_4, VR_3, 0x00 },
-	{ VR_POWER_FAULT_2_REG, 0xDF, VR_10, VR_7, VR_8, VR_5, VR_11, 0x00, VR_8, VR_9 },
-	{ VR_POWER_FAULT_3_REG, 0xD7, VR_4, VR_3, VR_10, 0x00, VR_7, 0x00, VR_9, VR_6 },
-	{ VR_POWER_FAULT_4_REG, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, VR_2 },
-	{ VR_POWER_FAULT_5_REG, 0x48, 0x00, 0x00, 0x00, VR_1, 0x00, 0x00, VR_11, 0x00 },
-	{ VR_SMBUS_ALERT_1_REG, 0xFF, VR_1, VR_10, VR_7, VR_8, VR_9, VR_2, VR_4, VR_3 },
-	{ VR_SMBUS_ALERT_2_REG, 0xF8, 0x00, 0x00, 0x00, VR_11, VR_5, VR_6, UBC_1, UBC_2 },
-	{ ASIC_OC_WARN_REG, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
-	{ SYSTEM_ALERT_FAULT_REG, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
-	{ VR_HOT_FAULT_1_REG, 0xFF, VR_10, VR_7, VR_6, VR_4, VR_5, VR_3, VR_9, VR_8 },
-	{ VR_HOT_FAULT_2_REG, 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, VR_11, VR_1 },
-	{ TEMPERATURE_IC_OVERT_FAULT_REG, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
-	{ VR_POWER_INPUT_FAULT_1_REG, 0xFF, VR_10, VR_7, VR_6, VR_4, VR_5, VR_3, VR_9, VR_8 },
-	{ VR_POWER_INPUT_FAULT_2_REG, 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, VR_11, VR_1 },
-	{ LEAK_DETCTION_REG, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },
+	{ VR_POWER_FAULT_1_REG, 0x7E, { 0x00, VR_5, VR_6, UBC_2, UBC_1, VR_4, VR_3, 0x00 } },
+	{ VR_POWER_FAULT_2_REG, 0xDF, { VR_10, VR_7, VR_8, VR_5, VR_11, 0x00, VR_8, VR_9 } },
+	{ VR_POWER_FAULT_3_REG, 0xD7, { VR_4, VR_3, VR_10, 0x00, VR_7, 0x00, VR_9, VR_6 } },
+	{ VR_POWER_FAULT_4_REG, 0x80, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, VR_2 } },
+	{ VR_POWER_FAULT_5_REG, 0x48, { 0x00, 0x00, 0x00, VR_1, 0x00, 0x00, VR_11, 0x00 } },
+	{ VR_SMBUS_ALERT_1_REG, 0xFF, { VR_1, VR_10, VR_7, VR_8, VR_9, VR_2, VR_4, VR_3 } },
+	{ VR_SMBUS_ALERT_2_REG, 0xF8, { 0x00, 0x00, 0x00, VR_11, VR_5, VR_6, UBC_1, UBC_2 } },
+	{ ASIC_OC_WARN_REG, 0x00, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } },
+	{ SYSTEM_ALERT_FAULT_REG, 0x00, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } },
+	{ VR_HOT_FAULT_1_REG, 0xFF, { VR_10, VR_7, VR_6, VR_4, VR_5, VR_3, VR_9, VR_8 } },
+	{ VR_HOT_FAULT_2_REG, 0xC0, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, VR_11, VR_1 } },
+	{ TEMPERATURE_IC_OVERT_FAULT_REG, 0x00, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } },
+	{ VR_POWER_INPUT_FAULT_1_REG, 0xFF, { VR_10, VR_7, VR_6, VR_4, VR_5, VR_3, VR_9, VR_8 } },
+	{ VR_POWER_INPUT_FAULT_2_REG, 0xC0, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, VR_11, VR_1 } },
+	{ LEAK_DETCTION_REG, 0x00, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } },
 };
+
+bool ubc_enabled_delayed_status = false;
+bool is_dc_status_changing = false;
+
+void set_dc_status_changing_status(bool status)
+{
+	is_dc_status_changing = status;
+}
+
+void check_ubc_delayed(struct k_timer *timer)
+{
+	/* FM_PLD_UBC_EN_R
+	 * 1 -> UBC is enabled
+	 * 0 -> UBC is disabled
+	 */
+	bool is_ubc_enabled = (gpio_get(FM_PLD_UBC_EN_R) == GPIO_HIGH);
+	bool is_dc_on = is_mb_dc_on();
+
+	if (is_ubc_enabled != is_dc_on) {
+		error_log_event(is_ubc_enabled ? DC_ON_STATUS_FAULT : DC_OFF_STATUS_FAULT,
+				LOG_ASSERT);
+		set_dc_status_changing_status(false);
+		return;
+	}
+
+	ubc_enabled_delayed_status = is_ubc_enabled;
+}
 
 bool vr_error_callback(aegis_cpld_info *cpld_info, uint8_t *current_cpld_value)
 {
 	CHECK_NULL_ARG_WITH_RETURN(cpld_info, false);
 	CHECK_NULL_ARG_WITH_RETURN(current_cpld_value, false);
+
+	// Find the corresponding entry in vr_error_callback_info_table using cpld_offset
+	const vr_error_callback_info *callback_info = NULL;
+	for (size_t i = 0; i < ARRAY_SIZE(vr_error_callback_info_table); i++) {
+		if (vr_error_callback_info_table[i].cpld_offset == cpld_info->cpld_offset) {
+			callback_info = &vr_error_callback_info_table[i];
+			break;
+		}
+	}
+
+	if (!callback_info) {
+		LOG_ERR("No matching VR error callback info for CPLD offset 0x%02X",
+			cpld_info->cpld_offset);
+		return false;
+	}
 
 	// Get the expected value based on the current UBC status
 	uint8_t expected_val =
@@ -298,7 +241,7 @@ bool vr_error_callback(aegis_cpld_info *cpld_info, uint8_t *current_cpld_value)
 
 	// Calculate current faults and new faults
 	uint8_t current_fault = *current_cpld_value ^ expected_val;
-	uint8_t new_fault = current_fault ^ cpld_info->is_fault_bit_map;
+	uint8_t new_fault = current_fault & ~cpld_info->is_fault_bit_map;
 
 	// Update the fault bitmap
 	cpld_info->is_fault_bit_map = current_fault;
@@ -316,18 +259,41 @@ bool vr_error_callback(aegis_cpld_info *cpld_info, uint8_t *current_cpld_value)
 		}
 
 		// Get the corresponding VR sensor number based on the bit position
-		uint8_t vr_sensor_num = *((&cpld_info->bit_0_mapping_vr_sensor_num) + bit);
+		uint8_t vr_index = callback_info->bit_mapping_vr_sensor_num[bit];
 
-		if (vr_sensor_num == 0x00) {
-			continue; // Skip if the VR sensor number is invalid
+		// Skip if vr_index is invalid
+		if (vr_index == 0x00) {
+			LOG_ERR("Invalid VR index for bit %d in CPLD offset 0x%02X", bit,
+				cpld_info->cpld_offset);
+			continue;
 		}
 
-		LOG_ERR("Alert VR sensor: %d (bit %d)", vr_sensor_num, bit);
+		uint8_t sensor_num = 0x00;
+		for (size_t j = 0; j < ARRAY_SIZE(vr_device_table); j++) {
+			if (vr_device_table[j].index == vr_index) {
+				sensor_num = vr_device_table[j].sensor_num_1;
+				break;
+			}
+		}
+
+		// Skip if sensor_num is invalid
+		if (sensor_num == 0x00) {
+			LOG_ERR("No matching sensor_num for VR index 0x%02X", vr_index);
+			continue;
+		}
+
+		LOG_ERR("Alert VR sensor: 0x%02X (bit %d, index %d)", sensor_num, bit, vr_index);
 
 		// Perform additional access if required for the VR sensor
-		if (cpld_info->vr_status_word_access_map & (1 << bit)) {
-			LOG_ERR("Performing additional access for VR sensor: %d", vr_sensor_num);
-			error_log_event(vr_sensor_num, LOG_ASSERT);
+		if (callback_info->vr_status_word_access_map & (1 << bit)) {
+			LOG_ERR("Performing additional access for VR sensor: 0x%02X", sensor_num);
+
+			if (sensor_num == 0x00) {
+				LOG_ERR("Invalid sensor number: 0x%02X for additional access",
+					sensor_num);
+				continue; // Skip if the sensor number is invalid
+			}
+			error_log_event(sensor_num, LOG_ASSERT);
 		}
 	}
 
@@ -338,14 +304,16 @@ void poll_cpld_registers()
 {
 	uint8_t data = 0;
 
+	if (is_dc_status_changing == false) {
+		ubc_enabled_delayed_status = is_mb_dc_on();
+	}
+
 	while (1) {
 		/* Sleep for the polling interval */
 		k_msleep(CPLD_POLLING_INTERVAL_MS);
 
-		check_ubc_status();
-
 		/* Check if any status is changing */
-		if (is_dc_on_status_changing || is_dc_off_status_changing)
+		if (is_dc_status_changing)
 			continue;
 
 		for (size_t i = 0; i < ARRAY_SIZE(aegis_cpld_info_table); i++) {
@@ -381,4 +349,13 @@ void poll_cpld_registers()
 			}
 		}
 	}
+}
+
+void init_cpld_polling(void)
+{
+	cpld_polling_tid = k_thread_create(
+		&cpld_polling_thread, cpld_polling_stack, K_THREAD_STACK_SIZEOF(cpld_polling_stack),
+		poll_cpld_registers, NULL, NULL, NULL, CONFIG_MAIN_THREAD_PRIORITY, 0,
+		K_MSEC(3000)); //sleep for 3 seconds to prevent dc status changing when reboot BIC
+	k_thread_name_set(&cpld_polling_thread, "cpld_polling_thread");
 }

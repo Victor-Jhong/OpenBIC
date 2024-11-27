@@ -47,6 +47,9 @@ void pal_load_fru_config(void)
 bool plat_eeprom_write(uint32_t offset, uint8_t *data, uint16_t data_len)
 {
 	CHECK_NULL_ARG_WITH_RETURN(data, false);
+
+	LOG_INF("plat_eeprom_write, offset: 0x%x, data_len: %d", offset, data_len);
+
 	EEPROM_ENTRY entry;
 
 	entry.offset = offset;
