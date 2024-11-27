@@ -175,13 +175,13 @@ void plat_log_read(uint8_t *log_data, uint8_t cmd_size, uint16_t order)
 
 	plat_err_log_mapping *p = (plat_err_log_mapping *)log_data;
 
-	LOG_HEXDUMP_INF(log_data, cmd_size, "plat_log_read_before");
+	// LOG_HEXDUMP_INF(log_data, cmd_size, "plat_log_read_before");
 
 	if (p->index == 0xFFFF) {
 		memset(log_data, 0x00, cmd_size);
 	}
 
-	LOG_HEXDUMP_INF(log_data, cmd_size, "plat_log_read_after");
+	// LOG_HEXDUMP_INF(log_data, cmd_size, "plat_log_read_after");
 }
 
 // Clear logs from memory and EEPROM with error handling
@@ -355,7 +355,7 @@ void error_log_event(uint8_t sensor_num, bool log_status)
 
 		// Update the log entry's index
 		err_log_data[fru_count].index = next_index;
-		next_index = (next_index + 1) % LOG_MAX_INDEX;
+		next_index = (next_index % LOG_MAX_INDEX) + 1;
 		// Update log error code and timestamp
 		err_log_data[fru_count].err_code = sensor_num;
 		err_log_data[fru_count].sys_time = k_uptime_get();
@@ -389,7 +389,7 @@ void error_log_event(uint8_t sensor_num, bool log_status)
 		}
 
 		// Update the next log position
-		next_log_position = (fru_count + 1) % LOG_MAX_NUM;
+		next_log_position = (fru_count % LOG_MAX_NUM) + 1;
 	}
 }
 
@@ -428,8 +428,8 @@ void find_last_log_position()
 		return;
 	}
 
-	next_log_position = (last_position + 1) % LOG_MAX_NUM;
-	next_index = (max_index + 1) % LOG_MAX_INDEX;
+	next_log_position = (last_position % LOG_MAX_NUM) + 1;
+	next_index = (max_index % LOG_MAX_INDEX) + 1;
 	LOG_INF("Next log position: %d, next index: %d", next_log_position, next_index);
 }
 

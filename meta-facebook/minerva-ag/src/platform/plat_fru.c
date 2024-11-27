@@ -80,20 +80,16 @@ bool plat_eeprom_read(uint32_t offset, uint8_t *data, uint16_t data_len)
 	entry.offset = offset;
 	entry.data_len = data_len;
 
-	printf("plat_eeprom_read 1 \n");
 	uint8_t fru_index = 0;
 	if (!find_FRU_ID(LOG_EEPROM_ID, &fru_index)) {
 		LOG_ERR("find_FRU_ID fail when read eeprom 0x%x ", offset);
 		return false;
 	}
 
-	printf("plat_eeprom_read 2 \n");
 	memcpy(&entry.config, &fru_config[fru_index], sizeof(fru_config[fru_index]));
 	memset(entry.data, 0xFF, sizeof(entry.data));
 
-	printf("plat_eeprom_read 3 \n");
 	if (!eeprom_read(&entry)) {
-		printf("plat_eeprom_read 4 \n");
 		LOG_ERR("read eeprom 0x%x fail", offset);
 		return false;
 	}
