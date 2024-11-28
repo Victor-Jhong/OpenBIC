@@ -9458,25 +9458,6 @@ bool is_vr_access(uint8_t sensor_num)
 		get_plat_sensor_polling_enable_flag());
 }
 
-void find_vr_addr_and_bus_and_sensor_dev_by_sensor_id(uint8_t sensor_id, uint8_t *vr_bus,
-						      uint8_t *vr_addr, uint8_t *sensor_dev)
-{
-	CHECK_NULL_ARG(vr_bus);
-	CHECK_NULL_ARG(vr_addr);
-	CHECK_NULL_ARG(sensor_dev);
-
-	int pldm_sensor_count = 0;
-	pldm_sensor_count = plat_pldm_sensor_get_sensor_count(VR_SENSOR_THREAD_ID);
-	for (int index = 0; index < pldm_sensor_count; index++) {
-		if (plat_pldm_sensor_vr_table[index].pldm_sensor_cfg.num == sensor_id) {
-			*vr_addr = plat_pldm_sensor_vr_table[index].pldm_sensor_cfg.target_addr;
-			*vr_bus = plat_pldm_sensor_vr_table[index].pldm_sensor_cfg.port;
-			*sensor_dev = plat_pldm_sensor_vr_table[index].pldm_sensor_cfg.type;
-			return;
-		}
-	}
-}
-
 bool get_sensor_info_by_sensor_id(uint8_t sensor_id, uint8_t *vr_bus, uint8_t *vr_addr,
 				  uint8_t *sensor_dev)
 {

@@ -43,8 +43,7 @@ LOG_MODULE_REGISTER(plat_fwupdate);
 static uint8_t pldm_pre_vr_update(void *fw_update_param);
 static uint8_t pldm_post_vr_update(void *fw_update_param);
 static bool get_vr_fw_version(void *info_p, uint8_t *buf, uint8_t *len);
-void find_sensor_id_and_name_by_firmware_comp_id(uint8_t comp_identifier, uint8_t *sensor_id,
-						 char *sensor_name);
+
 typedef struct aegis_compnt_mapping_sensor {
 	uint8_t firmware_comp_id;
 	uint8_t plat_pldm_sensor_id;
@@ -376,8 +375,16 @@ static uint8_t pldm_pre_vr_update(void *fw_update_param)
 	uint8_t sensor_id = 0;
 	uint8_t sensor_dev = 0;
 	char sensor_name[MAX_AUX_SENSOR_NAME_LEN] = { 0 };
-	find_sensor_id_and_name_by_firmware_comp_id(p->comp_id, &sensor_id, sensor_name);
-	find_vr_addr_and_bus_and_sensor_dev_by_sensor_id(sensor_id, &bus, &addr, &sensor_dev);
+
+	if (!find_sensor_id_and_name_by_firmware_comp_id(p->comp_id, &sensor_id, sensor_name)) {
+		LOG_ERR("Can't find sensor id and name by comp id: 0x%x", p->comp_id);
+		return 1;
+	}
+
+	if (!get_sensor_info_by_sensor_id(sensor_id, &bus, &addr, &sensor_dev)) {
+		LOG_ERR("Can't find vr addr and bus by sensor id: 0x%x", sensor_id);
+		return 1;
+	}
 
 	/* Get bus and target address by sensor number in sensor configuration */
 	p->bus = bus;
@@ -459,8 +466,18 @@ static bool get_vr_fw_version(void *info_p, uint8_t *buf, uint8_t *len)
 	uint8_t sensor_id = 0;
 	uint8_t sensor_dev = 0;
 	char sensor_name[MAX_AUX_SENSOR_NAME_LEN] = { 0 };
-	find_sensor_id_and_name_by_firmware_comp_id(p->comp_identifier, &sensor_id, sensor_name);
-	find_vr_addr_and_bus_and_sensor_dev_by_sensor_id(sensor_id, &bus, &addr, &sensor_dev);
+
+	if (!find_sensor_id_and_name_by_firmware_comp_id(p->comp_identifier, &sensor_id,
+							 sensor_name)) {
+		LOG_ERR("Can't find sensor id and name by comp id: 0x%x", p->comp_identifier);
+		return ret;
+	}
+
+	if (!get_sensor_info_by_sensor_id(sensor_id, &bus, &addr, &sensor_dev)) {
+		LOG_ERR("Can't find vr addr and bus by sensor id: 0x%x", sensor_id);
+		return ret;
+	}
+
 	struct k_mutex *p_mutex = get_vr_mutex_by_comp_id(p->comp_identifier);
 
 	if (!p_mutex) {
@@ -603,17 +620,22 @@ void clear_pending_version(uint8_t activate_method)
 	}
 }
 
-void find_sensor_id_and_name_by_firmware_comp_id(uint8_t comp_identifier, uint8_t *sensor_id,
+bool find_sensor_id_and_name_by_firmware_comp_id(uint8_t comp_identifier, uint8_t *sensor_id,
 						 char *sensor_name)
 {
+	CHECK_NULL_ARG_WITH_RETURN(sensor_id, false);
+	CHECK_NULL_ARG_WITH_RETURN(sensor_name, false);
+
 	for (uint8_t i = 0; i < ARRAY_SIZE(aegis_vr_compnt_mapping_sensor_table); i++) {
 		if (aegis_vr_compnt_mapping_sensor_table[i].firmware_comp_id == comp_identifier) {
 			*sensor_id = aegis_vr_compnt_mapping_sensor_table[i].plat_pldm_sensor_id;
 			strncpy(sensor_name, aegis_vr_compnt_mapping_sensor_table[i].sensor_name,
 				MAX_AUX_SENSOR_NAME_LEN);
+			return true;
 		}
 	}
-	return;
+
+	return false;
 }
 
 int get_aegis_vr_compnt_mapping_sensor_table_count(void)

@@ -200,13 +200,13 @@ void plat_log_read(uint8_t *log_data, uint8_t cmd_size, uint16_t order)
 
 	plat_err_log_mapping *p = (plat_err_log_mapping *)log_data;
 
-	// LOG_HEXDUMP_INF(log_data, cmd_size, "plat_log_read_before");
+	LOG_HEXDUMP_DBG(log_data, cmd_size, "plat_log_read_before");
 
 	if (p->index == 0xFFFF) {
 		memset(log_data, 0x00, cmd_size);
 	}
 
-	// LOG_HEXDUMP_INF(log_data, cmd_size, "plat_log_read_after");
+	LOG_HEXDUMP_DBG(log_data, cmd_size, "plat_log_read_after");
 }
 
 // Clear logs from memory and EEPROM with error handling
@@ -411,7 +411,7 @@ void error_log_event(uint16_t error_code, bool log_status)
 		}
 
 		//dump err_log_data for debug
-		LOG_HEXDUMP_INF(&err_log_data[fru_count], sizeof(plat_err_log_mapping),
+		LOG_HEXDUMP_DBG(&err_log_data[fru_count], sizeof(plat_err_log_mapping),
 				"err_log_data");
 
 		// 1 base fru_count, write_address is 0 base

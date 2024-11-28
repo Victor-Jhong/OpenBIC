@@ -66,66 +66,6 @@ aegis_cpld_info aegis_cpld_info_table[] = {
 };
 // clang-format on
 
-// enum VR_UBC_INDEX_E {
-// 	UBC_1 = 0,
-// 	UBC_2,
-// 	VR_1,
-// 	VR_2,
-// 	VR_3,
-// 	VR_4,
-// 	VR_5,
-// 	VR_6,
-// 	VR_7,
-// 	VR_8,
-// 	VR_9,
-// 	VR_10,
-// 	VR_11,
-// 	VR_MAX,
-// };
-
-// typedef struct _vr_ubc_device_table_ {
-// 	uint8_t index;
-// 	uint8_t sensor_num_1;
-// 	uint8_t sensor_num_2;
-// } vr_ubc_device_table;
-
-// vr_ubc_device_table vr_device_table[] = {
-// 	{ UBC_1, SENSOR_NUM_UBC_1_TEMP_C },
-// 	{ UBC_2, SENSOR_NUM_UBC_2_TEMP_C },
-// 	{ VR_1, SENSOR_NUM_OSFP_P3V3_TEMP_C },
-// 	{ VR_2, SENSOR_NUM_CPU_P0V85_PVDD_TEMP_C },
-// 	{ VR_3, SENSOR_NUM_CPU_P0V75_PVDD_CH_N_TEMP_C, SENSOR_NUM_CPU_P0V75_MAX_PHY_N_TEMP_C },
-// 	{ VR_4, SENSOR_NUM_CPU_P0V75_PVDD_CH_S_TEMP_C, SENSOR_NUM_CPU_P0V75_MAX_PHY_S_TEMP_C },
-// 	{ VR_5, SENSOR_NUM_CPU_P0V75_TRVDD_ZONEA_TEMP_C, SENSOR_NUM_CPU_P1V8_VPP_HBM0_2_4_TEMP_C },
-// 	{ VR_6, SENSOR_NUM_CPU_P0V75_TRVDD_ZONEB_TEMP_C,
-// 	  SENSOR_NUM_CPU_P0V4_VDDQL_HBM0_2_4_TEMP_C },
-// 	{ VR_7, SENSOR_NUM_CPU_P1V1_VDDC_HBM0_2_4_TEMP_C,
-// 	  SENSOR_NUM_CPU_P0V75_VDDPHY_HBM0_2_4_TEMP_C },
-// 	{ VR_8, SENSOR_NUM_CPU_P0V9_TRVDD_ZONEA_TEMP_C, SENSOR_NUM_CPU_P1V8_VPP_HBM1_3_5_TEMP_C },
-// 	{ VR_9, SENSOR_NUM_CPU_P0V9_TRVDD_ZONEB_TEMP_C, SENSOR_NUM_CPU_P0V4_VDDQL_HBM1_3_5_TEMP_C },
-// 	{ VR_10, SENSOR_NUM_CPU_P1V1_VDDC_HBM1_3_5_TEMP_C,
-// 	  SENSOR_NUM_CPU_P0V75_VDDPHY_HBM1_3_5_TEMP_C },
-// 	{ VR_11, SENSOR_NUM_CPU_P0V8_VDDA_PCIE_TEMP_C, SENSOR_NUM_CPU_P1V2_VDDHTX_PCIE_TEMP_C },
-// };
-
-// vr_error_callback_info vr_error_callback_info_table[] = {
-// 	{ VR_POWER_FAULT_1_REG, 0x7E, { 0x00, VR_5, VR_6, UBC_2, UBC_1, VR_4, VR_3, 0x00 } },
-// 	{ VR_POWER_FAULT_2_REG, 0xDF, { VR_10, VR_7, VR_8, VR_5, VR_11, 0x00, VR_8, VR_9 } },
-// 	{ VR_POWER_FAULT_3_REG, 0xD7, { VR_4, VR_3, VR_10, 0x00, VR_7, 0x00, VR_9, VR_6 } },
-// 	{ VR_POWER_FAULT_4_REG, 0x80, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, VR_2 } },
-// 	{ VR_POWER_FAULT_5_REG, 0x48, { 0x00, 0x00, 0x00, VR_1, 0x00, 0x00, VR_11, 0x00 } },
-// 	{ VR_SMBUS_ALERT_1_REG, 0xFF, { VR_1, VR_10, VR_7, VR_8, VR_9, VR_2, VR_4, VR_3 } },
-// 	{ VR_SMBUS_ALERT_2_REG, 0xF8, { 0x00, 0x00, 0x00, VR_11, VR_5, VR_6, UBC_1, UBC_2 } },
-// 	{ ASIC_OC_WARN_REG, 0x00, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } },
-// 	{ SYSTEM_ALERT_FAULT_REG, 0x00, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } },
-// 	{ VR_HOT_FAULT_1_REG, 0xFF, { VR_10, VR_7, VR_6, VR_4, VR_5, VR_3, VR_9, VR_8 } },
-// 	{ VR_HOT_FAULT_2_REG, 0xC0, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, VR_11, VR_1 } },
-// 	{ TEMPERATURE_IC_OVERT_FAULT_REG, 0x00, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } },
-// 	{ VR_POWER_INPUT_FAULT_1_REG, 0xFF, { VR_10, VR_7, VR_6, VR_4, VR_5, VR_3, VR_9, VR_8 } },
-// 	{ VR_POWER_INPUT_FAULT_2_REG, 0xC0, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, VR_11, VR_1 } },
-// 	{ LEAK_DETCTION_REG, 0x00, { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } },
-// };
-
 bool ubc_enabled_delayed_status = false;
 bool is_dc_status_changing = false;
 
