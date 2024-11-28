@@ -350,7 +350,7 @@ void load_pldmupdate_comp_config(void)
 	size_t filtered_count = 0;
 	for (size_t i = 0; i < comp_config_count; i++) {
 		// Skip the AG_COMPNT_OSFP_P3V3 for MINERVA_AEGIS_BD
-		if ((get_board_stage() == MINERVA_AEGIS_BD) &&
+		if ((get_board_type() == MINERVA_AEGIS_BD) &&
 		    PLDMUPDATE_FW_CONFIG_TABLE[i].comp_identifier == AG_COMPNT_OSFP_P3V3)
 			continue;
 
@@ -455,9 +455,6 @@ static bool get_vr_fw_version(void *info_p, uint8_t *buf, uint8_t *len)
 	CHECK_NULL_ARG_WITH_RETURN(buf, false);
 	CHECK_NULL_ARG_WITH_RETURN(len, false);
 
-	/* Stop sensor polling */
-	set_plat_sensor_polling_enable_flag(false);
-
 	pldm_fw_update_info_t *p = (pldm_fw_update_info_t *)info_p;
 
 	bool ret = false;
@@ -482,12 +479,12 @@ static bool get_vr_fw_version(void *info_p, uint8_t *buf, uint8_t *len)
 
 	if (!p_mutex) {
 		LOG_ERR("vr comp id %d, mutex is NULL", p->comp_identifier);
-		return false;
+		return ret;
 	}
 
 	if (k_mutex_lock(p_mutex, K_MSEC(VR_MUTEX_LOCK_TIMEOUT_MS))) {
 		LOG_ERR("vr comp id %d, mutex %p lock fail", p->comp_identifier, p_mutex);
-		return false;
+		return ret;
 	}
 	LOG_DBG("vr comp id %d, mutex %p lock", p->comp_identifier, p_mutex);
 
@@ -498,49 +495,49 @@ static bool get_vr_fw_version(void *info_p, uint8_t *buf, uint8_t *len)
 	case sensor_dev_isl69259:
 		if (!raa229621_get_crc(bus, addr, &version)) {
 			LOG_ERR("The VR ISL69260 version reading failed");
-			return ret;
+			goto err;
 		}
 		if (raa229621_get_remaining_wr(bus, addr, (uint8_t *)&remain) < 0) {
 			LOG_ERR("The VR ISL69260 remaining reading failed");
-			return ret;
+			goto err;
 		}
 		break;
 	case sensor_dev_raa228238:
 		if (!raa229621_get_crc(bus, addr, &version)) {
 			LOG_ERR("The VR RAA228238 version reading failed");
-			return ret;
+			goto err;
 		}
 		if (raa229621_get_remaining_wr(bus, addr, (uint8_t *)&remain) < 0) {
 			LOG_ERR("The VR RAA228238 remaining reading failed");
-			return ret;
+			goto err;
 		}
 		break;
 	case sensor_dev_mp2971:
 		if (!mp2971_get_checksum(bus, addr, &version)) {
 			LOG_ERR("The VR MPS2971 version reading failed");
-			return ret;
+			goto err;
 		}
 		break;
 	case sensor_dev_mp2891:
 		if (!mp2891_get_fw_version(bus, addr, &version)) {
 			LOG_ERR("The VR MPS2891 version reading failed");
-			return ret;
+			goto err;
 		}
 		break;
 	case sensor_dev_mp29816a:
 		if (!mp29816a_get_fw_version(bus, addr, &version)) {
 			LOG_ERR("The VR MPS29816a version reading failed");
-			return ret;
+			goto err;
 		}
 		break;
 	case sensor_dev_raa228249:
 		if (!raa228249_get_crc(bus, addr, &version)) {
 			LOG_ERR("The VR RAA228249 version reading failed");
-			return ret;
+			goto err;
 		}
 		if (raa228249_get_remaining_wr(bus, addr, (uint8_t *)&remain) < 0) {
 			LOG_ERR("The VR RAA228249 remaining reading failed");
-			return ret;
+			goto err;
 		}
 		break;
 	default:
@@ -593,9 +590,6 @@ static bool get_vr_fw_version(void *info_p, uint8_t *buf, uint8_t *len)
 		*len += bin2hex((uint8_t *)&remain, 1, buf_p, 2) + strlen(remain_str_p);
 		buf_p += 2;
 	}
-
-	/* Start sensor polling */
-	set_plat_sensor_polling_enable_flag(true);
 
 	ret = true;
 

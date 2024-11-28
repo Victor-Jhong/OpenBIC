@@ -24,11 +24,13 @@
 #include "plat_i2c.h"
 #include "plat_log.h"
 #include "plat_event.h"
+#include "plat_hook.h"
+#include "plat_class.h"
 
 LOG_MODULE_REGISTER(plat_log);
 
 #define LOG_MAX_INDEX 0x0FFF // recount when log index > 0x0FFF
-#define LOG_MAX_NUM 5 // total log amount: 100  //remove
+#define LOG_MAX_NUM 20 // total log amount: 100  //remove
 // #define LOG_MAX_NUM 100 // total log amount: 100
 #define AEGIS_FRU_LOG_START 0x0000 // log offset: 0KB
 #define AEGIS_CPLD_REGISTER_START_OFFSET 0x00
@@ -266,9 +268,11 @@ bool get_vr_status_word(uint8_t bus, uint8_t addr, uint8_t *vr_status_word)
 	return true;
 }
 
-bool vr_fault_get_error_data(uint8_t sensor_id, uint8_t *data)
+bool vr_fault_get_error_data(uint8_t sensor_id, uint8_t device_id, uint8_t *data)
 {
 	CHECK_NULL_ARG_WITH_RETURN(data, false);
+
+	bool ret = false;
 
 	uint8_t bus;
 	uint8_t addr;
@@ -280,18 +284,41 @@ bool vr_fault_get_error_data(uint8_t sensor_id, uint8_t *data)
 		return false;
 	}
 
-	//TODO: add check mutex
+	struct k_mutex *p_mutex;
+
+	if (device_id >= VR_1) {
+		p_mutex = (struct k_mutex *)vr_mutex_get(device_id - 3); //mapping to VR_INDEX_E
+		LOG_DBG("vr device_id %d, mutex %p", device_id, p_mutex);
+
+		if (!p_mutex) {
+			LOG_ERR("vr device_id %d, mutex is NULL", device_id);
+			return false;
+		}
+
+		if (k_mutex_lock(p_mutex, K_MSEC(VR_MUTEX_LOCK_TIMEOUT_MS))) {
+			LOG_ERR("vr device_id %d, mutex %p lock fail", device_id, p_mutex);
+			return false;
+		}
+	}
 
 	if (!get_vr_status_word(bus, addr, vr_status_word)) {
-		LOG_ERR("Failed to get VR status word, error_num: 0x%x , bus: 0x%x, addr: 0x%x",
+		LOG_ERR("Failed to get VR status word, sensor_id: 0x%x , bus: 0x%x, addr: 0x%x",
 			sensor_id, bus, addr);
-		return false;
+		goto err;
 	}
 
 	LOG_DBG("vr_fault_get_error_data VR status word: 0x%x 0x%x", vr_status_word[0],
 		vr_status_word[1]);
 	memcpy(data, vr_status_word, sizeof(vr_status_word));
-	return true;
+	ret = true;
+
+err:
+	LOG_DBG("vr device_id %d, mutex %p unlock", device_id, p_mutex);
+	if (device_id >= VR_1) {
+		if (k_mutex_unlock(p_mutex))
+			LOG_ERR("vr device_id %d, mutex %p unlock fail", device_id, p_mutex);
+	}
+	return ret;
 }
 
 bool get_error_data(uint16_t error_code, uint8_t *data)
@@ -321,6 +348,12 @@ bool get_error_data(uint16_t error_code, uint8_t *data)
 		return false;
 	}
 
+	// Aegis BD dosn't have OSFP 3V3 VR
+	if ((device_id == VR_1) && (get_board_type() == MINERVA_AEGIS_BD)) {
+		LOG_DBG("Skip the check for OSFP 3V3 VR");
+		return false;
+	}
+
 	// Find the sensor number associated with the device_id
 	for (size_t i = 0; i < ARRAY_SIZE(vr_device_table); i++) {
 		if (vr_device_table[i].index == device_id) {
@@ -336,7 +369,7 @@ bool get_error_data(uint16_t error_code, uint8_t *data)
 	}
 
 	// Handle VR_FAULT_ASSERT errors and retrieve VR-specific data
-	if (!vr_fault_get_error_data(sensor_num, data)) {
+	if (!vr_fault_get_error_data(sensor_num, device_id, data)) {
 		LOG_ERR("Failed to retrieve VR fault data for sensor_num: 0x%x", sensor_num);
 		return false;
 	}

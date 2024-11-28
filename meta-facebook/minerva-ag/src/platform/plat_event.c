@@ -46,9 +46,9 @@ bool vr_error_callback(aegis_cpld_info *cpld_info, uint8_t *current_cpld_value);
 
 // clang-format off
 aegis_cpld_info aegis_cpld_info_table[] = {
-	{ VR_POWER_FAULT_1_REG, 			0x00, 0x08, true, 0x00, false, false, 0x00,  .status_changed_cb = vr_error_callback },//remove
+	{ VR_POWER_FAULT_1_REG, 			0x00, 0x03, true, 0x00, false, false, 0x00,  .status_changed_cb = vr_error_callback },//remove
 	// { VR_POWER_FAULT_1_REG, 			0x00, 0x00, true, 0x00, false, false, 0x00,  .status_changed_cb = vr_error_callback },
-	{ VR_POWER_FAULT_2_REG, 			0x00, 0x10, true, 0x00, false, false, 0x00,  .status_changed_cb = vr_error_callback },//remove
+	{ VR_POWER_FAULT_2_REG, 			0x00, 0x0c, true, 0x00, false, false, 0x00,  .status_changed_cb = vr_error_callback },//remove
 	// { VR_POWER_FAULT_2_REG, 			0x00, 0x00, true, 0x00, false, false, 0x00,  .status_changed_cb = vr_error_callback },
 	{ VR_POWER_FAULT_3_REG, 			0x00, 0x00, true, 0x00, false, false, 0x00,  .status_changed_cb = vr_error_callback },
 	{ VR_POWER_FAULT_4_REG, 			0x00, 0x00, true, 0x00, false, false, 0x00,  .status_changed_cb = vr_error_callback },
@@ -61,8 +61,10 @@ aegis_cpld_info aegis_cpld_info_table[] = {
 	{ VR_HOT_FAULT_2_REG, 				0xFF, 0xFF, true, 0x00, false, false, 0x00,  .status_changed_cb = vr_error_callback },
 	{ TEMPERATURE_IC_OVERT_FAULT_REG, 	0xFF, 0xFF, true, 0x00, false, false, 0x00,  .status_changed_cb = vr_error_callback },
 	{ VR_POWER_INPUT_FAULT_1_REG, 		0xFF, 0xFF, true, 0x00, false, false, 0x00,  .status_changed_cb = vr_error_callback },
-	{ VR_POWER_INPUT_FAULT_2_REG, 		0xFF, 0xFF, true, 0x00, false, false, 0x00,  .status_changed_cb = vr_error_callback },
-	{ LEAK_DETCTION_REG, 				0xDF, 0xDF, true, 0x00, false, false, 0x00,  .status_changed_cb = vr_error_callback },
+	{ VR_POWER_INPUT_FAULT_2_REG, 		0xFF, 0x3F, true, 0x00, false, false, 0x00,  .status_changed_cb = vr_error_callback },//remove
+	// { VR_POWER_INPUT_FAULT_2_REG, 	0xFF, 0xFF, true, 0x00, false, false, 0x00,  .status_changed_cb = vr_error_callback },
+	{ LEAK_DETCTION_REG, 				0xDF, 0x0F, true, 0x00, false, false, 0x00,  .status_changed_cb = vr_error_callback },//remove
+	// { LEAK_DETCTION_REG, 			0xDF, 0xDF, true, 0x00, false, false, 0x00,  .status_changed_cb = vr_error_callback },
 };
 // clang-format on
 

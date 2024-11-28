@@ -44,8 +44,7 @@ void cmd_log_dump(const struct shell *shell, size_t argc, char **argv)
 		return;
 	}
 
-	// int cmd_size = strtol(argv[1], NULL, 16);
-	int order = strtol(argv[1], NULL, 16);
+	int order = strtol(argv[1], NULL, 10);
 
 	if (order < 1) {
 		shell_warn(shell, "Help: test log log_dump <order>, order start from 1");
