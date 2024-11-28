@@ -166,9 +166,6 @@ bool vr_error_callback(aegis_cpld_info *cpld_info, uint8_t *current_cpld_value)
 	uint8_t current_fault = *current_cpld_value ^ expected_val;
 	uint8_t new_fault = current_fault & ~cpld_info->is_fault_bit_map;
 
-	// Update the fault bitmap
-	cpld_info->is_fault_bit_map = current_fault;
-
 	if (!new_fault) {
 		return true; // No new faults, return early
 	}

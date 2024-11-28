@@ -9461,6 +9461,10 @@ bool is_vr_access(uint8_t sensor_num)
 void find_vr_addr_and_bus_and_sensor_dev_by_sensor_id(uint8_t sensor_id, uint8_t *vr_bus,
 						      uint8_t *vr_addr, uint8_t *sensor_dev)
 {
+	CHECK_NULL_ARG(vr_bus);
+	CHECK_NULL_ARG(vr_addr);
+	CHECK_NULL_ARG(sensor_dev);
+
 	int pldm_sensor_count = 0;
 	pldm_sensor_count = plat_pldm_sensor_get_sensor_count(VR_SENSOR_THREAD_ID);
 	for (int index = 0; index < pldm_sensor_count; index++) {
@@ -9471,6 +9475,57 @@ void find_vr_addr_and_bus_and_sensor_dev_by_sensor_id(uint8_t sensor_id, uint8_t
 			return;
 		}
 	}
+}
+
+bool get_sensor_info_by_sensor_id(uint8_t sensor_id, uint8_t *vr_bus, uint8_t *vr_addr,
+				  uint8_t *sensor_dev)
+{
+	CHECK_NULL_ARG_WITH_RETURN(vr_bus, false);
+	CHECK_NULL_ARG_WITH_RETURN(vr_addr, false);
+	CHECK_NULL_ARG_WITH_RETURN(sensor_dev, false);
+
+	int pldm_sensor_count = 0;
+
+	if (sensor_id >= SENSOR_NUM_UBC_1_TEMP_C && sensor_id <= SENSOR_NUM_UBC_2_P12V_PWR_W) {
+		pldm_sensor_count = plat_pldm_sensor_get_sensor_count(UBC_SENSOR_THREAD_ID);
+		for (int index = 0; index < pldm_sensor_count; index++) {
+			if (plat_pldm_sensor_ubc_table[index].pldm_sensor_cfg.num == sensor_id) {
+				*vr_addr = plat_pldm_sensor_ubc_table[index]
+						   .pldm_sensor_cfg.target_addr;
+				*vr_bus = plat_pldm_sensor_ubc_table[index].pldm_sensor_cfg.port;
+				*sensor_dev =
+					plat_pldm_sensor_ubc_table[index].pldm_sensor_cfg.type;
+				return true;
+			}
+		}
+	} else if (sensor_id >= SENSOR_NUM_TOP_INLET_TEMP_C &&
+		   sensor_id <= SENSOR_NUM_ON_DIE_4_TEMP_C) {
+		pldm_sensor_count = plat_pldm_sensor_get_sensor_count(TEMP_SENSOR_THREAD_ID);
+		for (int index = 0; index < pldm_sensor_count; index++) {
+			if (plat_pldm_sensor_temp_table[index].pldm_sensor_cfg.num == sensor_id) {
+				*vr_addr = plat_pldm_sensor_temp_table[index]
+						   .pldm_sensor_cfg.target_addr;
+				*vr_bus = plat_pldm_sensor_temp_table[index].pldm_sensor_cfg.port;
+				*sensor_dev =
+					plat_pldm_sensor_temp_table[index].pldm_sensor_cfg.type;
+				return true;
+			}
+		}
+	} else if (sensor_id >= SENSOR_NUM_OSFP_P3V3_TEMP_C &&
+		   sensor_id <= SENSOR_NUM_CPU_P1V2_VDDHTX_PCIE_PWR_W) {
+		pldm_sensor_count = plat_pldm_sensor_get_sensor_count(VR_SENSOR_THREAD_ID);
+		for (int index = 0; index < pldm_sensor_count; index++) {
+			if (plat_pldm_sensor_vr_table[index].pldm_sensor_cfg.num == sensor_id) {
+				*vr_addr =
+					plat_pldm_sensor_vr_table[index].pldm_sensor_cfg.target_addr;
+				*vr_bus = plat_pldm_sensor_vr_table[index].pldm_sensor_cfg.port;
+				*sensor_dev = plat_pldm_sensor_vr_table[index].pldm_sensor_cfg.type;
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
 
 bool is_osfp_3v3_access(uint8_t sensor_num)

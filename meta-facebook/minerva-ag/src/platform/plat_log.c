@@ -94,7 +94,7 @@ const err_sensor_mapping minerva_ag_sensor_normal_codes[] = {
 };
 
 enum VR_UBC_INDEX_E {
-	UBC_1 = 0,
+	UBC_1 = 1,
 	UBC_2,
 	VR_1,
 	VR_2,
@@ -171,51 +171,6 @@ uint16_t error_log_count(void)
 	return LOG_MAX_NUM;
 }
 
-/* 
-(order = N of "the Nth newest event")
-input order to get the position in log array(err_log_data)
-position is 1 based
-// */
-// static uint16_t get_log_position_by_time_order(uint8_t order)
-// {
-// 	if (order > LOG_MAX_NUM) {
-// 		LOG_ERR("Invalid LOG count %d", order);
-// 		return 0;
-// 	}
-
-// 	uint16_t i = 0;
-
-// 	// Check if the log indices are continuous or if they've wrapped around
-// 	for (i = 0; i < LOG_MAX_NUM - 1; i++) {
-// 		if ((err_log_data[i + 1].index == (err_log_data[i].index + 1)) ||
-// 		    (err_log_data[i + 1].index == 1 && err_log_data[i].index == LOG_MAX_INDEX)) {
-// 			continue;
-// 		}
-// 		break;
-// 	}
-
-// 	// Calculate position based on the requested order and current log layout
-// 	return (i + LOG_MAX_NUM - (order - 1)) % LOG_MAX_NUM;
-// }
-
-// Read logs
-// void plat_log_read(uint8_t *log_data, uint8_t cmd_size, uint16_t order)
-// {
-// 	CHECK_NULL_ARG(log_data);
-
-// 	uint16_t log_position = get_log_position_by_time_order(order);
-// 	memcpy(log_data, &err_log_data[log_position], sizeof(uint8_t) * cmd_size);
-
-// 	plat_err_log_mapping *p = (plat_err_log_mapping *)log_data;
-
-// 	LOG_HEXDUMP_INF(log_data, sizeof(uint8_t) * cmd_size, "plat_log_read_before");
-
-// 	if (p->index == 0xFFFF) {
-// 		memset(log_data, 0x00, sizeof(uint8_t) * cmd_size); // Clear invalid data
-// 	}
-
-// 	LOG_HEXDUMP_INF(log_data, sizeof(uint8_t) * cmd_size, "plat_log_read_after");
-// }
 void plat_log_read(uint8_t *log_data, uint8_t cmd_size, uint16_t order)
 {
 	CHECK_NULL_ARG(log_data);
@@ -320,7 +275,12 @@ bool vr_fault_get_error_data(uint8_t sensor_id, uint8_t *data)
 	uint8_t sensor_dev;
 	uint8_t vr_status_word[2] = { 0 };
 
-	find_vr_addr_and_bus_and_sensor_dev_by_sensor_id(sensor_id, &bus, &addr, &sensor_dev);
+	if (!get_sensor_info_by_sensor_id(sensor_id, &bus, &addr, &sensor_dev)) {
+		LOG_ERR("Failed to find VR address and bus");
+		return false;
+	}
+
+	//TODO: add check mutex
 
 	if (!get_vr_status_word(bus, addr, vr_status_word)) {
 		LOG_ERR("Failed to get VR status word, error_num: 0x%x , bus: 0x%x, addr: 0x%x",
@@ -328,47 +288,11 @@ bool vr_fault_get_error_data(uint8_t sensor_id, uint8_t *data)
 		return false;
 	}
 
-	LOG_INF("vr_fault_get_error_data VR status word: 0x%x 0x%x", vr_status_word[0],
+	LOG_DBG("vr_fault_get_error_data VR status word: 0x%x 0x%x", vr_status_word[0],
 		vr_status_word[1]);
 	memcpy(data, vr_status_word, sizeof(vr_status_word));
 	return true;
 }
-
-// bool get_error_data(uint16_t error_num, uint8_t *data)
-// {
-// 	CHECK_NULL_ARG_WITH_RETURN(data, false);
-
-// 	uint8_t error_code = ERROR_TYPE_MAX;
-
-// 	//find err_code in err_sensor_mapping
-// 	for (uint8_t i = 0; i < ARRAY_SIZE(minerva_ag_sensor_err_codes); i++) {
-// 		if (error_num == minerva_ag_sensor_err_codes[i].err_num) {
-// 			error_code = minerva_ag_sensor_err_codes[i].err_code;
-// 			break;
-// 		}
-// 	}
-
-// 	if (error_code == ERROR_TYPE_MAX) {
-// 		return false;
-// 	}
-
-// 	switch (error_code) {
-// 	case VR_FAULT_ASSERT:
-// 		if (!vr_fault_get_error_data(error_num, data))
-// 			return false;
-// 		return true;
-// 	case VR_FAULT_DEASSERT:
-// 	case DC_ON_STATUS_FAULT_ASSERT:
-// 	case DC_ON_STATUS_FAULT_DEASSERT:
-// 	case DC_OFF_STATUS_FAULT_ASSERT:
-// 	case DC_OFF_STATUS_FAULT_DEASSERT:
-// 	case ASIC_FAULT_ASSERT:
-// 	case ASIC_FAULT_DEASSERT:
-// 		return false;
-// 	default:
-// 		return false;
-// 	}
-// }
 
 bool get_error_data(uint16_t error_code, uint8_t *data)
 {
@@ -377,22 +301,37 @@ bool get_error_data(uint16_t error_code, uint8_t *data)
 	// Extract CPLD offset and bit position from the error code
 	uint8_t cpld_offset = error_code & 0xFF;
 	uint8_t bit_position = (error_code >> 8) & 0x07;
+	LOG_DBG("cpld_offset: 0x%x, bit_position: 0x%x", cpld_offset, bit_position);
 
 	// Initialize sensor number
 	uint8_t sensor_num = 0x00;
+	uint8_t device_id = 0x00;
 
-	// Find the sensor number associated with the error code
+	// Find the device_id associated with the error code
 	for (size_t i = 0; i < ARRAY_SIZE(vr_error_callback_info_table); i++) {
 		if (vr_error_callback_info_table[i].cpld_offset == cpld_offset) {
-			sensor_num = vr_error_callback_info_table[i]
-					     .bit_mapping_vr_sensor_num[bit_position];
+			device_id = vr_error_callback_info_table[i]
+					    .bit_mapping_vr_sensor_num[bit_position];
+			break;
+		}
+	}
+
+	if (device_id == 0x00) {
+		LOG_DBG("No valid device_id for error_code: 0x%x", error_code);
+		return false;
+	}
+
+	// Find the sensor number associated with the device_id
+	for (size_t i = 0; i < ARRAY_SIZE(vr_device_table); i++) {
+		if (vr_device_table[i].index == device_id) {
+			sensor_num = vr_device_table[i].sensor_num_1;
 			break;
 		}
 	}
 
 	// If no valid sensor number is found, skip further data retrieval
 	if (sensor_num == 0x00) {
-		LOG_INF("No valid sensor_num for error_code: 0x%x", error_code);
+		LOG_DBG("No valid sensor_num for error_code: 0x%x", error_code);
 		return false;
 	}
 

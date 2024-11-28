@@ -54,7 +54,6 @@ void cmd_log_dump(const struct shell *shell, size_t argc, char **argv)
 
 	uint8_t log_data[128] = { 0 };
 	plat_log_read(log_data, AEGIS_FRU_LOG_SIZE, order);
-	printf("AEGIS_FRU_LOG_SIZE = %d\n", AEGIS_FRU_LOG_SIZE);
 
 	shell_hexdump(shell, log_data, sizeof(uint8_t) * AEGIS_FRU_LOG_SIZE);
 
