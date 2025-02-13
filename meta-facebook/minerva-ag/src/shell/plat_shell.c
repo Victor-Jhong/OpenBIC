@@ -22,6 +22,7 @@
 #include "mctp.h"
 #include "pldm.h"
 #include "plat_aegis_power_control_shell.h"
+#include "plat_fru.h"
 
 void pldm_cmd(const struct shell *shell, size_t argc, char **argv)
 {
@@ -63,18 +64,22 @@ void pldm_cmd(const struct shell *shell, size_t argc, char **argv)
 	return;
 }
 
+void fru_print_cmd(const struct shell *shell, size_t argc, char **argv)
+{
+	print_fru_info();
+}
+
 /* Sub-command Level 1 of command test */
-SHELL_STATIC_SUBCMD_SET_CREATE(sub_test_cmds,
-			       SHELL_CMD(sensor, &sub_plat_sensor_polling_cmd,
-					 "set/get platform sensor polling command", NULL),
-			       SHELL_CMD(log, &sub_plat_log_cmd, "platform log command", NULL),
-			       SHELL_CMD(cpld, &sub_cpld_cmd, "cpld command", NULL),
-			       SHELL_CMD(get_fw_version, &sub_get_fw_version_cmd,
-					 "get fw version command", NULL),
-			       SHELL_CMD(pldm, NULL, "send pldm to bmc", pldm_cmd),
-			       SHELL_CMD(aegis_power, &sub_aegis_power_cmds, "aegis power commands",
-					 NULL),
-			       SHELL_SUBCMD_SET_END);
+SHELL_STATIC_SUBCMD_SET_CREATE(
+	sub_test_cmds,
+	SHELL_CMD(sensor, &sub_plat_sensor_polling_cmd, "set/get platform sensor polling command",
+		  NULL),
+	SHELL_CMD(log, &sub_plat_log_cmd, "platform log command", NULL),
+	SHELL_CMD(cpld, &sub_cpld_cmd, "cpld command", NULL),
+	SHELL_CMD(get_fw_version, &sub_get_fw_version_cmd, "get fw version command", NULL),
+	SHELL_CMD(pldm, NULL, "send pldm to bmc", pldm_cmd),
+	SHELL_CMD(aegis_power, &sub_aegis_power_cmds, "aegis power commands", NULL),
+	SHELL_CMD(fru_print, NULL, "fru_print", fru_print_cmd), SHELL_SUBCMD_SET_END);
 
 /* Root of command test */
 SHELL_CMD_REGISTER(test, &sub_test_cmds, "Test commands for AG", NULL);
