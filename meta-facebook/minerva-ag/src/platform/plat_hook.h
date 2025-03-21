@@ -276,5 +276,6 @@ bool set_bootstrap_table_and_user_settings(uint8_t rail, uint8_t *change_setting
 					   uint8_t drive_index_level, bool is_perm,
 					   bool is_default);
 bool get_bootstrap_change_drive_level(int rail, int *drive_level);
+void init_temp_limit(void);
 
 #endif
