@@ -896,7 +896,7 @@ static bool soc_pcie_perst_user_settings_init(void)
 	return true;
 }
 
-static bool vr_vout_user_settings_init(void)
+bool vr_vout_user_settings_init(void)
 {
 	if (vr_vout_user_settings_get(&user_settings) == false) {
 		LOG_ERR("get vout user settings fail");
@@ -919,7 +919,7 @@ static bool vr_vout_user_settings_init(void)
 	return true;
 }
 
-static bool vr_vout_default_settings_init(void)
+bool vr_vout_default_settings_init(void)
 {
 	for (int i = 0; i < VR_RAIL_E_MAX; i++) {
 		if ((get_board_type() == MINERVA_AEGIS_BD) && (i == 0)) {
