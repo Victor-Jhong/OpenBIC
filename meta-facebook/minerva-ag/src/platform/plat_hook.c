@@ -42,6 +42,14 @@ LOG_MODULE_REGISTER(plat_hook);
 
 #define ALERT_LEVEL_USER_SETTINGS_OFFSET 0x8200
 
+#ifndef TMP432_CONFIG_WRITE_REG1
+#define TMP432_CONFIG_WRITE_REG1 0x03
+#endif
+
+#ifndef TMP432_CONFIG_READ_REG1
+#define TMP432_CONFIG_READ_REG1 0x09
+#endif
+
 static struct k_mutex vr_mutex[VR_MAX_NUM];
 static struct k_mutex pwrlevel_mutex;
 
@@ -132,10 +140,7 @@ bool post_ubc_read(sensor_cfg *cfg, void *args, int *reading)
 #define EEPROM_MAX_WRITE_TIME 5 // the BR24G512 eeprom max write time is 3.5 ms
 #define AEGIS_CPLD_ADDR (0x4C >> 1)
 #define VR_PRE_READ_ARG(idx)                                                                       \
-	{ .mutex = vr_mutex + idx, .vr_page = 0x0 },                                               \
-	{                                                                                          \
-		.mutex = vr_mutex + idx, .vr_page = 0x1                                            \
-	}
+	{ .mutex = vr_mutex + idx, .vr_page = 0x0 }, { .mutex = vr_mutex + idx, .vr_page = 0x1 }
 
 vr_pre_proc_arg vr_pre_read_args[] = {
 	{ .mutex = vr_mutex + 0, .vr_page = 0x0 },  { .mutex = vr_mutex + 0, .vr_page = 0x1 },
@@ -165,8 +170,10 @@ mpc12109_init_arg mpc12109_init_args[] = {
 };
 
 temp_mapping_sensor temp_index_table[] = {
-	{ TEMP_INDEX_ON_DIE_1_2, ASIC_DIE_ATH_SENSOR_0_TEMP_C, "CB_ASIC_DIE_ATH_SENSOR_0_TEMP" },
-	{ TEMP_INDEX_ON_DIE_3_4, ASIC_DIE_N_OWL_TEMP_C, "CB_ASIC_DIE_N_OWL_TEMP" },
+	{ TEMP_INDEX_ON_DIE_ATH_0_N_OWL, ASIC_DIE_ATH_SENSOR_0_TEMP_C,
+	  "CB_ASIC_DIE_ATH_SENSOR_0_TEMP" },
+	{ TEMP_INDEX_ON_DIE_ATH_1_S_OWL, ASIC_DIE_ATH_SENSOR_1_TEMP_C,
+	  "CB_ASIC_DIE_ATH_SENSOR_1_TEMP" },
 	{ TEMP_INDEX_TOP_INLET, TOP_INLET_TEMP_C, "CB_TOP_INLET_TEMP" },
 	{ TEMP_INDEX_BOT_INLET, BOT_INLET_TEMP_C, "CB_BOT_INLET_TEMP" },
 	{ TEMP_INDEX_TOP_OUTLET, TOP_OUTLET_TEMP_C, "CB_TOP_OUTLET_TEMP" },
@@ -1865,6 +1872,46 @@ bool plat_set_temp_threshold(uint8_t temp_index_threshold_type, uint32_t *millid
 	}
 
 	return true;
+}
+
+void init_temp_alert_mode(void)
+{
+	size_t num_of_temp = sizeof(temp_index_table) / sizeof(temp_index_table[0]);
+
+	for (size_t i = 0; i < num_of_temp; i++) {
+		uint32_t sensor_id = temp_index_table[i].sensor_id;
+		const char *name = temp_index_table[i].sensor_name;
+
+		if (sensor_id != ASIC_DIE_ATH_SENSOR_0_TEMP_C &&
+		    sensor_id != ASIC_DIE_ATH_SENSOR_1_TEMP_C) {
+			continue;
+		}
+
+		sensor_cfg *cfg = get_sensor_cfg_by_sensor_id(sensor_id);
+		if (cfg == NULL) {
+			LOG_ERR("Failed to get sensor config for sensor %s (0x%x)", name,
+				sensor_id);
+			continue;
+		}
+
+		uint8_t data = 0;
+		if (!plat_i2c_read(cfg->port, cfg->target_addr, TMP432_CONFIG_READ_REG1, &data,
+				   1)) {
+			LOG_ERR("Failed to read TMP432 config for sensor %s (0x%x)", name,
+				sensor_id);
+			continue;
+		}
+
+		data |= BIT(5);
+		if (!plat_i2c_write(cfg->port, cfg->target_addr, TMP432_CONFIG_WRITE_REG1, &data,
+				    1)) {
+			LOG_ERR("Failed to set TMP432 to temp alert mode for sensor %s (0x%x)",
+				name, sensor_id);
+			continue;
+		}
+
+		LOG_INF("Sensor %s (0x%x) init temp alert mode successfully", name, sensor_id);
+	}
 }
 
 void init_temp_limit(void)
