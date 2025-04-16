@@ -140,10 +140,7 @@ bool post_ubc_read(sensor_cfg *cfg, void *args, int *reading)
 #define EEPROM_MAX_WRITE_TIME 5 // the BR24G512 eeprom max write time is 3.5 ms
 #define AEGIS_CPLD_ADDR (0x4C >> 1)
 #define VR_PRE_READ_ARG(idx)                                                                       \
-	{ .mutex = vr_mutex + idx, .vr_page = 0x0 },                                               \
-	{                                                                                          \
-		.mutex = vr_mutex + idx, .vr_page = 0x1                                            \
-	}
+	{ .mutex = vr_mutex + idx, .vr_page = 0x0 }, { .mutex = vr_mutex + idx, .vr_page = 0x1 }
 
 vr_pre_proc_arg vr_pre_read_args[] = {
 	{ .mutex = vr_mutex + 0, .vr_page = 0x0 },  { .mutex = vr_mutex + 0, .vr_page = 0x1 },
@@ -1877,6 +1874,12 @@ bool plat_set_temp_threshold(uint8_t temp_index_threshold_type, uint32_t *millid
 	return true;
 }
 
+#define PLAT_TMP432_THERM_HYSTERESIS_VAL 0x64 //100
+
+#ifndef TMP432_THERM_HYSTERESIS_REG
+#define TMP432_THERM_HYSTERESIS_REG 0x21
+#endif
+
 void init_temp_alert_mode(void)
 {
 	size_t num_of_temp = sizeof(temp_index_table) / sizeof(temp_index_table[0]);
@@ -1897,12 +1900,12 @@ void init_temp_alert_mode(void)
 			continue;
 		}
 
+		//set to temp alert mode
 		uint8_t data = 0;
 		if (!plat_i2c_read(cfg->port, cfg->target_addr, TMP432_CONFIG_READ_REG1, &data,
 				   1)) {
-			LOG_ERR("Failed to read TMP432 config for sensor %s (0x%x)", name,
-				sensor_id);
-			continue;
+			LOG_ERR("Failed to read TMP432 config for sensor %s (0x%x), set TMP432_CONFIG_WRITE_REG1 to %lx ",
+				name, sensor_id, BIT(5));
 		}
 
 		data |= BIT(5);
@@ -1910,10 +1913,22 @@ void init_temp_alert_mode(void)
 				    1)) {
 			LOG_ERR("Failed to set TMP432 to temp alert mode for sensor %s (0x%x)",
 				name, sensor_id);
+		} else {
+			LOG_INF("Sensor %s (0x%x) init temp alert mode successfully", name,
+				sensor_id);
+		}
+
+		//set therm hysteresis
+		data = PLAT_TMP432_THERM_HYSTERESIS_VAL;
+		if (!plat_i2c_write(cfg->port, cfg->target_addr, TMP432_THERM_HYSTERESIS_REG, &data,
+				    1)) {
+			LOG_ERR("Failed to set TMP432 therm hysteresis to %d for sensor %s (0x%x)",
+				PLAT_TMP432_THERM_HYSTERESIS_VAL, name, sensor_id);
 			continue;
 		}
 
-		LOG_INF("Sensor %s (0x%x) init temp alert mode successfully", name, sensor_id);
+		LOG_INF("Sensor %s (0x%x) init therm hysteresis to %d successfully", name,
+			sensor_id, PLAT_TMP432_THERM_HYSTERESIS_VAL);
 	}
 }
 
