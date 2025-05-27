@@ -53,6 +53,9 @@ uint8_t cx7_read(sensor_cfg *cfg, int *reading)
 	req.sensor_id = init_arg->sensor_id;
 	req.rearm_event_state = 0;
 
+	// LOG_INF("Get CX7 sensor #%d reading, eid = 0x%x, sensor_id = 0x%x", init_arg->sensor_id,
+	// 	mctp_dest_eid, init_arg->sensor_id);
+
 	uint16_t resp_len =
 		pldm_platform_monitor_read(mctp_inst, ext_params,
 					   PLDM_MONITOR_CMD_CODE_GET_SENSOR_READING,

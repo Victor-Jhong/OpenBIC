@@ -503,14 +503,14 @@ bool is_broadcom_thor2_nic_type()
 
 void check_nic_config_by_ncsi(void)
 {
-	uint8_t config = NIC_CONFIG_UNKNOWN;
-	if (is_broadcom_thor2_nic_type() == true) {
-		set_cx7_init_arg_to_thor2();
-		config = NIC_CONFIG_THOR2;
-	} else {
-		// set_cx7_init_arg_to_cx7();
-		config = mellanox_cx7_ncsi_get_link_type();
-	}
+	// uint8_t config = NIC_CONFIG_UNKNOWN;
+	// if (is_broadcom_thor2_nic_type() == true) {
+	// 	set_cx7_init_arg_to_thor2();
+	// 	config = NIC_CONFIG_THOR2;
+	// } else {
+	// 	// set_cx7_init_arg_to_cx7();
+	// 	config = mellanox_cx7_ncsi_get_link_type();
+	// }
 
 	// config = mellanox_cx7_ncsi_get_link_type();
 
@@ -521,8 +521,9 @@ void check_nic_config_by_ncsi(void)
 	// 	config = check_nic_type_by_fru();
 	// }
 
-	nic_config = config;
-	LOG_INF("NIC config is %d, 0: UNKNOWN, 1: CX7, 2: IB_CX7, 3: THOR2", nic_config);
+	nic_config = NIC_CONFIG_THOR2;
+	// LOG_INF("NIC config is %d, 0: UNKNOWN, 1: CX7, 2: IB_CX7, 3: THOR2", nic_config);
+	LOG_ERR("NIC config is hard coded to THOR2 (0x%x)", nic_config);
 }
 
 uint8_t get_nic_config(void)

@@ -942,6 +942,28 @@ cx7_init_arg cx7_init_args[] = {
 	[7] = { .is_init = false, .endpoint = 0x17, .sensor_id = 0x0008 },
 };
 
+cx7_init_arg pollara_init_args[] = {
+	[0] = { .is_init = false, .endpoint = 0x10, .sensor_id = 0x003D },
+	[1] = { .is_init = false, .endpoint = 0x11, .sensor_id = 0x003D },
+	[2] = { .is_init = false, .endpoint = 0x12, .sensor_id = 0x003D },
+	[3] = { .is_init = false, .endpoint = 0x13, .sensor_id = 0x003D },
+	[4] = { .is_init = false, .endpoint = 0x14, .sensor_id = 0x003D },
+	[5] = { .is_init = false, .endpoint = 0x15, .sensor_id = 0x003D },
+	[6] = { .is_init = false, .endpoint = 0x16, .sensor_id = 0x003D },
+	[7] = { .is_init = false, .endpoint = 0x17, .sensor_id = 0x003D },
+};
+
+cx7_init_arg pollara_dr4_init_args[] = {
+	[0] = { .is_init = false, .endpoint = 0x10, .sensor_id = 0x0041 },
+	[1] = { .is_init = false, .endpoint = 0x11, .sensor_id = 0x0041 },
+	[2] = { .is_init = false, .endpoint = 0x12, .sensor_id = 0x0041 },
+	[3] = { .is_init = false, .endpoint = 0x13, .sensor_id = 0x0041 },
+	[4] = { .is_init = false, .endpoint = 0x14, .sensor_id = 0x0041 },
+	[5] = { .is_init = false, .endpoint = 0x15, .sensor_id = 0x0041 },
+	[6] = { .is_init = false, .endpoint = 0x16, .sensor_id = 0x0041 },
+	[7] = { .is_init = false, .endpoint = 0x17, .sensor_id = 0x0041 },
+};
+
 /**************************************************************************************************
  *  PRE-HOOK/POST-HOOK ARGS
  **************************************************************************************************/

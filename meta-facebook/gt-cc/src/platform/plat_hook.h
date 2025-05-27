@@ -48,6 +48,8 @@ extern ltc4282_init_arg ltc4282_hsc_init_args[];
 extern ltc4286_init_arg ltc4286_hsc_init_args[];
 extern nct7718w_init_arg nct7718w_init_args[];
 extern cx7_init_arg cx7_init_args[];
+extern cx7_init_arg pollara_init_args[];
+extern cx7_init_arg pollara_dr4_init_args[];
 /**************************************************************************************************
  *  PRE-HOOK/POST-HOOK ARGS
  **************************************************************************************************/
