@@ -27,6 +27,7 @@
 #include "plat_pldm_monitor.h"
 #include "plat_led.h"
 #include "plat_hook.h"
+#include <logging/log_ctrl.h>
 
 SCU_CFG scu_cfg[] = {
 	//register    value
@@ -35,6 +36,39 @@ SCU_CFG scu_cfg[] = {
 	{ 0x7e6e2618, 0x00FF0000 }, //SCU618: Disable GPIO internal pull down #2
 	{ 0x7e6e261C, 0x00000000 }, //SCU618: Disable GPIO internal pull down #3
 };
+
+bool set_log_level(uint16_t data)
+{
+	/*  LOG_LEVEL_NONE 0U
+        LOG_LEVEL_ERR  1U
+        LOG_LEVEL_WRN  2U
+        LOG_LEVEL_INF  3U
+        LOG_LEVEL_DBG  4U
+    */
+	if (data > 4)
+		return false;
+
+	printk("Set log level to %d\n", data);
+
+	int level = data;
+	int backend_cnt = log_backend_count_get();
+	for (int i = 0; i < backend_cnt; i++) {
+		const struct log_backend *backend = log_backend_get(i);
+		printk("Backend %d: %s \n", i, backend->name);
+
+		for (int j = 0; j < log_sources_count(); j++) {
+			const char *name = log_name_get(j);
+			int dynamic_lvl = log_filter_get(backend, CONFIG_LOG_DOMAIN_ID, j, true);
+			int compiled_lvl = log_filter_get(backend, CONFIG_LOG_DOMAIN_ID, j, false);
+			printk("log name %s: dynamic %d, compiled %d\n", name, dynamic_lvl,
+			       compiled_lvl);
+
+			log_filter_set(backend, CONFIG_LOG_DOMAIN_ID, j, level);
+		}
+	}
+
+	return true;
+}
 
 void pal_pre_init()
 {
@@ -46,6 +80,8 @@ void pal_pre_init()
 				1);
 	}
 	scu_init(scu_cfg, sizeof(scu_cfg) / sizeof(SCU_CFG));
+
+	set_log_level(1);
 
 	init_platform_config();
 }
