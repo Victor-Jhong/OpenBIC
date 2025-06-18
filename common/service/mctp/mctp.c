@@ -145,7 +145,7 @@ static uint8_t bridge_msg(mctp *mctp_inst, uint8_t *buf, uint16_t len)
 	uint8_t ret =
 		mctp_inst->ep_resolve(hdr->dest_ep, (void **)&target_mctp, &target_ext_params);
 	if (ret != MCTP_SUCCESS) {
-		LOG_ERR("can't bridge endpoint %x", hdr->dest_ep);
+		LOG_DBG("can't bridge endpoint %x", hdr->dest_ep);
 		return MCTP_ERROR;
 	}
 
@@ -169,21 +169,21 @@ static uint8_t mctp_pkt_assembling(mctp *mctp_inst, uint8_t *buf, uint16_t len)
 	/* first packet, allocate memory to hold data */
 	if (hdr->som && !hdr->eom) {
 		if (*buf_p) {
-			LOG_WRN("Unexpected SOM received?");
+			LOG_DBG("Unexpected SOM received?");
 			free(*buf_p);
 		}
 		*offset_p = 0;
 
 		*buf_p = (uint8_t *)malloc(MSG_ASSEMBLY_BUF_SIZE);
 		if (!*buf_p) {
-			LOG_WRN("cannot create memory...");
+			LOG_DBG("cannot create memory...");
 			return MCTP_ERROR;
 		}
 		memset(*buf_p, 0, MSG_ASSEMBLY_BUF_SIZE);
 	}
 
 	if (!(*buf_p)) {
-		LOG_HEXDUMP_WRN(buf, len, "There was no SOM package before?");
+		LOG_HEXDUMP_DBG(buf, len, "There was no SOM package before?");
 		return MCTP_ERROR;
 	}
 
@@ -203,11 +203,11 @@ static void mctp_rx_task(void *arg, void *dummy0, void *dummy1)
 
 	mctp *mctp_inst = (mctp *)arg;
 	if (!mctp_inst->read_data) {
-		LOG_WRN("mctp_rx_task without medium read function!");
+		LOG_DBG("mctp_rx_task without medium read function!");
 		return;
 	}
 
-	LOG_INF("mctp_rx_task start %p", mctp_inst);
+	LOG_DBG("mctp_rx_task start %p", mctp_inst);
 
 	while (1) {
 		k_msleep(MCTP_POLL_TIME_MS);
@@ -241,7 +241,7 @@ static void mctp_rx_task(void *arg, void *dummy0, void *dummy1)
 			/* try to bridge this packet */
 			ret = bridge_msg(mctp_inst, read_buf, read_len);
 			if (ret == MCTP_ERROR)
-				LOG_WRN("Bridge to endpoint 0x%x failed ", hdr->dest_ep);
+				LOG_DBG("Bridge to endpoint 0x%x failed ", hdr->dest_ep);
 			continue;
 		}
 
@@ -249,7 +249,7 @@ static void mctp_rx_task(void *arg, void *dummy0, void *dummy1)
 
 		/* assembling the mctp message */
 		if (mctp_pkt_assembling(mctp_inst, read_buf, read_len) == MCTP_ERROR)
-			LOG_WRN("Packet assemble failed ");
+			LOG_DBG("Packet assemble failed ");
 
 		/* if it is not last packet, waiting for the remain data */
 		if (!hdr->eom)
@@ -284,7 +284,7 @@ static void mctp_tx_task_response(struct k_msgq *msgq, uint8_t resp_code)
 	CHECK_NULL_ARG(msgq);
 
 	if (k_msgq_put(msgq, &resp_code, K_NO_WAIT))
-		LOG_WRN("mctp tx task response failed");
+		LOG_DBG("mctp tx task response failed");
 }
 
 /* mctp tx task */
@@ -297,11 +297,11 @@ static void mctp_tx_task(void *arg, void *dummy0, void *dummy1)
 	mctp *mctp_inst = (mctp *)arg;
 
 	if (!mctp_inst->write_data) {
-		LOG_WRN("mctp_tx_task without medium write function!");
+		LOG_DBG("mctp_tx_task without medium write function!");
 		return;
 	}
 
-	LOG_INF("mctp_tx_task start %p ", mctp_inst);
+	LOG_DBG("mctp_tx_task start %p ", mctp_inst);
 
 	while (1) {
 		mctp_tx_msg mctp_msg = { 0 };
@@ -385,7 +385,7 @@ static void mctp_tx_task(void *arg, void *dummy0, void *dummy1)
 						    mctp_msg.ext_params);
 
 			if (ret != MCTP_SUCCESS) {
-				LOG_WRN("mctp write data failed");
+				LOG_DBG("mctp write data failed");
 				break;
 			}
 		}
@@ -431,7 +431,7 @@ uint8_t mctp_deinit(mctp *mctp_inst)
 
 	mctp_stop(mctp_inst);
 	if (mctp_medium_deinit(mctp_inst) == MCTP_ERROR)
-		LOG_WRN("mctp deinit failed ");
+		LOG_DBG("mctp deinit failed ");
 
 	free(mctp_inst);
 	return MCTP_SUCCESS;
@@ -453,7 +453,7 @@ uint8_t mctp_set_medium_configure(mctp *mctp_inst, MCTP_MEDIUM_TYPE medium_type,
 
 error:
 	if (mctp_medium_deinit(mctp_inst) == MCTP_ERROR)
-		LOG_WRN("mctp deinit failed ");
+		LOG_DBG("mctp deinit failed ");
 	mctp_inst->medium_type = MCTP_MEDIUM_TYPE_UNKNOWN;
 	return MCTP_ERROR;
 }
@@ -498,7 +498,7 @@ uint8_t mctp_start(mctp *mctp_inst)
 	CHECK_NULL_ARG_WITH_RETURN(mctp_inst, MCTP_ERROR);
 
 	if (mctp_inst->is_servcie_start) {
-		LOG_WRN("The mctp_inst is already start!");
+		LOG_DBG("The mctp_inst is already start!");
 		return MCTP_ERROR;
 	}
 
@@ -506,7 +506,7 @@ uint8_t mctp_start(mctp *mctp_inst)
 
 	uint8_t *msgq_buf = (uint8_t *)malloc(MCTP_TX_QUEUE_SIZE * sizeof(mctp_tx_msg));
 	if (!msgq_buf) {
-		LOG_WRN("msgq alloc failed!!");
+		LOG_DBG("msgq alloc failed!!");
 		goto error;
 	}
 
@@ -536,7 +536,7 @@ uint8_t mctp_start(mctp *mctp_inst)
 	return MCTP_SUCCESS;
 
 error:
-	LOG_ERR("mctp_start failed!!");
+	LOG_DBG("mctp_start failed!!");
 	mctp_stop(mctp_inst);
 	return MCTP_ERROR;
 }
@@ -549,7 +549,7 @@ static uint8_t mctp_pass_tx_task(mctp *mctp_inst, uint8_t *buf, uint16_t len,
 	CHECK_ARG_WITH_RETURN(!len, MCTP_ERROR);
 
 	if (!mctp_inst->is_servcie_start) {
-		LOG_WRN("The mctp_inst isn't start service!");
+		LOG_DBG("The mctp_inst isn't start service!");
 		return MCTP_ERROR;
 	}
 
@@ -574,7 +574,7 @@ static uint8_t mctp_pass_tx_task(mctp *mctp_inst, uint8_t *buf, uint16_t len,
 	if (!ret) {
 		uint8_t evt = MCTP_ERROR;
 		if (k_msgq_get(&evt_msgq, &evt, K_FOREVER)) {
-			LOG_WRN("failed to get status from msgq!");
+			LOG_DBG("failed to get status from msgq!");
 			goto error;
 		}
 
@@ -649,7 +649,7 @@ __weak int pal_find_bus_in_mctp_port(mctp_port *p)
 		bus = p->conf.i3c_conf.bus;
 		break;
 	default:
-		LOG_WRN("Cannot find medium type");
+		LOG_DBG("Cannot find medium type");
 		return -1;
 	}
 

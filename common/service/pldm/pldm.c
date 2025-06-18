@@ -76,17 +76,17 @@ static bool unregister_instid(void *mctp_p, uint8_t inst_num)
 	CHECK_NULL_ARG_WITH_RETURN(mctp_p, false);
 
 	if (inst_num >= PLDM_MAX_INSTID_COUNT) {
-		LOG_ERR("Invalid instance number %d", inst_num);
+		LOG_DBG("Invalid instance number %d", inst_num);
 		return false;
 	}
 
 	mctp *mctp_inst = (mctp *)mctp_p;
 	if (!mctp_inst->pldm_inst_table) {
-		LOG_ERR("Instance table not init!");
+		LOG_DBG("Instance table not init!");
 		return false;
 	}
 	if (!(mctp_inst->pldm_inst_table & BIT(inst_num))) {
-		LOG_ERR("Inatant id %d not register yet!", inst_num);
+		LOG_DBG("Inatant id %d not register yet!", inst_num);
 		return false;
 	}
 	WRITE_BIT(mctp_inst->pldm_inst_table, inst_num, 0);
@@ -135,7 +135,7 @@ void pldm_read_resp_handler(void *args, uint8_t *rbuf, uint16_t rlen)
 	pldm_recv_resp_arg *recv_arg = (pldm_recv_resp_arg *)args;
 
 	if (rlen > recv_arg->rbuf_len) {
-		LOG_WRN("Response length(%d) is greater than buffer length(%d)!", rlen,
+		LOG_DBG("Response length(%d) is greater than buffer length(%d)!", rlen,
 			recv_arg->rbuf_len);
 		recv_arg->return_len = recv_arg->rbuf_len;
 	} else {
@@ -170,7 +170,7 @@ uint16_t mctp_pldm_read(void *mctp_p, pldm_msg *msg, uint8_t *rbuf, uint16_t rbu
 	uint8_t event_msgq_buffer[1];
 	struct k_msgq *event_msgq_p = (struct k_msgq *)malloc(sizeof(struct k_msgq));
 	if (!event_msgq_p) {
-		LOG_WRN("Failed to allocate event_msgq_p");
+		LOG_DBG("Failed to allocate event_msgq_p");
 		return 0;
 	}
 	uint16_t ret_len = 0;
@@ -180,7 +180,7 @@ uint16_t mctp_pldm_read(void *mctp_p, pldm_msg *msg, uint8_t *rbuf, uint16_t rbu
 	pldm_recv_resp_arg *recv_arg_p = (pldm_recv_resp_arg *)malloc(sizeof(pldm_recv_resp_arg));
 	if (!recv_arg_p) {
 		SAFE_FREE(event_msgq_p);
-		LOG_WRN("Failed to allocate recv_arg_p");
+		LOG_DBG("Failed to allocate recv_arg_p");
 		return 0;
 	}
 	recv_arg_p->msgq = event_msgq_p;
@@ -200,11 +200,11 @@ uint16_t mctp_pldm_read(void *mctp_p, pldm_msg *msg, uint8_t *rbuf, uint16_t rbu
 #ifdef PLDM_SEND_FAIL_DELAY_MS
 			k_msleep(PLDM_SEND_FAIL_DELAY_MS);
 #endif
-			LOG_WRN("Send msg failed!");
+			LOG_DBG("Send msg failed!");
 			continue;
 		}
 		if (k_msgq_get(event_msgq_p, &event, K_FOREVER)) {
-			LOG_WRN("Failed to get status from msgq!");
+			LOG_DBG("Failed to get status from msgq!");
 			continue;
 		}
 		if (event == PLDM_READ_EVENT_SUCCESS) {
@@ -216,7 +216,7 @@ uint16_t mctp_pldm_read(void *mctp_p, pldm_msg *msg, uint8_t *rbuf, uint16_t rbu
 	}
 	SAFE_FREE(event_msgq_p);
 	SAFE_FREE(recv_arg_p);
-	LOG_WRN("Retry reach max!");
+	LOG_DBG("Retry reach max!");
 	return 0;
 }
 
@@ -226,7 +226,7 @@ static uint8_t pldm_msg_timeout_check(sys_slist_t *list, struct k_mutex *mutex)
 	CHECK_NULL_ARG_WITH_RETURN(mutex, MCTP_ERROR);
 
 	if (k_mutex_lock(mutex, K_MSEC(PLDM_RESP_MSG_PROC_MUTEX_TIMEOUT_MS))) {
-		LOG_WRN("pldm mutex is locked over %d ms!!", PLDM_RESP_MSG_PROC_MUTEX_TIMEOUT_MS);
+		LOG_DBG("pldm mutex is locked over %d ms!!", PLDM_RESP_MSG_PROC_MUTEX_TIMEOUT_MS);
 		return MCTP_ERROR;
 	}
 
@@ -244,7 +244,7 @@ static uint8_t pldm_msg_timeout_check(sys_slist_t *list, struct k_mutex *mutex)
 			sys_slist_remove(list, pre_node, node);
 
 			if (unregister_instid(p->mctp_inst, p->msg.hdr.inst_id) == false) {
-				LOG_ERR("Unregister failed!");
+				LOG_DBG("Unregister failed!");
 				return PLDM_ERROR;
 			}
 
@@ -290,7 +290,7 @@ static uint8_t pldm_resp_msg_process(mctp *const mctp_inst, uint8_t *buf, uint32
 	sys_snode_t *found_node = NULL;
 
 	if (k_mutex_lock(&wait_recv_resp_mutex, K_MSEC(PLDM_RESP_MSG_PROC_MUTEX_TIMEOUT_MS))) {
-		LOG_WRN("pldm mutex is locked over %d ms!!", PLDM_RESP_MSG_PROC_MUTEX_TIMEOUT_MS);
+		LOG_DBG("pldm mutex is locked over %d ms!!", PLDM_RESP_MSG_PROC_MUTEX_TIMEOUT_MS);
 		return PLDM_ERROR;
 	}
 
@@ -305,7 +305,7 @@ static uint8_t pldm_resp_msg_process(mctp *const mctp_inst, uint8_t *buf, uint32
 			sys_slist_remove(&wait_recv_resp_list, pre_node, node);
 
 			if (unregister_instid(mctp_inst, p->msg.hdr.inst_id) == false) {
-				LOG_ERR("Unregister failed!");
+				LOG_DBG("Unregister failed!");
 				k_mutex_unlock(&wait_recv_resp_mutex);
 				return PLDM_ERROR;
 			}
@@ -422,7 +422,7 @@ uint8_t mctp_pldm_send_msg(void *mctp_p, pldm_msg *msg)
 
 	if (msg->hdr.rq) {
 		if (register_instid(mctp_p, &get_inst_id) == false) {
-			LOG_ERR("Register failed!");
+			LOG_DBG("Register failed!");
 			return PLDM_ERROR;
 		}
 
@@ -445,7 +445,7 @@ uint8_t mctp_pldm_send_msg(void *mctp_p, pldm_msg *msg)
 	if (msg->hdr.rq) {
 		p = (wait_msg *)malloc(sizeof(*p));
 		if (!p) {
-			LOG_WRN("wait_msg alloc failed!");
+			LOG_DBG("wait_msg alloc failed!");
 			goto error;
 		}
 
@@ -462,7 +462,7 @@ uint8_t mctp_pldm_send_msg(void *mctp_p, pldm_msg *msg)
 
 	uint8_t rc = mctp_send_msg(mctp_inst, buf, len, msg->ext_params);
 	if (rc == MCTP_ERROR) {
-		LOG_ERR("mctp_send_msg error!!");
+		LOG_DBG("mctp_send_msg error!!");
 
 		if (p != NULL) {
 			sys_slist_find_and_remove(&wait_recv_resp_list, &p->node);
@@ -477,7 +477,7 @@ uint8_t mctp_pldm_send_msg(void *mctp_p, pldm_msg *msg)
 error:
 	if (msg->hdr.rq) {
 		if (unregister_instid(mctp_p, get_inst_id) == false) {
-			LOG_ERR("Unregister failed!");
+			LOG_DBG("Unregister failed!");
 		}
 	}
 
@@ -506,7 +506,7 @@ uint8_t get_supported_pldm_type(uint8_t *buf, uint8_t buf_size)
 		const uint8_t bit_index = query_tbl[i].type % 8;
 
 		if (buf_index >= buf_size) {
-			LOG_WRN("The PLDM type(0x%x) is out of range!", query_tbl[i].type);
+			LOG_DBG("The PLDM type(0x%x) is out of range!", query_tbl[i].type);
 			continue;
 		}
 
@@ -535,7 +535,7 @@ uint8_t get_supported_pldm_commands(PLDM_TYPE type, uint8_t *buf, uint8_t buf_si
 	}
 
 	if (!handler_query) {
-		LOG_WRN("Invalid PLDM type, (0x%x)", type);
+		LOG_DBG("Invalid PLDM type, (0x%x)", type);
 		return PLDM_ERROR_INVALID_PLDM_TYPE;
 	}
 
@@ -648,7 +648,7 @@ int pldm_send_ipmi_request(ipmi_msg *msg)
 	uint8_t res_len = mctp_pldm_read(p->mctp_inst, &pmsg, rbuf, sizeof(rbuf));
 
 	if (!res_len) {
-		LOG_ERR("mctp_pldm_read fail");
+		LOG_DBG("mctp_pldm_read fail");
 		return false;
 	}
 

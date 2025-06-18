@@ -65,8 +65,8 @@ static bool is_pec_vaild(uint8_t dest_addr, uint8_t *buf, uint32_t len)
 	uint8_t exp_pec = buf[len - 1];
 
 	if (pec != exp_pec) {
-		LOG_WRN("pec error dest_addr %x, cal = %x, exp = %x", dest_addr, pec, exp_pec);
-		LOG_HEXDUMP_WRN(buf, sizeof(len), "is_pec_vaild");
+		LOG_DBG("pec error dest_addr %x, cal = %x, exp = %x", dest_addr, pec, exp_pec);
+		LOG_HEXDUMP_DBG(buf, sizeof(len), "is_pec_vaild");
 	}
 
 	return (pec == exp_pec) ? true : false;
@@ -136,11 +136,11 @@ static uint16_t mctp_smbus_read(void *mctp_p, uint8_t *buf, uint32_t len,
 	uint8_t ret = 0;
 	ret = i2c_target_read(mctp_inst->medium_conf.smbus_conf.bus, rdata, 256, &rlen);
 	if (ret) {
-		LOG_ERR("i2c_target_read fail, ret %d", ret);
+		LOG_DBG("i2c_target_read fail, ret %d", ret);
 		return 0;
 	}
 	if (rlen < sizeof(smbus_hdr)) {
-		LOG_ERR("recv invalid len %d", rlen);
+		LOG_DBG("recv invalid len %d", rlen);
 		return 0;
 	}
 
@@ -197,7 +197,7 @@ static uint16_t mctp_smbus_write(void *mctp_p, uint8_t *buf, uint32_t len,
 	uint8_t send_buf[send_len];
 	uint8_t rc = make_send_buf(mctp_inst, send_buf, send_len, buf, len, extra_data);
 	if (rc == MCTP_ERROR) {
-		LOG_WRN("make send buf failed!!");
+		LOG_DBG("make send buf failed!!");
 		return MCTP_ERROR;
 	}
 
@@ -212,7 +212,7 @@ static uint16_t mctp_smbus_write(void *mctp_p, uint8_t *buf, uint32_t len,
 	memcpy(&i2c_msg.data[0], send_buf, send_len);
 	status = i2c_master_write(&i2c_msg, 5);
 	if (status) {
-		LOG_ERR("i2c_master_write failed, ret %d", status);
+		LOG_DBG("i2c_master_write failed, ret %d", status);
 		return MCTP_ERROR;
 	}
 
