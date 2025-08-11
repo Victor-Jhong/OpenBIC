@@ -36,7 +36,8 @@
 
 // I2C configuration for HBM
 #define HBM_I2C_BUS I2C_BUS6
-#define HBM_I2C_ADDR (0xD4 >> 1) // 7-bit address 0x6A
+#define HBM_I2C_ADDR_WRITE 0x6A // Write address for offset
+#define HBM_I2C_ADDR_READ 0x6C // Read address for data
 #define HBM_CHANNEL_DATA_SIZE 8 // 8 bytes per channel
 #define HBM_MAX_CHANNELS 16
 #define HBM_MAX_HBMS 6
@@ -124,15 +125,21 @@ static int read_hbm_data(uint8_t hbm, uint8_t channel, uint8_t *data)
 
 	// Setup I2C message for writing offset address
 	i2c_msg.bus = HBM_I2C_BUS;
-	i2c_msg.target_addr = HBM_I2C_ADDR;
-	i2c_msg.tx_len = 4; // 4 bytes for 32-bit address
+	i2c_msg.target_addr = HBM_I2C_ADDR_WRITE;
+	i2c_msg.tx_len = 9;
 	i2c_msg.rx_len = 0;
 
-	// Pack the 32-bit offset address into bytes (little-endian)
-	i2c_msg.data[0] = (full_offset >> 0) & 0xFF;
-	i2c_msg.data[1] = (full_offset >> 8) & 0xFF;
-	i2c_msg.data[2] = (full_offset >> 16) & 0xFF;
-	i2c_msg.data[3] = (full_offset >> 24) & 0xFF;
+	// Pack the command and offset address based on your example
+	// Example: i2c write I2C_5 6A D3 06 ED 4E 7C D0 FF 10 FF
+	i2c_msg.data[0] = 0xD3;
+	i2c_msg.data[1] = 0x06;
+	i2c_msg.data[2] = (full_offset >> 0) & 0xFF; // ED (LSB)
+	i2c_msg.data[3] = (full_offset >> 8) & 0xFF; // 4E
+	i2c_msg.data[4] = (full_offset >> 16) & 0xFF; // 7C
+	i2c_msg.data[5] = (full_offset >> 24) & 0xFF; // D0 (MSB)
+	i2c_msg.data[6] = 0xFF;
+	i2c_msg.data[7] = 0x10;
+	i2c_msg.data[8] = 0xFF;
 
 	// Write offset address to device
 	if (i2c_master_write(&i2c_msg, retry)) {
@@ -140,8 +147,13 @@ static int read_hbm_data(uint8_t hbm, uint8_t channel, uint8_t *data)
 	}
 
 	// Setup I2C message for reading data
-	i2c_msg.tx_len = 0;
-	i2c_msg.rx_len = HBM_CHANNEL_DATA_SIZE;
+	// Based on your example: i2c read I2C_5 6C 00 08
+	// This means: bus I2C_5, addr 6C, offset 0, read 8 bytes
+	i2c_msg.bus = HBM_I2C_BUS;
+	i2c_msg.target_addr = HBM_I2C_ADDR_READ;
+	i2c_msg.tx_len = 1;
+	i2c_msg.rx_len = HBM_CHANNEL_DATA_SIZE; // Read 8 bytes
+	i2c_msg.data[0] = 0x00; // Offset 0
 
 	// Read the 8 bytes of data
 	if (i2c_master_read(&i2c_msg, retry)) {
@@ -163,15 +175,16 @@ static int read_hbm_data(uint8_t hbm, uint8_t channel, uint8_t *data)
  */
 static void print_hbm_data(const struct shell *shell, uint8_t hbm, uint8_t channel, uint8_t *data)
 {
-	shell_print(shell, "HBM%d Channel%d:", hbm, channel);
-	shell_print(shell, "  max_temp_current: %d", data[0]);
-	shell_print(shell, "  temp_current: %d", data[1]);
-	shell_print(shell, "  min_temp_history: %d", data[2]);
-	shell_print(shell, "  max_temp_history: %d", data[3]);
-	shell_print(shell, "  sid0: %d", data[4]);
-	shell_print(shell, "  sid1: %d", data[5]);
-	shell_print(shell, "  sid2: %d", data[6]);
-	shell_print(shell, "  sid3: %d", data[7]);
+	shell_print(shell, "HBM %d Channel %d:", hbm, channel);
+	// aline print data
+	shell_print(shell, "  max_temp_current: %-24d", data[0]);
+	shell_print(shell, "  temp_current: %-24d", data[1]);
+	shell_print(shell, "  min_temp_history: %-24d", data[2]);
+	shell_print(shell, "  max_temp_history: %-24d", data[3]);
+	shell_print(shell, "  sid0: %-24d", data[4]);
+	shell_print(shell, "  sid1: %-24d", data[5]);
+	shell_print(shell, "  sid2: %-24d", data[6]);
+	shell_print(shell, "  sid3: %-24d", data[7]);
 }
 
 void athena_read_cmd(const struct shell *shell, size_t argc, char **argv)
