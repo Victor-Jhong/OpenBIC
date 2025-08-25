@@ -1,0 +1,149 @@
+# HBM Data Reading Guide using I2C Commands
+
+## Overview
+This guide explains how to read HBM (High Bandwidth Memory) data using direct I2C commands 
+when the athena read command is not available in the firmware.
+
+## Hardware Configuration
+- I2C Bus: I2C_5 (corresponds to I2C_BUS6 in code)
+- Write Address: 0x6A (7-bit address for setting offset)
+- Read Address: 0x6C (7-bit address for reading data)
+- Data Size: 8 bytes per channel
+
+## HBM Memory Layout
+
+### Base Address
+- HBM_BASE_OFFSET: 0xD07C4000
+
+### HBM Data Offsets
+| HBM | Offset (hex) | Offset (dec) |
+|-----|--------------|--------------|
+| 0   | 0x0EED       | 3821         |
+| 1   | 0x1327       | 4903         |
+| 2   | 0x1761       | 5985         |
+| 3   | 0x1B9B       | 7067         |
+| 4   | 0x1FD5       | 8149         |
+| 5   | 0x240F       | 9231         |
+
+### Channel Data Structure (8 bytes per channel)
+| Byte | Data Field         |
+|------|--------------------|
+| 0    | max_temp_current   |
+| 1    | temp_current       |
+| 2    | min_temp_history   |
+| 3    | max_temp_history   |
+| 4    | sid0               |
+| 5    | sid1               |
+| 6    | sid2               |
+| 7    | sid3               |
+
+## Address Calculation Formula
+
+For HBM number H (0-5) and Channel number C (0-15):
+
+```
+Full_Address = HBM_BASE_OFFSET + HBM_OFFSET[H] + (C * 8)
+             = 0xD07C4000 + HBM_OFFSET[H] + (C * 8)
+```
+
+### Example Calculations
+
+For HBM 0, Channel 0:
+```
+Address = 0xD07C4000 + 0x0EED + (0 * 8) = 0xD07C4EED
+```
+
+For HBM 1, Channel 5:
+```
+Address = 0xD07C4000 + 0x1327 + (5 * 8) = 0xD07C134F
+```
+
+## I2C Command Sequence
+
+### Step 1: Write Offset Address
+```
+i2c write I2C_5 6A D3 06 [addr_byte0] [addr_byte1] [addr_byte2] [addr_byte3] FF 10 FF
+```
+
+Where:
+- D3 06: Fixed command prefix
+- addr_byte0: (Full_Address >> 0) & 0xFF  (LSB)
+- addr_byte1: (Full_Address >> 8) & 0xFF
+- addr_byte2: (Full_Address >> 16) & 0xFF
+- addr_byte3: (Full_Address >> 24) & 0xFF (MSB)
+- FF 10 FF: Fixed command suffix
+
+### Step 2: Read Data
+```
+i2c read I2C_5 6C 00 08
+```
+
+This reads 8 bytes of data from the previously set address.
+
+## Examples
+
+### Example 1: Read HBM 0, Channel 0
+1. Calculate address: 0xD07C4000 + 0x0EED + 0 = 0xD07C4EED
+2. Break down address:
+   - addr_byte0 = 0xED
+   - addr_byte1 = 0x4E
+   - addr_byte2 = 0x7C
+   - addr_byte3 = 0xD0
+3. Commands:
+   ```
+   i2c write I2C_5 6A D3 06 ED 4E 7C D0 FF 10 FF
+   i2c read I2C_5 6C 00 08
+   ```
+
+### Example 2: Read HBM 2, Channel 10 
+1. Calculate address: 0xD07C4000 + 0x1761 + (10 * 8) = 0xD07C17B1
+2. Break down address:
+    - addr_byte0 = 0xB1
+    - addr_byte1 = 0x17
+    - addr_byte2 = 0x7C
+    - addr_byte3 = 0xD0
+3. Commands:
+    ```
+    i2c write I2C_5 6A D3 06 B1 17 7C D0 FF 10 FF
+    i2c read I2C_5 6C 00 08
+    ```
+
+## Data Interpretation
+
+After executing the read command, you will get 8 bytes of data. Interpret them as follows:
+
+```
+Response: XX XX XX XX XX XX XX XX
+          |  |  |  |  |  |  |  |
+          |  |  |  |  |  |  |  +-- sid3
+          |  |  |  |  |  |  +---- sid2
+          |  |  |  |  |  +------ sid1
+          |  |  |  |  +-------- sid0
+          |  |  |  +---------- max_temp_history
+          |  |  +------------ min_temp_history
+          |  +-------------- temp_current
+          +---------------- max_temp_current
+```
+
+## Quick Reference Table
+
+| HBM | Base Address | Ch0        | Ch1        | Ch2        | Ch3        | Ch4        | Ch5        | Ch6        | Ch7        | Ch8        | Ch9        | Ch10       | Ch11       | Ch12       | Ch13       | Ch14       | Ch15       |
+|-----|--------------|------------|------------|------------|------------|------------|------------|------------|------------|------------|------------|------------|------------|------------|------------|------------|------------|
+| 0   | 0xD07C4EED   | 0xD07C4EED | 0xD07C4EF5 | 0xD07C4EFD | 0xD07C4F05 | 0xD07C4F0D | 0xD07C4F15 | 0xD07C4F1D | 0xD07C4F25 | 0xD07C4F2D | 0xD07C4F35 | 0xD07C4F3D | 0xD07C4F45 | 0xD07C4F4D | 0xD07C4F55 | 0xD07C4F5D | 0xD07C4F65 |
+| 1   | 0xD07C1327   | 0xD07C1327 | 0xD07C132F | 0xD07C1337 | 0xD07C133F | 0xD07C1347 | 0xD07C134F | 0xD07C1357 | 0xD07C135F | 0xD07C1367 | 0xD07C136F | 0xD07C1377 | 0xD07C137F | 0xD07C1387 | 0xD07C138F | 0xD07C1397 | 0xD07C139F |
+| 2   | 0xD07C1761   | 0xD07C1761 | 0xD07C1769 | 0xD07C1771 | 0xD07C1779 | 0xD07C1781 | 0xD07C1789 | 0xD07C1791 | 0xD07C1799 | 0xD07C17A1 | 0xD07C17A9 | 0xD07C17B1 | 0xD07C17B9 | 0xD07C17C1 | 0xD07C17C9 | 0xD07C17D1 | 0xD07C17D9 |
+| 3   | 0xD07C1B9B   | 0xD07C1B9B | 0xD07C1BA3 | 0xD07C1BAB | 0xD07C1BB3 | 0xD07C1BBB | 0xD07C1BC3 | 0xD07C1BCB | 0xD07C1BD3 | 0xD07C1BDB | 0xD07C1BE3 | 0xD07C1BEB | 0xD07C1BF3 | 0xD07C1BFB | 0xD07C1C03 | 0xD07C1C0B | 0xD07C1C13 |
+| 4   | 0xD07C1FD5   | 0xD07C1FD5 | 0xD07C1FDD | 0xD07C1FE5 | 0xD07C1FED | 0xD07C1FF5 | 0xD07C1FFD | 0xD07C2005 | 0xD07C200D | 0xD07C2015 | 0xD07C201D | 0xD07C2025 | 0xD07C202D | 0xD07C2035 | 0xD07C203D | 0xD07C2045 | 0xD07C204D |
+| 5   | 0xD07C240F   | 0xD07C240F | 0xD07C2417 | 0xD07C241F | 0xD07C2427 | 0xD07C242F | 0xD07C2437 | 0xD07C243F | 0xD07C2447 | 0xD07C244F | 0xD07C2457 | 0xD07C245F | 0xD07C2467 | 0xD07C246F | 0xD07C2477 | 0xD07C247F | 0xD07C2487 |
+
+## Troubleshooting
+
+1. **No response from read command**: Ensure the write command was successful first
+2. **Incorrect data**: Verify the address calculation and byte order
+3. **Bus errors**: Check I2C bus availability and device connectivity
+4. **Invalid HBM/Channel**: HBM must be 0-5, Channel must be 0-15
+
+## Script Usage
+
+Use the provided `hbm_command_generator.sh` script to automatically generate 
+the correct I2C commands for any HBM and channel combination.
