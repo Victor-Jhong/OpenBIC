@@ -86,6 +86,18 @@ __weak uint16_t plat_find_update_info_work(uint16_t comp_id)
 	return comp_id;
 }
 
+__weak uint8_t plat_pldm_request_update_check(uint16_t num_of_comp, uint8_t *comp_image_version_str,
+					      uint8_t comp_image_version_str_len)
+{
+	// Platform specific check for request update
+	// Compare num_of_comp with component version information
+	// Return PLDM_SUCCESS if check passes, error code otherwise
+
+	// return PLDM_SUCCESS;
+
+	return PLDM_FW_UPDATE_CC_UNABLE_TO_INITIATE_UPDATE;
+}
+
 int get_descriptor_type_length(uint16_t type)
 {
 	switch (type) {
@@ -1031,6 +1043,16 @@ static uint8_t request_update(void *mctp_inst, uint8_t *buf, uint16_t len, uint8
 		req_p->comp_image_set_ver_str_type, req_p->comp_image_set_ver_str_len);
 	LOG_HEXDUMP_INF(buf + sizeof(struct pldm_request_update_req),
 			req_p->comp_image_set_ver_str_len, "Component image version: ");
+
+	// Platform specific check for request update
+	uint8_t check_result =
+		plat_pldm_request_update_check(req_p->num_of_comp,
+					       buf + sizeof(struct pldm_request_update_req),
+					       req_p->comp_image_set_ver_str_len);
+	if (check_result != PLDM_SUCCESS) {
+		resp_p->completion_code = check_result;
+		goto exit;
+	}
 
 	*resp_len = sizeof(struct pldm_request_update_resp);
 	resp_p->completion_code = PLDM_SUCCESS;
