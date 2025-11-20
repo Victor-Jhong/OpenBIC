@@ -644,7 +644,7 @@ static void pldm_status_reset()
 
 static void exit_update_mode()
 {
-	printk("PLDM update mode timeout, exiting update mode...\n");
+	LOG_INF("PLDM update mode timeout, exiting update mode...\n");
 	pldm_status_reset();
 }
 

@@ -275,6 +275,8 @@ static int get_raa_polling_status(uint8_t bus, uint8_t addr)
 	uint8_t tbuf[2], rbuf[4];
 	int retry = 3;
 
+	return 0;
+
 	do {
 		tbuf[0] = VR_RAA_REG_PROG_STATUS;
 		tbuf[1] = 0x00;
@@ -413,7 +415,7 @@ bool raa228249_fwupdate(uint8_t bus, uint8_t addr, uint8_t *img_buff, uint32_t i
 
 	if (!remain) {
 		LOG_ERR("No remaining writes");
-		return false;
+		// return false;
 	}
 	if (remain <= VR_WARN_REMAIN_WR) {
 		LOG_WRN("The remaining writes %d is below the threshold value %d!", remain,
@@ -427,6 +429,11 @@ bool raa228249_fwupdate(uint8_t bus, uint8_t addr, uint8_t *img_buff, uint32_t i
 		goto exit;
 	}
 
+	//print all raa228249_config
+	LOG_INF("After parsing image, dev addr: 0x%02X, mode: 0x%02X, cfg id: 0x%02X, wr cnt: %d, devid exp: 0x%08X, product_id exp : 0x%04X, rev exp: 0x%08X, crc exp: 0x%08X",
+		dev_cfg.addr, dev_cfg.mode, dev_cfg.cfg_id, dev_cfg.wr_cnt, dev_cfg.devid_exp,
+		dev_cfg.product_id_exp, dev_cfg.rev_exp, dev_cfg.crc_exp);
+
 	// check device id
 	if (get_raa_devid(bus, addr, &devid) < 0) {
 		goto exit;
@@ -439,16 +446,18 @@ bool raa228249_fwupdate(uint8_t bus, uint8_t addr, uint8_t *img_buff, uint32_t i
 
 	// write configuration data
 	I2C_MSG i2c_msg = { 0 };
-	uint8_t retry = 3;
+	// uint8_t retry = 3;
 	i2c_msg.bus = bus;
 	i2c_msg.target_addr = addr;
 	for (int i = 0; i < dev_cfg.wr_cnt; i++) {
 		i2c_msg.tx_len = dev_cfg.pdata[i].len;
 		memcpy(i2c_msg.data, &dev_cfg.pdata[i].cmd, dev_cfg.pdata[i].len);
-		if (i2c_master_write(&i2c_msg, retry)) {
-			LOG_ERR("Failed to write config data to dev: 0x%x", addr);
-			goto exit;
-		}
+		// if (i2c_master_write(&i2c_msg, retry)) {
+		// 	LOG_ERR("Failed to write config data to dev: 0x%x", addr);
+		// 	goto exit;
+		// }
+
+		// LOG_INF("Skip writing config data to dev");
 
 		uint8_t percent = ((i + 1) * 100) / dev_cfg.wr_cnt;
 		if (percent % 10 == 0) {
