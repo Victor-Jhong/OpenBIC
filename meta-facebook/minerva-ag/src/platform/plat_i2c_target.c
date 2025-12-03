@@ -258,6 +258,8 @@ void set_control_voltage_handler(struct k_work *work_item)
 	LOG_DBG("Setting rail %x to %d mV", rail, millivolt);
 
 	plat_set_vout_command(rail, &millivolt, false, false);
+
+	free((void *)sensor_data);
 }
 
 void set_power_capping_handler(struct k_work *work_item)
@@ -270,6 +272,8 @@ void set_power_capping_handler(struct k_work *work_item)
 	plat_set_power_capping_command(POWER_CAPPING_INDEX_HC, &set_value_HC, false);
 	plat_set_power_capping_command(POWER_CAPPING_INDEX_LC, &set_value_LC, false);
 	// LOG_DBG("Power capping set HC: %d, LC: %d", set_value_HC, set_value_LC);
+
+	free((void *)sensor_data);
 }
 
 bool get_fru_info_element(telemetry_info *telemetry_info, char **fru_element,
@@ -398,23 +402,23 @@ void i2c_bridge_command_handler(struct k_work *work_item)
 	const plat_i2c_bridge_command_config *sensor_data_config =
 		CONTAINER_OF(work_item, plat_i2c_bridge_command_config, work);
 
-	int response_data_len = sensor_data_config->read_len;
+	uint8_t response_data_len = sensor_data_config->read_len;
 
-	size_t table_size_41 = sizeof(plat_i2c_bridge_command_status);
-	plat_i2c_bridge_command_status *sensor_data_status =
-		allocate_table((void **)&i2c_bridge_command_status_table[0], table_size_41);
-	if (!sensor_data_status)
-		return;
+	size_t status_table_size = sizeof(plat_i2c_bridge_command_status);
+	plat_i2c_bridge_command_status *status_data =
+		allocate_table((void **)&i2c_bridge_command_status_table[0], status_table_size);
+	if (!status_data)
+		goto cleanup_and_exit;
 
-	size_t table_size_42 =
-		sizeof(plat_i2c_bridge_command_response_data) + response_data_len * sizeof(uint8_t);
-	plat_i2c_bridge_command_response_data *sensor_data_response =
-		allocate_table((void **)&i2c_bridge_command_response_data_table[0], table_size_42);
-	if (!sensor_data_response)
-		return;
+	size_t response_table_size =
+		sizeof(plat_i2c_bridge_command_response_data) + response_data_len;
+	plat_i2c_bridge_command_response_data *response_data = allocate_table(
+		(void **)&i2c_bridge_command_response_data_table[0], response_table_size);
+	if (!response_data)
+		goto cleanup_and_exit;
 
-	sensor_data_status->data_status = I2C_BRIDGE_COMMAND_IN_PROCESS;
-	sensor_data_response->data_length = 0x00;
+	status_data->data_status = I2C_BRIDGE_COMMAND_IN_PROCESS;
+	response_data->data_length = 0x00;
 
 	I2C_MSG i2c_msg = { 0 };
 	uint8_t retry = 5;
@@ -422,27 +426,38 @@ void i2c_bridge_command_handler(struct k_work *work_item)
 	i2c_msg.target_addr = sensor_data_config->addr;
 	i2c_msg.tx_len = sensor_data_config->write_len;
 	i2c_msg.rx_len = sensor_data_config->read_len;
+
+	if (sensor_data_config->write_len > I2C_BUFF_SIZE) {
+		LOG_ERR("Write length %d exceeds I2C buffer size %d", sensor_data_config->write_len,
+			I2C_BUFF_SIZE);
+		status_data->data_status = I2C_BRIDGE_COMMAND_FAILURE;
+		goto cleanup_and_exit;
+	}
+
 	memcpy(&i2c_msg.data, sensor_data_config->data, sensor_data_config->write_len);
 	if (response_data_len == 0) {
 		if (i2c_master_write(&i2c_msg, retry)) {
 			LOG_ERR("Failed to write reg, bus: %d, addr: 0x%x, tx_len: 0x%x",
 				i2c_msg.bus, i2c_msg.target_addr, i2c_msg.tx_len);
-			sensor_data_status->data_status = I2C_BRIDGE_COMMAND_FAILURE;
-			return;
+			status_data->data_status = I2C_BRIDGE_COMMAND_FAILURE;
+			goto cleanup_and_exit;
 		}
-		sensor_data_status->data_status = I2C_BRIDGE_COMMAND_SUCCESS;
-		sensor_data_response->data_length = response_data_len;
+		status_data->data_status = I2C_BRIDGE_COMMAND_SUCCESS;
+		response_data->data_length = response_data_len;
 	} else {
 		if (i2c_master_read(&i2c_msg, retry)) {
 			LOG_ERR("Failed to read reg, bus: %d, addr: 0x%x, tx_len: 0x%x",
 				i2c_msg.bus, i2c_msg.target_addr, i2c_msg.tx_len);
-			sensor_data_status->data_status = I2C_BRIDGE_COMMAND_FAILURE;
-			return;
+			status_data->data_status = I2C_BRIDGE_COMMAND_FAILURE;
+			goto cleanup_and_exit;
 		}
-		sensor_data_status->data_status = I2C_BRIDGE_COMMAND_SUCCESS;
-		sensor_data_response->data_length = response_data_len;
-		memcpy(sensor_data_response->response_data, i2c_msg.data, response_data_len);
+		status_data->data_status = I2C_BRIDGE_COMMAND_SUCCESS;
+		response_data->data_length = response_data_len;
+		memcpy(response_data->response_data, i2c_msg.data, response_data_len);
 	}
+
+cleanup_and_exit:
+	free((void *)sensor_data_config);
 }
 
 void set_sensor_polling_handler(struct k_work *work_item)
@@ -453,9 +468,12 @@ void set_sensor_polling_handler(struct k_work *work_item)
 	int value = sensor_data->set_value;
 	if (!(value == 0 || value == 1)) {
 		LOG_ERR("set sensor_polling:%x is out of range", value);
+		free((void *)sensor_data);
 		return;
 	}
 	set_plat_sensor_polling_enable_flag(value);
+
+	free((void *)sensor_data);
 }
 
 bool initialize_sensor_data(telemetry_info *telemetry_info, uint8_t *buffer_size)

@@ -68,6 +68,12 @@ bool plat_eeprom_write(uint32_t offset, uint8_t *data, uint16_t data_len)
 	entry.offset = offset;
 	entry.data_len = data_len;
 
+	if (data_len > EEPROM_WRITE_SIZE) {
+		LOG_ERR("Data length %d exceeds EEPROM buffer size %d", data_len,
+			EEPROM_WRITE_SIZE);
+		return false;
+	}
+
 	uint8_t fru_index = 0;
 	if (!find_FRU_ID(LOG_EEPROM_ID, &fru_index)) {
 		LOG_ERR("find_FRU_ID fail when write eeprom 0x%x ", offset);

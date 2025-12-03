@@ -547,7 +547,9 @@ bool pre_vr_read(sensor_cfg *cfg, void *args)
 	msg.data[0] = 0x00;
 	msg.data[1] = pre_proc_args->vr_page;
 	if (i2c_master_write(&msg, retry)) {
-		k_mutex_unlock(pre_proc_args->mutex);
+		if (pre_proc_args->mutex) {
+			k_mutex_unlock(pre_proc_args->mutex);
+		}
 		LOG_ERR("pre_vr_read, set page fail");
 		return false;
 	}

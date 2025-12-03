@@ -9297,12 +9297,24 @@ void plat_pldm_sensor_get_pdr_numeric_sensor(int thread_id, int sensor_num,
 
 void plat_load_numeric_sensor_pdr_table(PDR_numeric_sensor *numeric_sensor_table)
 {
+	if (!numeric_sensor_table) {
+		LOG_ERR("numeric_sensor_table is NULL");
+		return;
+	}
+
 	int thread_id = 0, sensor_num = 0;
 	int max_sensor_num = 0, current_sensor_size = 0;
+
+	uint32_t max_entries = plat_get_pdr_size(PLDM_NUMERIC_SENSOR_PDR);
 
 	for (thread_id = 0; thread_id < MAX_SENSOR_THREAD_ID; thread_id++) {
 		max_sensor_num = plat_pldm_sensor_get_sensor_count(thread_id);
 		for (sensor_num = 0; sensor_num < max_sensor_num; sensor_num++) {
+			if (current_sensor_size >= max_entries) {
+				LOG_ERR("Buffer overflow: current_sensor_size %d >= max_entries %u",
+					current_sensor_size, max_entries);
+				return;
+			}
 			plat_pldm_sensor_get_pdr_numeric_sensor(
 				thread_id, sensor_num, &numeric_sensor_table[current_sensor_size]);
 			current_sensor_size++;
@@ -9312,6 +9324,11 @@ void plat_load_numeric_sensor_pdr_table(PDR_numeric_sensor *numeric_sensor_table
 
 void plat_load_aux_sensor_names_pdr_table(PDR_sensor_auxiliary_names *aux_sensor_name_table)
 {
+	if (!aux_sensor_name_table) {
+		LOG_ERR("aux_sensor_name_table is NULL");
+		return;
+	}
+
 	size_t plat_pdr_sensor_aux_names_table_size = ARRAY_SIZE(plat_pdr_sensor_aux_names_table);
 	size_t plat_3v3_pdr_sensor_aux_names_table_size =
 		ARRAY_SIZE(plat_3v3_pdr_sensor_aux_names_table);
@@ -9319,25 +9336,53 @@ void plat_load_aux_sensor_names_pdr_table(PDR_sensor_auxiliary_names *aux_sensor
 		ARRAY_SIZE(plat_0v85_pvdd_pdr_sensor_aux_names_table);
 	size_t offset = 0;
 
+	uint32_t max_entries = plat_get_pdr_size(PLDM_SENSOR_AUXILIARY_NAMES_PDR);
+
 	if (get_board_type() == MINERVA_AEGIS_BD) {
+		// Check boundary before each copy operation
+		if (offset + plat_0v85_pvdd_pdr_sensor_aux_names_table_size > max_entries) {
+			LOG_ERR("Buffer overflow: offset %zu + size %zu > max %u", offset,
+				plat_0v85_pvdd_pdr_sensor_aux_names_table_size, max_entries);
+			return;
+		}
 		memcpy(aux_sensor_name_table + offset, plat_0v85_pvdd_pdr_sensor_aux_names_table,
 		       plat_0v85_pvdd_pdr_sensor_aux_names_table_size *
 			       sizeof(PDR_sensor_auxiliary_names));
 		offset += plat_0v85_pvdd_pdr_sensor_aux_names_table_size;
 
+		if (offset + plat_pdr_sensor_aux_names_table_size > max_entries) {
+			LOG_ERR("Buffer overflow: offset %zu + size %zu > max %u", offset,
+				plat_pdr_sensor_aux_names_table_size, max_entries);
+			return;
+		}
 		memcpy(aux_sensor_name_table + offset, plat_pdr_sensor_aux_names_table,
 		       plat_pdr_sensor_aux_names_table_size * sizeof(PDR_sensor_auxiliary_names));
 	} else {
+		if (offset + plat_3v3_pdr_sensor_aux_names_table_size > max_entries) {
+			LOG_ERR("Buffer overflow: offset %zu + size %zu > max %u", offset,
+				plat_3v3_pdr_sensor_aux_names_table_size, max_entries);
+			return;
+		}
 		memcpy(aux_sensor_name_table + offset, plat_3v3_pdr_sensor_aux_names_table,
 		       plat_3v3_pdr_sensor_aux_names_table_size *
 			       sizeof(PDR_sensor_auxiliary_names));
 		offset += plat_3v3_pdr_sensor_aux_names_table_size;
 
+		if (offset + plat_0v85_pvdd_pdr_sensor_aux_names_table_size > max_entries) {
+			LOG_ERR("Buffer overflow: offset %zu + size %zu > max %u", offset,
+				plat_0v85_pvdd_pdr_sensor_aux_names_table_size, max_entries);
+			return;
+		}
 		memcpy(aux_sensor_name_table + offset, plat_0v85_pvdd_pdr_sensor_aux_names_table,
 		       plat_0v85_pvdd_pdr_sensor_aux_names_table_size *
 			       sizeof(PDR_sensor_auxiliary_names));
 		offset += plat_0v85_pvdd_pdr_sensor_aux_names_table_size;
 
+		if (offset + plat_pdr_sensor_aux_names_table_size > max_entries) {
+			LOG_ERR("Buffer overflow: offset %zu + size %zu > max %u", offset,
+				plat_pdr_sensor_aux_names_table_size, max_entries);
+			return;
+		}
 		memcpy(aux_sensor_name_table + offset, plat_pdr_sensor_aux_names_table,
 		       plat_pdr_sensor_aux_names_table_size * sizeof(PDR_sensor_auxiliary_names));
 	}
