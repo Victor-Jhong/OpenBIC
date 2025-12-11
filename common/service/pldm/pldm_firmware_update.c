@@ -1428,6 +1428,8 @@ static uint8_t get_firmware_parameter(void *mctp_inst, uint8_t *buf, uint16_t le
 	CHECK_NULL_ARG_WITH_RETURN(resp_len, PLDM_ERROR);
 	CHECK_NULL_ARG_WITH_RETURN(ext_params, PLDM_ERROR);
 
+	LOG_INF("get_firmware_parameter received");
+
 	struct pldm_get_firmware_parameters_resp *resp_p =
 		(struct pldm_get_firmware_parameters_resp *)resp;
 
