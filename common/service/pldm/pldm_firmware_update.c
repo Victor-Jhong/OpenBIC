@@ -1411,6 +1411,10 @@ static uint8_t get_firmware_parameter(void *mctp_inst, uint8_t *buf, uint16_t le
 	CHECK_NULL_ARG_WITH_RETURN(resp_len, PLDM_ERROR);
 	CHECK_NULL_ARG_WITH_RETURN(ext_params, PLDM_ERROR);
 
+#ifdef ENABLE_PLDM_GET_FW_PARAM_DEBUG_LOG
+	LOG_INF("pldm get_firmware_parameter received");
+#endif
+
 	struct pldm_get_firmware_parameters_resp *resp_p =
 		(struct pldm_get_firmware_parameters_resp *)resp;
 
@@ -1779,6 +1783,14 @@ bool is_update_state_download_phase()
 bool is_update_state_idle()
 {
 	if (current_state == STATE_IDLE) {
+		return true;
+	}
+	return false;
+}
+
+bool is_update_state_idle_or_learn_comp()
+{
+	if ((current_state == STATE_IDLE) || (current_state == STATE_LEARN_COMP)) {
 		return true;
 	}
 	return false;
